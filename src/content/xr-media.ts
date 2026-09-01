@@ -1,0 +1,41 @@
+const base = "/images/xr";
+
+export const xrMedia = {
+  arAutomotiveTraining: `${base}/ar-automotive-training.jpg`,
+  arLabInspection: `${base}/ar-lab-inspection.jpg`,
+  arManufacturingDigitalTwin: `${base}/ar-manufacturing-digital-twin.jpg`,
+  arManufacturingTablet: `${base}/ar-manufacturing-tablet.jpg`,
+  childrenRoboticsLearning: `${base}/children-robotics-learning.jpg`,
+  girlRoboticsLab: `${base}/girl-robotics-lab.jpg`,
+  industrialDataXrWorker: `${base}/industrial-data-xr-worker.jpg`,
+  industrialMrTechnician: `${base}/industrial-mr-technician.jpg`,
+  industrialVrTraining: `${base}/industrial-vr-training.jpg`,
+  industrialXrInterface: `${base}/industrial-xr-interface.png`,
+  jefCollegeComputerLab: `${base}/jef-college-computer-lab.jpg`,
+  jefDigitalClassroomSession: `${base}/jef-digital-classroom-session.jpeg`,
+  jefIndustryBriefing: `${base}/jef-industry-briefing.jpeg`,
+  jefLargeTrainingRoom: `${base}/jef-large-training-room.jpg`,
+  jefSmallWorkshopDemo: `${base}/jef-small-workshop-demo.jpg`,
+  jefTransformingEducationBanner: `${base}/jef-transforming-education-banner.jpeg`,
+  jefXrExpoHeadsetDemo: `${base}/jef-xr-expo-headset-demo.jpeg`,
+  jefXrPresentationStage1: `${base}/jef-xr-presentation-stage-1.jpg`,
+  jefXrPresentationStage2: `${base}/jef-xr-presentation-stage-2.jpg`,
+  medicalXrSpine: `${base}/medical-xr-spine.jpg`,
+  medicalXrTraining: `${base}/medical-xr-training.jpg`,
+  mixedRealityDeviceCollage: `${base}/mixed-reality-device-collage.jpg`,
+  roboticsSensorCar: `${base}/robotics-sensor-car.jpg`,
+  spatialAiCollaborationRoom: `${base}/spatial-ai-collaboration-room.jpg`,
+  spatialAiRoboticsFactory: `${base}/spatial-ai-robotics-factory.png`,
+  vrIndustrialFactoryTour: `${base}/vr-industrial-factory-tour.jpeg`,
+  vrRoboticsWorkcell: `${base}/vr-robotics-workcell.jpg`,
+  xrClassroomSolarSystem: `${base}/xr-classroom-solar-system.jpg`,
+  xrDeviceIndustrialHologram: `${base}/xr-device-industrial-hologram.jpg`,
+  xrEducationGears: `${base}/xr-education-gears.jpg`,
+  xrManufacturingDashboard: `${base}/xr-manufacturing-dashboard.jpg`,
+  xrManufacturingEngineOverlay: `${base}/xr-manufacturing-engine-overlay.jpeg`,
+  xrMedicalHeartLearning: `${base}/xr-medical-heart-learning.jpg`,
+  xrScienceClassroomDna: `${base}/xr-science-classroom-dna.jpg`,
+  xrSpaceScienceLearning: `${base}/xr-space-science-learning.jpg`
+} as const;
+
+export type XrMediaKey = keyof typeof xrMedia;

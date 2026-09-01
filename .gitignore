@@ -1,0 +1,45 @@
+# dependencies
+node_modules
+
+# Next.js and build output
+.next
+out
+dist
+coverage
+test-results
+playwright-report
+*.tsbuildinfo
+__pycache__/
+*.pyc
+
+# Cloudflare local state
+.wrangler
+.dev.vars
+
+# environment files with secrets
+.env
+.env.local
+.env.production
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+db/fgc/backups/*.json
+db/fgc/backups/*.json
+
+# Unrelated MJIF Python tests retained locally only
+/tests/*.py
+
+# Unrelated MJIF dashboard artifact retained locally
+/tests/baselines/dashboard/execution_terminal_phase2.png
