@@ -90,7 +90,7 @@ export type FgcSubmissionDetail = {
   sourceStatus: string;
   sections: FgcSubmissionDetailSection[];
   versions: Array<{ id: string; version: number; status: string; checksum: string; createdAt: string; createdBy: string | null }>;
-  evidenceFiles: Array<{ id: string; category: string; filename: string; mimeType: string; sizeBytes: number; documentDate: string | null; description: string | null; confidentiality: string; reviewStatus: string; uploadedAt: string; viewUrl: string }>;
+  evidenceFiles: Array<{ id: string; category: string; filename: string; mimeType: string; sizeBytes: number; checksumSha256: string; documentDate: string | null; description: string | null; confidentiality: string; reviewStatus: string; uploadStatus: string; scannerStatus: string; version: number; sectionCode: string | null; fieldCode: string | null; uploadedAt: string; viewUrl: string }>;
   evidenceReviews: Array<{ id: string; evidenceFileId: string | null; decision: string; decisionReason: string; reviewerNotes: string | null; reviewedBy: string; createdAt: string }>;
   statusHistory: Array<{ id: string; previousStatus: string | null; newStatus: string; changedRole: string | null; reason: string; comments: string | null; createdAt: string }>;
   auditEvents: Array<{ id: string; actorRole: string | null; action: string; reason: string | null; createdAt: string }>;
@@ -379,11 +379,11 @@ export async function getFgcSubmissionDetail(access: Access, submissionId: strin
     WHERE submission_version_id = $1
     ORDER BY section_code, field_code
   `, [latestVersion.id]) : { rows: [] };
-  const evidenceResult = await fgcQuery<{ id: string; evidence_category: string; original_filename: string; mime_type: string; file_size_bytes: string; document_date: string | null; description: string | null; confidentiality_classification: string; review_status: string; created_at: string }>(`
-    SELECT id::text, evidence_category, original_filename, mime_type, file_size_bytes::text, document_date::text,
-      description, confidentiality_classification, review_status::text, created_at::text
+  const evidenceResult = await fgcQuery<{ id: string; evidence_category: string; original_filename: string; mime_type: string; file_size_bytes: string; checksum_sha256: string; document_date: string | null; description: string | null; confidentiality_classification: string; review_status: string; upload_status: string; scanner_status: string; evidence_version: number; section_code: string | null; field_code: string | null; created_at: string }>(`
+    SELECT id::text, evidence_category, original_filename, mime_type, file_size_bytes::text, checksum_sha256, document_date::text,
+      description, confidentiality_classification, review_status::text, upload_status, scanner_status, evidence_version, section_code, field_code, created_at::text
     FROM fgc.evidence_files
-    WHERE submission_id = $1 AND deleted_at IS NULL
+    WHERE submission_id = $1 AND deleted_at IS NULL AND upload_status = 'COMPLETED'
     ORDER BY created_at DESC
   `, [submissionId]);
   const reviewResult = await fgcQuery<{ id: string; evidence_file_id: string | null; decision: string; decision_reason: string; reviewer_notes: string | null; reviewed_by_name: string; created_at: string }>(`
@@ -463,7 +463,7 @@ export async function getFgcSubmissionDetail(access: Access, submissionId: strin
       .filter((section): section is FgcSubmissionDetailSection => Boolean(section))
       .concat(Array.from(sections.values()).filter((section) => !fgcLecturerModules.some((formModule) => formModule.code === section.code))),
     versions: versionResult.rows.map((row) => ({ id: row.id, version: row.version, status: row.status_at_snapshot, checksum: row.snapshot_checksum, createdAt: row.created_at, createdBy: row.created_by_name })),
-    evidenceFiles: evidenceResult.rows.map((row) => ({ id: row.id, category: row.evidence_category, filename: row.original_filename, mimeType: row.mime_type, sizeBytes: Number(row.file_size_bytes), documentDate: row.document_date, description: row.description, confidentiality: row.confidentiality_classification, reviewStatus: row.review_status, uploadedAt: row.created_at, viewUrl: `/api/fgc/evidence/files/${row.id}/download` })),
+    evidenceFiles: evidenceResult.rows.map((row) => ({ id: row.id, category: row.evidence_category, filename: row.original_filename, mimeType: row.mime_type, sizeBytes: Number(row.file_size_bytes), checksumSha256: row.checksum_sha256, documentDate: row.document_date, description: row.description, confidentiality: row.confidentiality_classification, reviewStatus: row.review_status, uploadStatus: row.upload_status, scannerStatus: row.scanner_status, version: row.evidence_version, sectionCode: row.section_code, fieldCode: row.field_code, uploadedAt: row.created_at, viewUrl: `/api/fgc/evidence/files/${row.id}/download` })),
     evidenceReviews: reviewResult.rows.map((row) => ({ id: row.id, evidenceFileId: row.evidence_file_id, decision: row.decision, decisionReason: row.decision_reason, reviewerNotes: row.reviewer_notes, reviewedBy: row.reviewed_by_name, createdAt: row.created_at })),
     statusHistory: historyResult.rows.map((row) => ({ id: row.id, previousStatus: row.previous_status, newStatus: row.new_status, changedRole: row.changed_role, reason: row.reason, comments: row.comments, createdAt: row.created_at })),
     auditEvents: auditResult.rows.map((row) => ({ id: row.id, actorRole: row.actor_role, action: row.action, reason: row.reason, createdAt: row.created_at }))
@@ -481,7 +481,7 @@ export async function createFgcEvidenceFileViewUrl(access: Access, fileId: strin
   }>(`
     SELECT id::text, submission_id::text, storage_provider, storage_bucket, storage_key, original_filename, mime_type
     FROM fgc.evidence_files
-    WHERE id = $1 AND deleted_at IS NULL
+    WHERE id = $1 AND deleted_at IS NULL AND upload_status = 'COMPLETED'
     LIMIT 1
   `, [fileId]);
   const file = fileResult.rows[0];
@@ -513,7 +513,7 @@ export async function createFgcEvidenceFileViewUrl(access: Access, fileId: strin
 
   await fgcQuery(`
     INSERT INTO fgc.production_audit_events (actor_user_id, actor_role, action, object_type, object_id, reason, metadata)
-    VALUES ($1, $2, 'VIEW_EVIDENCE_FILE', 'evidence_file', $3, 'Generated short-lived private evidence document view URL.', $4::jsonb)
+    VALUES ($1, $2, 'DOWNLOAD_EVIDENCE_FILE', 'evidence_file', $3, 'Generated short-lived private evidence document download URL.', $4::jsonb)
   `, [access.user.id, access.access.activeRole?.code ?? access.access.accessState, file.id, JSON.stringify({ submissionId: file.submission_id, filename: file.original_filename })]);
 
   return {

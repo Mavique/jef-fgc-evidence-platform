@@ -43,8 +43,12 @@ type LecturerEvidenceFileRow = {
   original_filename: string;
   mime_type: string;
   file_size_bytes: string;
+  checksum_sha256: string;
   description: string | null;
   review_status: string;
+  upload_status: string;
+  scanner_status: string;
+  evidence_version: number;
   created_at: string;
 };
 
@@ -76,7 +80,7 @@ export type LecturerFormState = {
   values: FgcLecturerDraftValues;
   completion: ReturnType<typeof evaluateFgcLecturerDraft>;
   versionHistory: Array<{ version: number; createdAt: string }>;
-  evidenceFiles: Array<{ id: string; category: string; filename: string; mimeType: string; sizeBytes: number; description: string | null; reviewStatus: string; uploadedAt: string; viewUrl: string }>;
+  evidenceFiles: Array<{ id: string; category: string; filename: string; mimeType: string; sizeBytes: number; checksumSha256: string; description: string | null; reviewStatus: string; uploadStatus: string; scannerStatus: string; version: number; uploadedAt: string; viewUrl: string }>;
 };
 
 export class FgcFormAccessError extends Error {
@@ -188,10 +192,11 @@ async function getEvidenceFiles(submissionId: string | null) {
   const result = await fgcQuery<LecturerEvidenceFileRow>(
     `
       SELECT id::text, evidence_category, original_filename, mime_type, file_size_bytes::text,
-        description, review_status::text, created_at::text
+        checksum_sha256, description, review_status::text, upload_status, scanner_status, evidence_version, created_at::text
       FROM fgc.evidence_files
       WHERE submission_id = $1
         AND deleted_at IS NULL
+        AND upload_status = 'COMPLETED'
       ORDER BY created_at DESC
     `,
     [submissionId]
@@ -202,8 +207,12 @@ async function getEvidenceFiles(submissionId: string | null) {
     filename: row.original_filename,
     mimeType: row.mime_type,
     sizeBytes: Number(row.file_size_bytes),
+    checksumSha256: row.checksum_sha256,
     description: row.description,
     reviewStatus: row.review_status,
+    uploadStatus: row.upload_status,
+    scannerStatus: row.scanner_status,
+    version: row.evidence_version,
     uploadedAt: row.created_at,
     viewUrl: `/api/fgc/evidence/files/${row.id}/download`
   }));

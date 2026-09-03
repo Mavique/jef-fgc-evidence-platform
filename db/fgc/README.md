@@ -16,6 +16,7 @@ The schema is source-aligned to the supplied September 2026 workshop artefacts a
 - `005_curriculum_master_schema.sql` adds the independent National TVET Curriculum Master Catalogue for qualifications, programmes, subjects, modules, curriculum versions, aliases, trades, reference requests and curriculum import staging.
 - `006_seed_curriculum_master.sql` seeds source provenance, category expansion, disciplines, aliases and a conservative starter curriculum sample. Full authoritative NC(V), Report 191, QCTO and SAQA imports remain pending.
 - `007_production_hardening_schema.sql` adds production application tables for hashed-password accounts, email verification tokens, sessions, role approval, campus directory requests, form assignments, submission lifecycle versioning, evidence file metadata, reviews, reports, notifications and append-only audit events.
+- `008_evidence_upload_lifecycle.sql` extends the canonical evidence file table with upload lifecycle, scanner-boundary state, replacement versioning and field-level response links for private binary uploads.
 
 ## Apply Locally
 
@@ -50,6 +51,7 @@ Production migration order:
 2. `003_tvet_reference_schema.sql`
 3. `005_curriculum_master_schema.sql`
 4. `007_production_hardening_schema.sql`
+5. `008_evidence_upload_lifecycle.sql`
 
 Production reference seed order:
 
@@ -85,6 +87,7 @@ Migration `007_production_hardening_schema.sql` is the first product-grade appli
 - `fgc.campus_addition_requests`: governed workflow for missing campus records instead of free-text campus creation.
 - `fgc.form_templates`, `fgc.form_assignments`, `fgc.production_submissions`, `fgc.production_submission_versions`, `fgc.production_response_values`: assigned data-capture workflows with versioned submissions and field-level evidence-source classification.
 - `fgc.evidence_files`, `fgc.evidence_reviews`: private-storage file metadata, checksums, lifecycle status and review decisions.
+- `fgc.evidence_files` is extended by `008_evidence_upload_lifecycle.sql` so completed rows can be distinguished from failed/interrupted uploads, linked to the current toolkit response, versioned on replacement and marked with an honest scanner state when malware scanning is not configured.
 - `fgc.analytics_import_batches`, `fgc.generated_reports`, `fgc.notifications`: integration, reporting and communication queues.
 - `fgc.production_audit_events`: append-only audit events for regulated workflow actions.
 - `fgc.v_production_readiness`: operational readiness counters for administrators.

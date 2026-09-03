@@ -10,6 +10,8 @@ const workbenchSource = readFileSync(join(process.cwd(), "src", "lib", "fgc", "w
 const workbenchUiSource = readFileSync(join(process.cwd(), "src", "components", "merseta-fgc", "FgcAccessExperience.tsx"), "utf8");
 const submissionDetailRouteSource = readFileSync(join(process.cwd(), "src", "app", "api", "fgc", "submissions", "[submissionId]", "route.ts"), "utf8");
 const evidenceDownloadRouteSource = readFileSync(join(process.cwd(), "src", "app", "api", "fgc", "evidence", "files", "[fileId]", "download", "route.ts"), "utf8");
+const evidenceUploadSource = readFileSync(join(process.cwd(), "src", "lib", "fgc", "evidence-upload.ts"), "utf8");
+const evidenceUploadRouteSource = readFileSync(join(process.cwd(), "src", "app", "api", "fgc", "lecturer", "forms", "[assignmentId]", "evidence", "route.ts"), "utf8");
 
 describe("FGC production security helpers", () => {
   it("hashes passwords without storing the clear text and verifies only the right password", async () => {
@@ -147,9 +149,19 @@ describe("FGC canonical submission visibility", () => {
   it("makes stored evidence documents viewable through a governed signed-link route", () => {
     expect(workbenchSource).toContain("export async function createFgcEvidenceFileViewUrl");
     expect(workbenchSource).toContain("await assertSubmissionVisibleToAccess(access, file.submission_id)");
-    expect(workbenchSource).toContain("VIEW_EVIDENCE_FILE");
+    expect(workbenchSource).toContain("DOWNLOAD_EVIDENCE_FILE");
     expect(evidenceDownloadRouteSource).toContain("createFgcEvidenceFileViewUrl");
     expect(evidenceDownloadRouteSource).toContain("NextResponse.redirect");
+  });
+
+  it("uses real private evidence upload instead of recording filenames only", () => {
+    expect(evidenceUploadSource).toContain("uploadLecturerEvidenceFile");
+    expect(evidenceUploadSource).toContain("uploadToSupabaseStorage");
+    expect(evidenceUploadSource).toContain("checksumSha256");
+    expect(evidenceUploadSource).toContain("'PENDING_REVIEW'");
+    expect(evidenceUploadRouteSource).toContain("request.formData()");
+    expect(workbenchUiSource).toContain("Upload evidence files to private storage");
+    expect(workbenchUiSource).not.toContain("Register evidence files for this draft");
   });
 
   it("shows manifest-only evidence entries separately from uploaded files", () => {

@@ -748,6 +748,7 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploadState, setUploadState] = useState<{ busy: boolean; progress: number; message: string; error: string }>({ busy: false, progress: 0, message: "", error: "" });
   const errorSummaryRef = useRef<HTMLDivElement | null>(null);
 
   const completion = useMemo(() => evaluateFgcLecturerDraft(values), [values]);
@@ -830,6 +831,15 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
     setMessage(`Draft saved. Completion ${payload.result.completion.completionPercent}%.`);
   }
 
+  async function refreshFormState() {
+    const refreshed = await fetch(`/api/fgc/lecturer/forms/${assignmentId}`, { cache: "no-store" }).then((result) => result.json());
+    if (refreshed.ok) {
+      setFormState(refreshed.form);
+      setValues(refreshed.form.values);
+      setDirty(false);
+    }
+  }
+
   function handleValueChange(key: string, value: string) {
     setValues((current) => ({ ...current, [key]: value }));
     setDirty(true);
@@ -843,12 +853,76 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
     }
   }
 
-  function handleFileRegister(files: FileList | null) {
-    if (!files?.length) return;
-    const names = Array.from(files).map((file) => `${file.name} (${Math.round(file.size / 1024)} KB)`);
+  function uploadedFilesManifestValues(files: Array<{ filename: string; sizeBytes: number; reviewStatus: string; checksumSha256: string }>) {
+    if (!files.length) return values;
+    const names = files.map((file) => `${file.filename} (${formatBytes(file.sizeBytes)}) - ${formatStatusLabel(file.reviewStatus)} - SHA-256 ${file.checksumSha256.slice(0, 12)}...`);
     const key = fieldKey("evidence_uploads", "evidence_manifest");
     const existing = values[key]?.trim();
-    handleValueChange(key, [existing, ...names].filter(Boolean).join("\n"));
+    return { ...values, [key]: [existing, ...names].filter(Boolean).join("\n") };
+  }
+
+  function uploadEvidenceWithProgress(formData: FormData) {
+    return new Promise<{ ok: boolean; evidenceFile?: { filename: string; sizeBytes: number; reviewStatus: string; checksumSha256: string }; message?: string }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `/api/fgc/lecturer/forms/${assignmentId}/evidence`);
+      xhr.responseType = "json";
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          setUploadState((current) => ({ ...current, progress: Math.max(1, Math.round((event.loaded / event.total) * 100)) }));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Evidence upload failed before the server could complete it."));
+      xhr.onload = () => {
+        const payload = (xhr.response || {}) as { ok?: boolean; evidenceFile?: { filename: string; sizeBytes: number; reviewStatus: string; checksumSha256: string }; message?: string };
+        if (xhr.status >= 200 && xhr.status < 300 && payload.ok) resolve({ ok: true, evidenceFile: payload.evidenceFile });
+        else resolve({ ok: false, message: payload.message ?? "Evidence upload was rejected." });
+      };
+      xhr.send(formData);
+    });
+  }
+
+  async function handleFileUpload(files: FileList | null) {
+    if (!files?.length || isLocked) return;
+    setUploadState({ busy: true, progress: 0, message: "Preparing evidence upload...", error: "" });
+    const uploaded: Array<{ filename: string; sizeBytes: number; reviewStatus: string; checksumSha256: string }> = [];
+    try {
+      if (dirty || !formState?.submission.id) await saveDraft("Lecturer saved draft before evidence upload");
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.set("file", file);
+        formData.set("evidenceCategory", "LECTURER_SUPPORTING_EVIDENCE");
+        formData.set("sectionCode", "evidence_uploads");
+        formData.set("fieldCode", "evidence_manifest");
+        formData.set("confidentiality", "INTERNAL");
+        setUploadState({ busy: true, progress: 1, message: `Uploading ${file.name}...`, error: "" });
+        const result = await uploadEvidenceWithProgress(formData);
+        if (!result.ok || !result.evidenceFile) {
+          throw new Error(result.message ?? `${file.name} could not be uploaded.`);
+        }
+        uploaded.push(result.evidenceFile);
+        setUploadState({ busy: true, progress: 100, message: `${file.name} uploaded and persisted pending review.`, error: "" });
+      }
+      const nextValues = uploadedFilesManifestValues(uploaded);
+      setValues(nextValues);
+      const response = await fetch(`/api/fgc/lecturer/forms/${assignmentId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ values: nextValues, reason: "Lecturer evidence upload metadata added to manifest" })
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { message?: string } | null;
+        throw new Error(payload?.message ?? "Evidence stored, but manifest metadata could not be saved.");
+      }
+      await refreshFormState();
+      setUploadState({ busy: false, progress: 100, message: `${uploaded.length} evidence file${uploaded.length === 1 ? "" : "s"} stored pending review.`, error: "" });
+    } catch (error) {
+      setUploadState({
+        busy: false,
+        progress: 0,
+        message: "",
+        error: error instanceof Error ? error.message : "Evidence upload failed."
+      });
+    }
   }
 
   async function handleSaveAndContinue() {
@@ -885,8 +959,7 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
     }
     setDirty(false);
     setMessage("Submitted successfully. The form is now locked as an immutable lecturer snapshot.");
-    const refreshed = await fetch(`/api/fgc/lecturer/forms/${assignmentId}`, { cache: "no-store" }).then((result) => result.json());
-    if (refreshed.ok) setFormState(refreshed.form);
+    await refreshFormState();
   }
 
   if (!formState) {
@@ -1026,12 +1099,56 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
                   <div className="rounded-[0.95rem] border border-dashed border-cyan/30 bg-cyan/[0.06] p-4">
                     <label className="flex min-h-14 cursor-pointer items-center gap-3 text-sm font-bold text-cyan">
                       <UploadCloud aria-hidden="true" size={20} />
-                      Register evidence files for this draft
-                      <input className="sr-only" type="file" multiple onChange={(event) => handleFileRegister(event.target.files)} disabled={isLocked} />
+                      Upload evidence files to private storage
+                      <input
+                        accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.json,.xml,.log,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,image/png,image/jpeg,text/plain,application/json,application/xml,text/xml"
+                        className="sr-only"
+                        type="file"
+                        multiple
+                        onChange={(event) => {
+                          handleFileUpload(event.target.files);
+                          event.currentTarget.value = "";
+                        }}
+                        disabled={isLocked || uploadState.busy}
+                      />
                     </label>
-                    <p className="mt-2 text-xs leading-5 text-paper/56">
-                      File names are recorded into the evidence manifest. Private binary storage still depends on the configured evidence storage provider.
-                    </p>
+                    <p className="mt-2 text-xs leading-5 text-paper/56">Supported: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, JSON, XML and LOG exports. Uploaded files remain document-supported and pending review.</p>
+                    <div className="mt-3" aria-live="polite">
+                      {uploadState.busy ? (
+                        <div className="grid gap-2 rounded-[0.85rem] bg-ink/52 p-3 ring-1 ring-white/[0.08]">
+                          <div className="flex items-center justify-between gap-3 text-xs font-bold text-paper/70">
+                            <span>{uploadState.message}</span>
+                            <span>{uploadState.progress}%</span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={uploadState.progress}>
+                            <div className="h-full rounded-full bg-cyan transition-[width]" style={{ width: `${uploadState.progress}%` }} />
+                          </div>
+                        </div>
+                      ) : uploadState.error ? (
+                        <p className="rounded-[0.85rem] bg-rose-300/12 p-3 text-sm font-semibold text-rose-100 ring-1 ring-rose-300/25" role="alert">{uploadState.error}</p>
+                      ) : uploadState.message ? (
+                        <p className="rounded-[0.85rem] bg-lime/10 p-3 text-sm font-semibold text-lime ring-1 ring-lime/20" role="status">{uploadState.message}</p>
+                      ) : null}
+                    </div>
+                    <div className="mt-4 grid gap-2">
+                      {formState.evidenceFiles.length ? formState.evidenceFiles.map((file) => (
+                        <div className="rounded-[0.85rem] bg-ink/52 p-3 ring-1 ring-white/[0.08]" key={file.id}>
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <p className="break-words text-sm font-semibold text-paper">{file.filename}</p>
+                              <p className="mt-1 text-xs leading-5 text-paper/52">{file.category} - {file.mimeType} - {formatBytes(file.sizeBytes)} - v{file.version}</p>
+                              <p className="mt-1 text-xs font-bold text-cyan">{formatStatusLabel(file.reviewStatus)} - Scan {formatStatusLabel(file.scannerStatus)}</p>
+                              <p className="mt-1 break-all font-mono text-[0.65rem] text-paper/42">SHA-256 {file.checksumSha256}</p>
+                            </div>
+                            <a className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-white/[0.08] px-4 text-sm font-bold text-paper ring-1 ring-white/[0.12]" href={file.viewUrl} target="_blank" rel="noreferrer">
+                              <FileText aria-hidden="true" size={15} /> View
+                            </a>
+                          </div>
+                        </div>
+                      )) : (
+                        <p className="rounded-[0.85rem] border border-dashed border-white/[0.14] p-3 text-sm leading-6 text-paper/54">No private evidence files have been stored for this draft yet.</p>
+                      )}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -1260,8 +1377,9 @@ function SubmittedLecturerReport({ formState, values, completion }: { formState:
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <p className="break-words text-sm font-bold text-ink">{file.filename}</p>
-                          <p className="mt-1 text-xs leading-5 text-ink/52">{file.category} · {file.mimeType} · {formatBytes(file.sizeBytes)}</p>
-                          <p className="mt-1 text-xs font-bold text-ink/60">{formatStatusLabel(file.reviewStatus)}</p>
+                          <p className="mt-1 text-xs leading-5 text-ink/52">{file.category} - {file.mimeType} - {formatBytes(file.sizeBytes)} - v{file.version}</p>
+                          <p className="mt-1 text-xs font-bold text-ink/60">{formatStatusLabel(file.reviewStatus)} - Scan {formatStatusLabel(file.scannerStatus)}</p>
+                          <p className="mt-1 break-all font-mono text-[0.62rem] text-ink/42">SHA-256 {file.checksumSha256}</p>
                         </div>
                         <a className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-bold text-paper print:hidden" href={file.viewUrl} target="_blank" rel="noreferrer">
                           <FileText aria-hidden="true" size={15} /> View document
@@ -1672,8 +1790,9 @@ function ProductionSubmissionDetailViewer({ detail, onClose }: { detail: FgcSubm
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="break-words text-sm font-semibold">{file.filename}</p>
-                    <p className="mt-1 text-xs leading-5 text-paper/52">{file.category} · {file.mimeType} · {formatBytes(file.sizeBytes)}</p>
-                    <p className="mt-2 text-xs font-bold text-cyan">{formatStatusLabel(file.reviewStatus)} · {file.confidentiality}</p>
+                    <p className="mt-1 text-xs leading-5 text-paper/52">{file.category} - {file.mimeType} - {formatBytes(file.sizeBytes)} - v{file.version}</p>
+                    <p className="mt-2 text-xs font-bold text-cyan">{formatStatusLabel(file.reviewStatus)} - {file.confidentiality} - Scan {formatStatusLabel(file.scannerStatus)}</p>
+                    <p className="mt-1 break-all font-mono text-[0.62rem] text-paper/42">SHA-256 {file.checksumSha256}</p>
                   </div>
                   <a className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-cyan px-4 text-sm font-bold text-ink" href={file.viewUrl} target="_blank" rel="noreferrer">
                     <FileText aria-hidden="true" size={15} /> View document

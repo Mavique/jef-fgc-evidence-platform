@@ -8,6 +8,9 @@ const referenceSchema = readFileSync(join(root, "db", "fgc", "003_tvet_reference
 const referenceSeed = readFileSync(join(root, "db", "fgc", "004_seed_tvet_reference.sql"), "utf8");
 const curriculumSchema = readFileSync(join(root, "db", "fgc", "005_curriculum_master_schema.sql"), "utf8");
 const curriculumSeed = readFileSync(join(root, "db", "fgc", "006_seed_curriculum_master.sql"), "utf8");
+const productionSchema = readFileSync(join(root, "db", "fgc", "007_production_hardening_schema.sql"), "utf8");
+const evidenceUploadLifecycleMigration = readFileSync(join(root, "db", "fgc", "008_evidence_upload_lifecycle.sql"), "utf8");
+const migrationConfig = readFileSync(join(root, "scripts", "fgc", "config.mjs"), "utf8");
 
 describe("FGC PostgreSQL schema", () => {
   it("keeps the core evidence domains represented as tables", () => {
@@ -52,6 +55,34 @@ describe("FGC PostgreSQL schema", () => {
     ].forEach((viewName) => {
       expect(schema).toContain(`VIEW ${viewName}`);
     });
+  });
+});
+
+describe("FGC evidence upload lifecycle migration", () => {
+  it("extends the existing canonical evidence_files table without creating a parallel table", () => {
+    expect(productionSchema).toContain("CREATE TABLE fgc.evidence_files");
+    expect(evidenceUploadLifecycleMigration).toContain("ALTER TABLE fgc.evidence_files");
+    expect(evidenceUploadLifecycleMigration).not.toContain("CREATE TABLE fgc.evidence_uploads");
+    expect(evidenceUploadLifecycleMigration).toContain("ADD COLUMN IF NOT EXISTS upload_status text NOT NULL DEFAULT 'COMPLETED'");
+    expect(evidenceUploadLifecycleMigration).toContain("ADD COLUMN IF NOT EXISTS scanner_status text NOT NULL DEFAULT 'UNAVAILABLE'");
+    expect(evidenceUploadLifecycleMigration).toContain("ADD COLUMN IF NOT EXISTS evidence_version integer NOT NULL DEFAULT 1");
+  });
+
+  it("links evidence to canonical submissions, response values and replacement versions", () => {
+    expect(evidenceUploadLifecycleMigration).toContain("ADD COLUMN IF NOT EXISTS replaced_file_id uuid REFERENCES fgc.evidence_files(id)");
+    expect(evidenceUploadLifecycleMigration).toContain("ADD COLUMN IF NOT EXISTS submission_version_id uuid REFERENCES fgc.production_submission_versions(id) ON DELETE SET NULL");
+    expect(evidenceUploadLifecycleMigration).toContain("ADD COLUMN IF NOT EXISTS response_value_id uuid REFERENCES fgc.production_response_values(id) ON DELETE SET NULL");
+    expect(evidenceUploadLifecycleMigration).toContain("CREATE UNIQUE INDEX IF NOT EXISTS idx_fgc_evidence_files_single_replacement");
+    expect(evidenceUploadLifecycleMigration).toContain("CREATE UNIQUE INDEX IF NOT EXISTS idx_fgc_evidence_files_submission_checksum_category");
+    expect(evidenceUploadLifecycleMigration).toContain("upload_completed_at IS NOT NULL");
+  });
+
+  it("is discoverable by the normal migration runner and separate from seed execution", () => {
+    const migrationList = migrationConfig.slice(migrationConfig.indexOf("export const migrationFiles"), migrationConfig.indexOf("export const referenceSeedFiles"));
+    expect(migrationList).toContain('"008_evidence_upload_lifecycle.sql"');
+    expect(migrationList).not.toContain("seeds/");
+    expect(migrationList).not.toContain("004_seed_tvet_reference.sql");
+    expect(migrationList).not.toContain("006_seed_curriculum_master.sql");
   });
 });
 

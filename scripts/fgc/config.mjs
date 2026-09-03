@@ -44,7 +44,8 @@ export const migrationFiles = [
   "001_schema.sql",
   "003_tvet_reference_schema.sql",
   "005_curriculum_master_schema.sql",
-  "007_production_hardening_schema.sql"
+  "007_production_hardening_schema.sql",
+  "008_evidence_upload_lifecycle.sql"
 ];
 
 export const referenceSeedFiles = [
