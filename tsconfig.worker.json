@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "plugins": []
+  },
+  "include": [
+    "worker.ts",
+    "worker-configuration.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

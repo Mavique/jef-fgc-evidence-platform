@@ -43,3 +43,4 @@ db/fgc/backups/*.json
 
 # Unrelated MJIF dashboard artifact retained locally
 /tests/baselines/dashboard/execution_terminal_phase2.png
+.vinext/
