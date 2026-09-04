@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  canAccessProtectedData,
   classifyAssessment,
-  demoAdminProfile,
-  demoUserProfiles,
-  fgcDemoSessionKey,
   fgcRouteDefinitions,
-  resolveRoleHome,
   rubricAreas,
   totalRubricScore,
   type LecturerAssessment,
@@ -62,17 +57,6 @@ describe("merSETA FGC evidence rules", () => {
     expect(classifyAssessment(assessment({ scores: scores(0) }))).toBe("Not Yet Demonstrated");
   });
 
-  it("blocks protected data until email, affiliation and role activation are complete", () => {
-    const pending = demoUserProfiles.find((profile) => profile.accountState === "Affiliation Review Pending");
-    const active = demoUserProfiles.find((profile) => profile.accountState === "Active");
-
-    expect(pending).toBeDefined();
-    expect(active).toBeDefined();
-    expect(canAccessProtectedData(pending!)).toBe(false);
-    expect(canAccessProtectedData(active!)).toBe(true);
-    expect(resolveRoleHome(pending!)).toBe("/fgc-ekm/access-pending");
-  });
-
   it("keeps FGC access routes explicit about public and protected entry points", () => {
     const signUp = fgcRouteDefinitions.find((route) => route.route === "/fgc-ekm/sign-up");
     const home = fgcRouteDefinitions.find((route) => route.route === "/fgc-ekm/home");
@@ -81,16 +65,5 @@ describe("merSETA FGC evidence rules", () => {
     expect(signUp?.access).toBe("Public");
     expect(home?.access).toBe("Protected");
     expect(adminQueue?.primaryRole).toBe("JEF Administrator");
-  });
-
-  it("provides a non-credential demo admin profile for frontend access testing", () => {
-    const adminProfile = demoUserProfiles.find((profile) => profile.id === demoAdminProfile.userId);
-
-    expect(fgcDemoSessionKey).toBe("jef-fgc-demo-session");
-    expect(demoAdminProfile.email).toBe("admin.demo@jengrac.example");
-    expect("password" in demoAdminProfile).toBe(false);
-    expect(adminProfile?.requestedRole).toBe("JEF Administrator");
-    expect(adminProfile).toBeDefined();
-    expect(canAccessProtectedData(adminProfile!)).toBe(true);
   });
 });

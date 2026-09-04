@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { ArrowRight, ChevronDown, LayoutDashboard, LogOut, Menu, UserCircle, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { fgcDemoSessionKey, type DemoAuthSession } from "@/content/merseta-fgc";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
 
 type SolutionItem = {
@@ -96,13 +95,6 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function getWorkspaceHref(session: DemoAuthSession | null) {
-  if (!session) return "/fgc-ekm/sign-in";
-  if (session.role === "Lecturer") return "/fgc-ekm/data-capturer";
-  if (session.role === "College Lead Admin") return "/fgc-ekm/college/demo-college-01/overview";
-  return session.landingRoute || "/fgc-ekm";
-}
-
 function getProductionWorkspaceHref(access: FgcCurrentUserResult | null) {
   if (!access?.ok) return null;
   return access.access.expectedPortal || "/fgc-ekm/home";
@@ -120,8 +112,6 @@ export function SiteNav() {
   const [fgcOpen, setFgcOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(true);
-  const [sessionReady, setSessionReady] = useState(false);
-  const [session, setSession] = useState<DemoAuthSession | null>(null);
   const [productionAccess, setProductionAccess] = useState<FgcCurrentUserResult | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const solutionsButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -135,7 +125,7 @@ export function SiteNav() {
 
   const solutionsActive = pathname.startsWith("/programmes") || pathname === "/platform-overview";
   const productionWorkspaceHref = getProductionWorkspaceHref(productionAccess);
-  const workspaceHref = productionWorkspaceHref ?? getWorkspaceHref(session);
+  const workspaceHref = productionWorkspaceHref ?? "/fgc-ekm/sign-in";
 
   useEffect(() => {
     const onScroll = () => setSolid(window.scrollY > 48);
@@ -157,33 +147,6 @@ export function SiteNav() {
     readProductionSession();
     window.addEventListener("focus", readProductionSession);
     return () => window.removeEventListener("focus", readProductionSession);
-  }, []);
-
-  useEffect(() => {
-    const readSession = () => {
-      const stored = localStorage.getItem(fgcDemoSessionKey);
-      if (!stored) {
-        setSession(null);
-        setSessionReady(true);
-        return;
-      }
-      try {
-        setSession(JSON.parse(stored) as DemoAuthSession);
-      } catch {
-        localStorage.removeItem(fgcDemoSessionKey);
-        setSession(null);
-      } finally {
-        setSessionReady(true);
-      }
-    };
-
-    readSession();
-    window.addEventListener("storage", readSession);
-    window.addEventListener("focus", readSession);
-    return () => {
-      window.removeEventListener("storage", readSession);
-      window.removeEventListener("focus", readSession);
-    };
   }, []);
 
   useEffect(() => {
@@ -303,8 +266,6 @@ export function SiteNav() {
 
   const handleSignOut = async () => {
     await fetch("/api/fgc/auth/logout", { method: "POST" }).catch(() => null);
-    localStorage.removeItem(fgcDemoSessionKey);
-    setSession(null);
     setProductionAccess(null);
     setFgcOpen(false);
     setMobileOpen(false);
@@ -312,9 +273,9 @@ export function SiteNav() {
   };
 
   const productionSession = productionAccess?.ok ? productionAccess : null;
-  const fgcSignedIn = Boolean(productionSession || session);
-  const fgcDisplayName = productionSession?.user.name ?? session?.name ?? "FGC user";
-  const fgcDisplayRole = productionSession?.access.accessState.replaceAll("_", " ") ?? session?.role ?? "Production session";
+  const fgcSignedIn = Boolean(productionSession);
+  const fgcDisplayName = productionSession?.user.name ?? "FGC user";
+  const fgcDisplayRole = productionSession?.access.accessState.replaceAll("_", " ") ?? "Production session";
   const navSurface = solid || solutionsOpen || fgcOpen || mobileOpen
     ? "bg-ink/[0.91] shadow-[0_18px_70px_rgba(0,0,0,0.34)] ring-white/[0.14]"
     : "bg-ink/[0.68] ring-white/[0.1]";
@@ -464,7 +425,7 @@ export function SiteNav() {
               onClick={toggleFgcMenu}
             >
               {fgcSignedIn ? <UserCircle aria-hidden="true" size={17} /> : <LayoutDashboard aria-hidden="true" size={17} />}
-              {fgcSignedIn ? "My FGC Workspace" : sessionReady ? "FGC Portal" : "FGC Portal"}
+              {fgcSignedIn ? "My FGC Workspace" : "FGC Portal"}
               <ChevronDown aria-hidden="true" className={`transition duration-200 ${fgcOpen ? "rotate-180" : ""}`} size={15} />
             </button>
 
@@ -493,12 +454,6 @@ export function SiteNav() {
                       <span className="font-semibold">My account</span>
                       <span className="text-sm text-paper/56">Review profile and access state.</span>
                     </Link>
-                    {session?.isMaster ? (
-                      <Link className="grid min-h-14 rounded-[0.75rem] px-3 py-3 transition hover:bg-white/[0.07] focus-visible:bg-white/[0.07] focus-visible:outline-none" href="/fgc-ekm/home" role="menuitem" onClick={() => setFgcOpen(false)}>
-                        <span className="font-semibold">Switch workspace</span>
-                        <span className="text-sm text-paper/56">Preview role-aware dashboard routes.</span>
-                      </Link>
-                    ) : null}
                     <button className="mt-1 flex min-h-11 w-full items-center gap-2 rounded-[0.75rem] px-3 text-left text-sm font-bold text-rose-100 transition hover:bg-rose-300/10 focus-visible:bg-rose-300/10 focus-visible:outline-none" role="menuitem" type="button" onClick={handleSignOut}>
                       <LogOut aria-hidden="true" size={16} />
                       Sign out

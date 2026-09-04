@@ -47,7 +47,7 @@ const rolePortalPriority: Array<{ codes: string[]; accessState: FgcAccessState; 
   { codes: ["MERSETA_ADMINISTRATOR", "MERSETA_VIEWER", "MERSETA_OVERSIGHT"], accessState: "MERSETA_ACTIVE", expectedPortal: "/fgc-ekm/merseta" },
   { codes: ["MODERATOR"], accessState: "MODERATOR_ACTIVE", expectedPortal: "/fgc-ekm/moderation" },
   { codes: ["ASSESSOR"], accessState: "ASSESSOR_ACTIVE", expectedPortal: "/fgc-ekm/assessments/challenges" },
-  { codes: ["COLLEGE_EVIDENCE_OWNER"], accessState: "COLLEGE_ACTIVE", expectedPortal: "/fgc-ekm/college/demo-college-01/overview" },
+  { codes: ["COLLEGE_EVIDENCE_OWNER"], accessState: "COLLEGE_ACTIVE", expectedPortal: "/fgc-ekm/college/overview" },
   { codes: ["LECTURER"], accessState: "LECTURER_ACTIVE", expectedPortal: "/fgc-ekm/data-capturer" }
 ];
 

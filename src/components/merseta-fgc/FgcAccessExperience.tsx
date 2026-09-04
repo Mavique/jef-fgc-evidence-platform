@@ -19,7 +19,6 @@ import {
   Route,
   RotateCcw,
   Save,
-  Search,
   Send,
   ShieldCheck,
   UploadCloud,
@@ -27,12 +26,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import {
-  canAccessProtectedData,
-  fgcDemoSessionKey,
   fgcRouteDefinitions,
-  resolveRoleHome,
-  type DemoAuthSession,
-  type DemoUserProfile,
   type FgcRouteDefinition
 } from "@/content/merseta-fgc";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
@@ -512,7 +506,7 @@ function SignInPanel() {
         {error ? <p className="rounded-[0.95rem] border border-rose-300/30 bg-rose-300/10 p-4 text-sm font-semibold leading-6 text-rose-100" role="alert">{error}</p> : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-bold text-cyan underline-offset-4 hover:underline" href="/fgc-ekm/forgot-password">Forgot password?</Link>
-          <Link className="text-sm font-bold text-paper/68 underline-offset-4 hover:text-paper hover:underline" href="/fgc-ekm/invitation/demo-token">Accept invitation</Link>
+          <Link className="text-sm font-bold text-paper/68 underline-offset-4 hover:text-paper hover:underline" href="/fgc-ekm/sign-up">Create account</Link>
         </div>
         <button className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan px-6 text-sm font-bold text-ink transition hover:bg-lime disabled:cursor-not-allowed disabled:opacity-55" type="submit" disabled={submitting}>
           {submitting ? "Checking production auth..." : "Continue securely"}
@@ -631,7 +625,7 @@ function productionWorkspaces(access: ResolvedProductionAccess) {
     return workspaces;
   }
   if (state === "COLLEGE_ACTIVE") {
-    addWorkspace(["College Evidence Workspace", "/fgc-ekm/college/demo-college-01/overview", "Review lecturer submissions scoped to your authorised college and campus."]);
+    addWorkspace(["College Evidence Workspace", "/fgc-ekm/college/overview", "Review lecturer submissions scoped to your authorised college and campus."]);
     addWorkspace(["Evidence Work Queue", "/fgc-ekm/tasks", "Enrich institutional context, request clarifications and send complete records onward."]);
     addWorkspace(["FGC Intelligence Dashboard", "/fgc-ekm", "View scoped evidence trends and data-quality signals."]);
     addWorkspace(["Account Settings", "/fgc-ekm/my-account", "Check your active college/campus scope and pending role decisions."]);
@@ -2173,148 +2167,36 @@ function ProductionRouteView({ routePath, access }: { routePath: string; access:
   return <ProductionPortalHome access={access} />;
 }
 
-function AccessStatusTimeline({ profile }: { profile: DemoUserProfile }) {
+function PublicPendingAccess() {
   const stages = [
-    ["Account created", true],
-    ["Email confirmed", profile.emailVerified],
-    ["Affiliation review", profile.accountState === "Active" || profile.accountState === "Affiliation Review Pending" || profile.accountState === "More Information Required"],
-    ["Role active", canAccessProtectedData(profile)]
+    ["Identity created", "Created by the registration API."],
+    ["Email confirmed", "Confirmed through the configured identity flow."],
+    ["Affiliation reviewed", "Approved by an authorised college or programme administrator."],
+    ["Role activated", "Only an approved active role opens protected data."]
   ] as const;
 
   return (
-    <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
-      <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Access status</p>
-      <div className="mt-6 grid gap-3 md:grid-cols-4">
-        {stages.map(([stage, complete], index) => (
-          <div className={`rounded-[0.95rem] p-4 ring-1 ${complete ? "bg-lime/12 text-lime ring-lime/20" : "bg-white/[0.055] text-paper/54 ring-white/[0.1]"}`} key={stage}>
-            {complete ? <CheckCircle2 aria-hidden="true" size={19} /> : <Clock3 aria-hidden="true" size={19} />}
-            <p className="mt-3 font-semibold">{stage}</p>
-            <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-[0.14em] opacity-70">Step {index + 1}</p>
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function PendingAccess({ profile }: { profile: DemoUserProfile }) {
-  return (
     <div className="grid gap-6">
-      <AccessStatusTimeline profile={profile} />
-      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-[1.1rem] bg-amber/10 p-6 text-amber ring-1 ring-amber/20">
-          <FileWarning aria-hidden="true" size={28} />
-          <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">Protected data remains blocked.</h3>
-          <p className="mt-4 leading-7">
-            {profile.name} has confirmed email control, but the institutional affiliation and role assignment are not active yet.
-          </p>
-        </article>
-        <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">Requested scope</p>
-          <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">{profile.contextLabel}</h3>
-          <ul className="mt-5 grid gap-3 text-sm leading-6 text-paper/68">
-            {profile.attentionItems.map((item) => <li className="rounded-[0.85rem] bg-ink/52 p-3" key={item}>{item}</li>)}
-          </ul>
-        </article>
-      </div>
-    </div>
-  );
-}
-
-function RoleAwareHome({ profiles }: { profiles: DemoUserProfile[] }) {
-  return (
-    <div className="grid gap-6">
-      <div className="grid gap-4 xl:grid-cols-4">
-        {profiles.map((profile) => (
-          <article className="rounded-[1.1rem] bg-white/[0.055] p-5 ring-1 ring-white/[0.1]" key={profile.id}>
-            <p className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-cyan">{profile.requestedRole}</p>
-            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em]">{profile.name}</h3>
-            <p className="mt-2 text-sm leading-6 text-paper/54">{profile.contextLabel}</p>
-            <Link className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white/[0.08] px-4 text-sm font-bold text-paper ring-1 ring-white/[0.12]" href={resolveRoleHome(profile)}>
-              Resolve portal
-              <ArrowRight aria-hidden="true" size={16} />
-            </Link>
-          </article>
-        ))}
-      </div>
       <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">What needs attention now</p>
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {profiles.flatMap((profile) => profile.attentionItems.map((item) => [profile.name, item] as const)).map(([name, item]) => (
-            <div className="rounded-[0.95rem] bg-ink/52 p-4" key={`${name}-${item}`}>
-              <p className="text-sm font-semibold text-cyan">{name}</p>
-              <p className="mt-2 text-sm leading-6 text-paper/68">{item}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Access status</p>
+        <div className="mt-6 grid gap-3 md:grid-cols-4">
+          {stages.map(([stage, note], index) => (
+            <div className="rounded-[0.95rem] bg-white/[0.055] p-4 text-paper/68 ring-1 ring-white/[0.1]" key={stage}>
+              <Clock3 aria-hidden="true" size={19} />
+              <p className="mt-3 font-semibold text-paper">{stage}</p>
+              <p className="mt-1 text-xs leading-5 text-paper/48">{note}</p>
+              <p className="mt-2 font-mono text-[0.66rem] uppercase tracking-[0.14em] opacity-70">Step {index + 1}</p>
             </div>
           ))}
         </div>
       </article>
-    </div>
-  );
-}
-
-function AccountPanel({ profile }: { profile: DemoUserProfile }) {
-  return (
-    <div className="grid gap-6 lg:grid-cols-[0.84fr_1.16fr]">
-      <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
-        <UserCheck aria-hidden="true" className="text-lime" size={28} />
-        <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">{profile.name}</h3>
-        <p className="mt-2 text-paper/58">{profile.email}</p>
-        <div className="mt-5 grid gap-3">
-          <p className="rounded-[0.9rem] bg-ink/52 p-4 text-sm">Email verified: <b>{profile.emailVerified ? "Yes" : "No"}</b></p>
-          <p className="rounded-[0.9rem] bg-ink/52 p-4 text-sm">Account state: <b>{profile.accountState}</b></p>
-          <p className="rounded-[0.9rem] bg-ink/52 p-4 text-sm">Default route: <b>{resolveRoleHome(profile)}</b></p>
-        </div>
+      <article className="rounded-[1.1rem] bg-amber/10 p-6 text-amber ring-1 ring-amber/20">
+        <FileWarning aria-hidden="true" size={28} />
+        <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">Protected data remains blocked.</h3>
+        <p className="mt-4 leading-7">
+          Sign in to see your persisted account state. This page does not infer approval from a browser-side profile.
+        </p>
       </article>
-      <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Role assignments</p>
-        <div className="mt-5 grid gap-3">
-          {profile.roleAssignments.map((assignment) => (
-            <div className="rounded-[0.95rem] bg-ink/52 p-4 ring-1 ring-white/[0.08]" key={assignment.id}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h4 className="text-xl font-semibold tracking-[-0.035em]">{assignment.role}</h4>
-                <span className="rounded-full bg-lime/14 px-3 py-1 text-xs font-bold text-lime ring-1 ring-lime/20">{assignment.status}</span>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-paper/62">{assignment.organisation} - {assignment.campusScope}</p>
-              <p className="mt-2 text-xs text-paper/42">Approver: {assignment.approver}</p>
-            </div>
-          ))}
-        </div>
-      </article>
-    </div>
-  );
-}
-
-function AccessManagement({ profiles }: { profiles: DemoUserProfile[] }) {
-  return (
-    <div className="grid gap-6">
-      <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Administrative queue</p>
-            <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">Approve scope, not ambition.</h3>
-          </div>
-          <div className="flex min-h-11 items-center gap-3 rounded-full bg-white/[0.08] px-4 ring-1 ring-white/[0.1]">
-            <Search aria-hidden="true" className="text-cyan" size={17} />
-            <span className="text-sm text-paper/54">Search requests</span>
-          </div>
-        </div>
-      </article>
-      <div className="grid gap-3">
-        {profiles.map((profile) => (
-          <article className="grid min-w-0 gap-4 rounded-[1.05rem] bg-white/[0.055] p-5 ring-1 ring-white/[0.1] xl:grid-cols-[minmax(0,1fr)_minmax(360px,auto)]" key={profile.id}>
-            <div className="min-w-0">
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-lime">{profile.accountState}</p>
-              <h4 className="mt-2 min-w-0 [overflow-wrap:anywhere] text-2xl font-semibold tracking-[-0.04em]">{profile.name}</h4>
-              <p className="mt-2 min-w-0 [overflow-wrap:anywhere] text-sm leading-6 text-paper/58">{profile.contextLabel}</p>
-            </div>
-            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-3 xl:justify-end">
-              <button className="min-h-11 rounded-full bg-lime px-4 py-2 text-sm font-bold leading-5 text-ink" type="button">Approve scoped role</button>
-              <button className="min-h-11 rounded-full bg-white/[0.08] px-4 py-2 text-sm font-bold leading-5 text-paper ring-1 ring-white/[0.12]" type="button">Return for information</button>
-              <button className="min-h-11 rounded-full bg-rose-300 px-4 py-2 text-sm font-bold leading-5 text-ink" type="button">Reject with reason</button>
-            </div>
-          </article>
-        ))}
-      </div>
     </div>
   );
 }
@@ -2648,12 +2530,8 @@ function RouteMap({ routeDefinitions }: { routeDefinitions: FgcRouteDefinition[]
   );
 }
 
-function GenericProtectedView({ routePath, routeDefinitions, profiles }: { routePath: string; routeDefinitions: FgcRouteDefinition[]; profiles: DemoUserProfile[] }) {
+function GenericProtectedView({ routePath, routeDefinitions }: { routePath: string; routeDefinitions: FgcRouteDefinition[] }) {
   const definition = routeDefinitions.find((route) => route.route === routePath);
-
-  if (routePath === "/fgc-ekm/home") return <RoleAwareHome profiles={profiles} />;
-  if (routePath === "/fgc-ekm/my-account" || routePath === "/fgc-ekm/my-affiliations") return <AccountPanel profile={profiles[0]} />;
-  if (routePath === "/fgc-ekm/admin/access-requests" || routePath === "/fgc-ekm/admin/users-roles") return <AccessManagement profiles={profiles} />;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
@@ -2661,7 +2539,7 @@ function GenericProtectedView({ routePath, routeDefinitions, profiles }: { route
         <Route aria-hidden="true" className="text-cyan" size={28} />
         <h3 className="mt-4 text-3xl font-semibold tracking-[-0.045em]">{definition?.title ?? "Configured FGC route"}</h3>
         <p className="mt-4 leading-7 text-paper/62">
-          This route is registered in the FGC product architecture. The current frontend shows the correct access purpose and links back to the working observatory while backend persistence is prepared.
+          This route is registered in the FGC product architecture. It opens only through authenticated production APIs and displays an empty state when no canonical records exist.
         </p>
         <Link className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-cyan px-5 text-sm font-bold text-ink" href="/fgc-ekm">
           Open current dashboard
@@ -2684,32 +2562,9 @@ function GenericProtectedView({ routePath, routeDefinitions, profiles }: { route
 }
 
 export function FgcAccessExperience({ routePath, initialAccess = null }: { routePath: string; initialAccess?: ProductionAccessResult }) {
-  const [profiles, setProfiles] = useState<DemoUserProfile[]>([]);
   const [routeDefinitions] = useState<FgcRouteDefinition[]>(fgcRouteDefinitions);
-  const [session, setSession] = useState<DemoAuthSession | null>(null);
   const [productionAccess, setProductionAccess] = useState<ProductionAccessResult>(initialAccess);
   const [productionAccessReady, setProductionAccessReady] = useState(Boolean(initialAccess));
-
-  useEffect(() => {
-    const storedSession = localStorage.getItem(fgcDemoSessionKey);
-    if (!storedSession) return;
-    try {
-      setSession(JSON.parse(storedSession) as DemoAuthSession);
-    } catch {
-      localStorage.removeItem(fgcDemoSessionKey);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!productionAccessReady || productionAccess?.ok) return;
-    let live = true;
-    import("@/content/merseta-fgc").then(({ demoUserProfiles }) => {
-      if (live) setProfiles(demoUserProfiles);
-    });
-    return () => {
-      live = false;
-    };
-  }, [productionAccess, productionAccessReady]);
 
   useEffect(() => {
     let live = true;
@@ -2734,7 +2589,6 @@ export function FgcAccessExperience({ routePath, initialAccess = null }: { route
   const title = routeTitle(routePath, routeDefinitions);
   const group = routeGroup(routePath, routeDefinitions);
   const currentRoute = routeDefinitions.find((route) => route.route === routePath);
-  const pendingProfile = profiles.find((profile) => profile.accountState !== "Active") ?? profiles[0];
   const resolvedProductionAccess = productionAccess?.ok ? productionAccess : null;
 
   let content: ReactNode = (
@@ -2743,14 +2597,14 @@ export function FgcAccessExperience({ routePath, initialAccess = null }: { route
     </div>
   );
 
-  if (routeDefinitions.length && (profiles.length || resolvedProductionAccess || routePath.endsWith("/sign-in") || routePath.endsWith("/sign-up") || routePath.includes("/invitation/") || routePath.endsWith("/privacy") || routePath.endsWith("/accessibility") || routePath.endsWith("/help"))) {
+  if (routeDefinitions.length && (productionAccessReady || resolvedProductionAccess || routePath.endsWith("/sign-in") || routePath.endsWith("/sign-up") || routePath.includes("/invitation/") || routePath.endsWith("/privacy") || routePath.endsWith("/accessibility") || routePath.endsWith("/help"))) {
     if (resolvedProductionAccess && (routePath.endsWith("/sign-in") || routePath.endsWith("/sign-up") || routePath.endsWith("/home"))) {
       content = <ProductionRouteView routePath={routePath} access={resolvedProductionAccess} />;
     }
     else if (routePath.endsWith("/sign-up")) content = <RegistrationStepper />;
     else if (routePath.endsWith("/sign-in")) content = <SignInPanel />;
-    else if (routePath.endsWith("/confirm-email") || routePath.endsWith("/verification-pending")) content = <PendingAccess profile={pendingProfile} />;
-    else if (routePath.endsWith("/access-pending")) content = <PendingAccess profile={pendingProfile} />;
+    else if (routePath.endsWith("/confirm-email") || routePath.endsWith("/verification-pending")) content = <PublicPendingAccess />;
+    else if (routePath.endsWith("/access-pending")) content = resolvedProductionAccess ? <ProductionPendingAccess access={resolvedProductionAccess} /> : <PublicPendingAccess />;
     else if (routePath.includes("/invitation/")) content = <RegistrationStepper />;
     else if (routePath.endsWith("/privacy")) content = <RouteMap routeDefinitions={routeDefinitions.filter((route) => route.access !== "Protected")} />;
     else if (routePath.endsWith("/accessibility") || routePath.endsWith("/help")) content = <RouteMap routeDefinitions={routeDefinitions} />;
@@ -2780,7 +2634,7 @@ export function FgcAccessExperience({ routePath, initialAccess = null }: { route
     else if (routePath.startsWith("/fgc-ekm/data-capturer/forms/")) {
       content = <ProtectedAccessPrompt />;
     }
-    else if (currentRoute?.access === "Protected" && !session) {
+    else if (currentRoute?.access === "Protected") {
       if (!productionAccessReady) {
         content = (
           <div className="grid min-h-80 place-items-center rounded-[1.1rem] bg-white/[0.055] ring-1 ring-white/[0.1]">
@@ -2793,7 +2647,7 @@ export function FgcAccessExperience({ routePath, initialAccess = null }: { route
         content = <ProtectedAccessPrompt />;
       }
     }
-    else content = <GenericProtectedView routePath={routePath} routeDefinitions={routeDefinitions} profiles={profiles} />;
+    else content = <GenericProtectedView routePath={routePath} routeDefinitions={routeDefinitions} />;
   }
 
   return (
@@ -2801,7 +2655,7 @@ export function FgcAccessExperience({ routePath, initialAccess = null }: { route
       routePath={routePath}
       title={title}
       eyebrow={group}
-      signedInWorkspaceHref={resolvedProductionAccess?.access.expectedPortal ?? session?.landingRoute ?? null}
+      signedInWorkspaceHref={resolvedProductionAccess?.access.expectedPortal ?? null}
     >
       {content}
     </AccessShell>

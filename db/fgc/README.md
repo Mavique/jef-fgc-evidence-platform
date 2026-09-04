@@ -149,12 +149,8 @@ Core curriculum tables:
 - Province, college, campus, programme, level and subject fields should be saved as relational IDs from the reference registry.
 - Campus programme offerings are not inferred from national programme names; they require explicit verified source data.
 
-## Next Integration Step
+## Runtime Integration
 
-After the schema is approved, connect the Next.js app to PostgreSQL through either:
+The Next.js FGC workspace uses the direct `pg` service layer under `src/lib/fgc/*` for authenticated, role-scoped runtime queries. The legacy `src/services/merseta-fgc.ts` module is type-only and must not become a production operational data source.
 
-- Prisma, if you want a type-safe ORM and migrations.
-- Drizzle, if you want SQL-first TypeScript models.
-- Direct `pg`, if you want a lean service layer and hand-written SQL.
-
-The current frontend service boundary in `src/services/merseta-fgc.ts` is already shaped so the mock service can be replaced by a database-backed service.
+Assessor and moderator work queues intentionally return empty until a canonical assignment relationship is added. Historical review rows are not treated as assignment authority.

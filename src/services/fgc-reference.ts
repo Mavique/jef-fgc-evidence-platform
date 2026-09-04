@@ -28,8 +28,6 @@ export type LecturerReferenceSelection = {
 
 export type ReferenceDataQualitySnapshot = typeof referenceDataQualitySnapshot;
 
-const delay = () => new Promise((resolve) => setTimeout(resolve, 1));
-
 function textMatch(value: string, query: string) {
   const canonicalValue = value.toLowerCase().replace(/[^a-z0-9]+/g, "");
   const canonicalQuery = query.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -38,27 +36,22 @@ function textMatch(value: string, query: string) {
 
 export const fgcReferenceService = {
   async listProvinces(): Promise<ProvinceReference[]> {
-    await delay();
     return provinces;
   },
 
   async listColleges(provinceId?: string): Promise<CollegeReference[]> {
-    await delay();
     return provinceId ? tvetColleges.filter((college) => college.provinceId === provinceId) : tvetColleges;
   },
 
   async listCampuses(collegeId?: string): Promise<CampusReference[]> {
-    await delay();
     return collegeId ? campusSites.filter((campus) => campus.collegeId === collegeId) : campusSites;
   },
 
   async listProgrammeCategories() {
-    await delay();
     return programmeCategories;
   },
 
   async listProgrammes(selection: LecturerReferenceSelection = {}): Promise<ProgrammeReference[]> {
-    await delay();
     const verifiedCampusOfferings = selection.campusId
       ? campusProgrammeOfferings.filter((offering) => offering.campusId === selection.campusId && offering.status === "VERIFIED")
       : [];
@@ -74,14 +67,12 @@ export const fgcReferenceService = {
   },
 
   async listLevels(programmeId?: string): Promise<ProgrammeLevelReference[]> {
-    await delay();
     const programme = programmeCatalogue.find((item) => item.id === programmeId);
     if (!programme) return programmeLevels;
     return programmeLevels.filter((level) => level.categoryId === programme.categoryId);
   },
 
   async listSubjects(programmeId?: string, levelId?: string): Promise<SubjectReference[]> {
-    await delay();
     return subjectRegistry.filter((subject) => {
       const programmeMatch = programmeId ? subject.programmeId === programmeId : true;
       const levelMatch = levelId ? subject.levelId === levelId : true;
@@ -90,13 +81,11 @@ export const fgcReferenceService = {
   },
 
   async searchSubjects(query: string): Promise<SubjectReference[]> {
-    await delay();
     if (!query.trim()) return subjectRegistry;
     return subjectRegistry.filter((subject) => textMatch(subject.name, query) || textMatch(subject.code, query));
   },
 
   async searchProgrammes(query: string): Promise<ProgrammeReference[]> {
-    await delay();
     if (!query.trim()) return programmeCatalogue;
     return programmeCatalogue.filter((programme) => (
       textMatch(programme.title, query) ||
@@ -107,7 +96,6 @@ export const fgcReferenceService = {
   },
 
   async searchCurriculum(query: string): Promise<CurriculumSearchResult[]> {
-    await delay();
     if (!query.trim()) return [];
 
     const programmeResults: CurriculumSearchResult[] = programmeCatalogue
@@ -139,7 +127,6 @@ export const fgcReferenceService = {
   },
 
   async getQualitySnapshot(): Promise<ReferenceDataQualitySnapshot> {
-    await delay();
     return referenceDataQualitySnapshot;
   }
 };

@@ -54,7 +54,7 @@ export function FgcGateway() {
                 <span className="grid size-8 place-items-center rounded-full bg-ink text-paper transition duration-700 ease-fluid group-hover:translate-x-1">↗</span>
               </Link>
               <Link className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/[0.08] px-6 py-4 text-sm font-bold text-paper ring-1 ring-white/[0.14] transition duration-700 ease-fluid hover:bg-white/[0.14]" href={fgcProduct.appRoute}>
-                View demo observatory
+                Open FGC workspace
               </Link>
               <Link className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/[0.08] px-6 py-4 text-sm font-bold text-paper ring-1 ring-white/[0.14] transition duration-700 ease-fluid hover:bg-white/[0.14]" href="#source-truth">
                 View evidence rules

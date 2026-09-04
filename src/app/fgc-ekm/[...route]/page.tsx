@@ -15,8 +15,7 @@ export function generateStaticParams() {
   return [
     ...fgcRouteDefinitions
       .filter((definition) => definition.route.startsWith("/fgc-ekm/"))
-      .map((definition) => ({ route: definition.route.replace("/fgc-ekm/", "").split("/") })),
-    { route: ["invitation", "demo-token"] }
+      .map((definition) => ({ route: definition.route.replace("/fgc-ekm/", "").split("/") }))
   ];
 }
 

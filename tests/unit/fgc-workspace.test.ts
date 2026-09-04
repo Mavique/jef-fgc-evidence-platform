@@ -1,7 +1,83 @@
 import { describe, expect, it } from "vitest";
 import { programmeCatalogue, programmeLevels, campusSites, tvetColleges } from "@/content/fgc-reference-data";
-import { evidenceItems, learnerUseRecords, lecturerAssessments, correctiveActions, decisionRegister } from "@/content/merseta-fgc";
+import { rubricAreas, type CorrectiveAction, type DecisionItem, type EvidenceItem, type LearnerUseRecord, type LecturerAssessment } from "@/content/merseta-fgc";
 import { createCaptureSubmission, exportWorkspace, hydrateWorkspace, updateActionStatus, type CaptureDraft } from "@/services/fgc-workspace";
+
+const evidenceItems: EvidenceItem[] = [
+  {
+    id: "EVI-TEST-001",
+    question: "Q1 Learner Utilisation",
+    college: "Test College",
+    type: "Platform analytics export",
+    sourceName: "Test export",
+    date: "2026-09-08",
+    owner: "Evidence Owner",
+    qualityStatus: "Verified",
+    reviewerNotes: "Unit test record."
+  }
+];
+
+const learnerUseRecords: LearnerUseRecord[] = [
+  {
+    id: "LU-TEST-001",
+    college: "Test College",
+    campus: "Test Campus",
+    programme: "Engineering Studies",
+    cohort: "N3",
+    date: "2026-09-08",
+    timeBand: "09:00-11:00",
+    context: "Scheduled class",
+    activeLearners: 21,
+    enrolledLearners: 25,
+    evidenceStatus: "Verified",
+    evidenceIds: ["EVI-TEST-001"]
+  }
+];
+
+const lecturerAssessments: LecturerAssessment[] = [
+  {
+    id: "AS-TEST-001",
+    college: "Test College",
+    campus: "Test Campus",
+    lecturer: "Test Lecturer",
+    programme: "Engineering Studies",
+    date: "2026-09-09",
+    experienceTitle: "Electrical Safety",
+    eonUrl: "EON-TEST-001",
+    scores: rubricAreas.map((area) => ({ area, score: 2, evidenceNote: "Observed independently." })),
+    assistanceType: "None",
+    facilitatorExecuted: false,
+    environmentFault: false,
+    moderation: "Confirmed",
+    evidenceIds: ["EVI-TEST-001"]
+  }
+];
+
+const correctiveActions: CorrectiveAction[] = [
+  {
+    id: "ACT-TEST-001",
+    college: "Test College",
+    issue: "Missing source confirmation",
+    category: "Evidence",
+    rootCause: "Unit test root cause",
+    action: "Collect source document",
+    owner: "Evidence Owner",
+    priority: "High",
+    dueDate: "2026-10-09",
+    status: "In Progress",
+    closureEvidence: "Source document"
+  }
+];
+
+const decisionRegister: DecisionItem[] = [
+  {
+    id: "DEC-TEST-001",
+    decision: "Unit test decision",
+    currentDefault: "Requires confirmation",
+    productionOwner: "JEF Administrator",
+    status: "Requires confirmation"
+  }
+];
 
 const base = hydrateWorkspace({
   scope: {

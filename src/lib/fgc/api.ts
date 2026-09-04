@@ -29,11 +29,7 @@ export function routeError(error: unknown) {
     return jsonError(409, "FGC_DUPLICATE_RECORD", "A record with these unique details already exists.");
   }
 
-  if (error instanceof Error) {
-    return jsonError(500, "FGC_SERVER_ERROR", error.message);
-  }
-
-  return jsonError(500, "FGC_SERVER_ERROR", "Unexpected FGC server error.");
+  return jsonError(500, "FGC_SERVER_ERROR", "The FGC operation could not be completed.");
 }
 
 function isDatabaseError(error: unknown): error is { code: string } {

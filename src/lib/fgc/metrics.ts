@@ -55,7 +55,94 @@ function toNumber(value: string | null | undefined) {
   return Number.isFinite(number) ? number : 0;
 }
 
+function userWhere(access: ResolvedProductionAccess) {
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "u.deleted_at IS NULL AND EXISTS (SELECT 1 FROM fgc.production_role_assignments scoped_pra WHERE scoped_pra.user_id = u.id AND scoped_pra.tvet_college_id = $1 AND scoped_pra.campus_id = $2)", values: [role.collegeId, role.campusId] }
+      : { sql: "u.deleted_at IS NULL AND EXISTS (SELECT 1 FROM fgc.production_role_assignments scoped_pra WHERE scoped_pra.user_id = u.id AND scoped_pra.tvet_college_id = $1)", values: [role.collegeId] };
+  }
+  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "u.deleted_at IS NULL AND EXISTS (SELECT 1 FROM fgc.production_role_assignments scoped_pra WHERE scoped_pra.user_id = u.id AND scoped_pra.tvet_college_id = $1 AND scoped_pra.campus_id = $2)", values: [role.collegeId, role.campusId] }
+      : { sql: "u.deleted_at IS NULL AND EXISTS (SELECT 1 FROM fgc.production_role_assignments scoped_pra WHERE scoped_pra.user_id = u.id AND scoped_pra.tvet_college_id = $1)", values: [role.collegeId] };
+  }
+  return { sql: "u.deleted_at IS NULL AND u.id = $1", values: [access.user.id] };
+}
+
+function roleWhere(access: ResolvedProductionAccess) {
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "pra.tvet_college_id = $1 AND pra.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "pra.tvet_college_id = $1", values: [role.collegeId] };
+  }
+  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "pra.tvet_college_id = $1 AND pra.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "pra.tvet_college_id = $1", values: [role.collegeId] };
+  }
+  return { sql: "pra.user_id = $1", values: [access.user.id] };
+}
+
+function assignmentWhere(access: ResolvedProductionAccess) {
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "fa.college_id = $1 AND fa.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "fa.college_id = $1", values: [role.collegeId] };
+  }
+  if (access.access.accessState === "LECTURER_ACTIVE") return { sql: "fa.assigned_to = $1", values: [access.user.id] };
+  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "fa.college_id = $1 AND fa.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "fa.college_id = $1", values: [role.collegeId] };
+  }
+  return { sql: "false", values: [] as string[] };
+}
+
+function submissionWhere(access: ResolvedProductionAccess) {
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "ps.college_id = $1", values: [role.collegeId] };
+  }
+  if (access.access.accessState === "LECTURER_ACTIVE") return { sql: "ps.submitted_by = $1", values: [access.user.id] };
+  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "ps.college_id = $1", values: [role.collegeId] };
+  }
+  return { sql: "false", values: [] as string[] };
+}
+
+function auditWhere(access: ResolvedProductionAccess) {
+  return { sql: "pae.actor_user_id = $1", values: [access.user.id] };
+}
+
 export async function getFgcProductionMetricsSummary(access: ResolvedProductionAccess): Promise<FgcProductionMetricsSummary> {
+  const users = userWhere(access);
+  const roles = roleWhere(access);
+  const assignments = assignmentWhere(access);
+  const submissions = submissionWhere(access);
+  const audit = auditWhere(access);
   const [userCounts, roleCounts, assignmentCounts, submissionCounts, auditCounts] = await Promise.all([
     fgcQuery<CountRow>(`
       SELECT
@@ -64,32 +151,36 @@ export async function getFgcProductionMetricsSummary(access: ResolvedProductionA
         COUNT(*) FILTER (WHERE email_verified_at IS NOT NULL)::text AS verified_users,
         COUNT(*) FILTER (WHERE account_state = 'AFFILIATION_PENDING')::text AS pending_affiliations,
         COUNT(*) FILTER (WHERE account_state = 'SUSPENDED')::text AS suspended_users
-      FROM fgc.production_users
-      WHERE deleted_at IS NULL
-    `),
+      FROM fgc.production_users u
+      WHERE ${users.sql}
+    `, users.values),
     fgcQuery<RoleCountRow>(`
       SELECT r.code::text AS role_code, pra.status::text AS status, COUNT(*)::text AS total
       FROM fgc.production_role_assignments pra
       JOIN fgc.roles r ON r.id = pra.role_id
+      WHERE ${roles.sql}
       GROUP BY r.code, pra.status
       ORDER BY r.code, pra.status
-    `),
+    `, roles.values),
     fgcQuery<AssignmentCountRow>(`
-      SELECT status::text, COUNT(*)::text AS total
-      FROM fgc.form_assignments
-      GROUP BY status
-      ORDER BY status
-    `),
+      SELECT fa.status::text, COUNT(*)::text AS total
+      FROM fgc.form_assignments fa
+      WHERE ${assignments.sql}
+      GROUP BY fa.status
+      ORDER BY fa.status
+    `, assignments.values),
     fgcQuery<SubmissionCountRow>(`
-      SELECT status::text, COUNT(*)::text AS total
-      FROM fgc.production_submissions
-      GROUP BY status
-      ORDER BY status
-    `),
+      SELECT ps.status::text, COUNT(*)::text AS total
+      FROM fgc.production_submissions ps
+      WHERE ${submissions.sql}
+      GROUP BY ps.status
+      ORDER BY ps.status
+    `, submissions.values),
     fgcQuery<AuditCountRow>(`
       SELECT COUNT(*)::text AS total_events, MAX(created_at)::text AS last_event_at
-      FROM fgc.production_audit_events
-    `)
+      FROM fgc.production_audit_events pae
+      WHERE ${audit.sql}
+    `, audit.values)
   ]);
 
   const counts = userCounts.rows[0];
@@ -117,7 +208,7 @@ export async function getFgcProductionMetricsSummary(access: ResolvedProductionA
     .filter((row) => ["DRAFT", "READY_FOR_LECTURER_REVIEW", "CLARIFICATION_REQUESTED", "RESUBMITTED"].includes(row.status))
     .reduce((total, row) => total + row.total, 0);
   const submittedEvidencePacks = submissionBreakdown
-    .filter((row) => !["DRAFT", "READY_FOR_LECTURER_REVIEW", "ARCHIVED", "SUPERSEDED"].includes(row.status))
+    .filter((row) => !["DRAFT", "READY_FOR_LECTURER_REVIEW", "CLARIFICATION_REQUESTED", "ARCHIVED", "SUPERSEDED"].includes(row.status))
     .reduce((total, row) => total + row.total, 0);
 
   return {

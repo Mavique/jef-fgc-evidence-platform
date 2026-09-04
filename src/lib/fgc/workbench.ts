@@ -115,7 +115,39 @@ function scopeWhere(access: Access) {
       ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
       : { sql: "ps.college_id = $1", values: [role.collegeId] };
   }
-  return { sql: "true", values: [] as string[] };
+  if (access.access.accessState === "ASSESSOR_ACTIVE" || access.access.accessState === "MODERATOR_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "MERSETA_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "ps.college_id = $1", values: [role.collegeId] };
+  }
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return role.campusId
+      ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
+      : { sql: "ps.college_id = $1", values: [role.collegeId] };
+  }
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  return { sql: "false", values: [] as string[] };
+}
+
+function generatedReportWhere(access: Access) {
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
+    const role = access.access.activeRole;
+    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
+    return { sql: "gr.generated_by = $1", values: [access.user.id] };
+  }
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  return { sql: "gr.generated_by = $1", values: [access.user.id] };
+}
+
+function auditEventWhere(access: Access) {
+  if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "pae.actor_user_id = $1", values: [access.user.id] };
+  if (access.access.accessState === "JEF_ADMIN_ACTIVE" && !access.access.activeRole?.collegeId) return { sql: "pae.actor_user_id = $1", values: [access.user.id] };
+  return { sql: "pae.actor_user_id = $1", values: [access.user.id] };
 }
 
 function submissionReference(id: string, createdAt: string | null) {
@@ -205,6 +237,8 @@ function queues(access: Access, submissions: FgcWorkbenchSubmission[]) {
 export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbench> {
   assertWorkbench(access);
   const scoped = scopeWhere(access);
+  const reportScoped = generatedReportWhere(access);
+  const auditScoped = auditEventWhere(access);
   const [metrics, submissionsResult, notificationsResult, reportsResult, auditResult] = await Promise.all([
     getFgcProductionMetricsSummary(access),
     fgcQuery<{
@@ -235,13 +269,17 @@ export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbe
       ORDER BY created_at DESC LIMIT 20
     `, [access.user.id, access.access.accessState]),
     fgcQuery<{ id: string; report_identifier: string; report_type: string; scope: string; status: string; created_at: string }>(`
-      SELECT id::text, report_identifier, report_type, scope, status::text, created_at::text
-      FROM fgc.generated_reports ORDER BY created_at DESC LIMIT 20
-    `),
+      SELECT gr.id::text, gr.report_identifier, gr.report_type, gr.scope, gr.status::text, gr.created_at::text
+      FROM fgc.generated_reports gr
+      WHERE ${reportScoped.sql}
+      ORDER BY gr.created_at DESC LIMIT 20
+    `, reportScoped.values),
     fgcQuery<{ id: string; actor_role: string | null; action: string; object_type: string; reason: string | null; created_at: string }>(`
-      SELECT id::text, actor_role, action, object_type, reason, created_at::text
-      FROM fgc.production_audit_events ORDER BY created_at DESC LIMIT 20
-    `)
+      SELECT pae.id::text, pae.actor_role, pae.action, pae.object_type, pae.reason, pae.created_at::text
+      FROM fgc.production_audit_events pae
+      WHERE ${auditScoped.sql}
+      ORDER BY pae.created_at DESC LIMIT 20
+    `, auditScoped.values)
   ]);
 
   const submissions = submissionsResult.rows.map((row) => {
@@ -290,7 +328,7 @@ export async function recordFgcWorkbenchDecision(access: Access, input: { submis
     ASSESSOR_REVIEW: ["ASSESSOR_ACTIVE", "JEF_ADMIN_ACTIVE"],
     REQUEST_CLARIFICATION: ["COLLEGE_ACTIVE", "ASSESSOR_ACTIVE", "MODERATOR_ACTIVE", "JEF_ADMIN_ACTIVE"],
     MODERATOR_FINALISE: ["MODERATOR_ACTIVE", "JEF_ADMIN_ACTIVE"],
-    JEF_REOPEN: ["JEF_ADMIN_ACTIVE", "PLATFORM_SUPER_ACTIVE"]
+    JEF_REOPEN: ["JEF_ADMIN_ACTIVE"]
   };
   if (!allowed[input.action].includes(access.access.accessState)) {
     throw new FgcWorkbenchAccessError(403, "FGC_ACTION_FORBIDDEN", "This role cannot perform the selected action.");
