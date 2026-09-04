@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 :root {
+  --font-display: "Arial", "Helvetica Neue", sans-serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --color-ink: 5 8 13;
   --color-surface: 9 15 24;
   --color-paper: 246 248 255;

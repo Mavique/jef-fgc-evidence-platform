@@ -17,6 +17,7 @@ The schema is source-aligned to the supplied September 2026 workshop artefacts a
 - `006_seed_curriculum_master.sql` seeds source provenance, category expansion, disciplines, aliases and a conservative starter curriculum sample. Full authoritative NC(V), Report 191, QCTO and SAQA imports remain pending.
 - `007_production_hardening_schema.sql` adds production application tables for hashed-password accounts, email verification tokens, sessions, role approval, campus directory requests, form assignments, submission lifecycle versioning, evidence file metadata, reviews, reports, notifications and append-only audit events.
 - `008_evidence_upload_lifecycle.sql` extends the canonical evidence file table with upload lifecycle, scanner-boundary state, replacement versioning and field-level response links for private binary uploads.
+- `009_review_assignment_workflows.sql` adds canonical assessor/moderator assignments, immutable assignment history, exact-version review binding and governed review handoff records. Assessor and moderator queues must use these assignments; `evidence_reviews` is not an assignment source.
 
 ## Apply Locally
 
@@ -32,9 +33,7 @@ npm run db:verify
 
 Example local database URL:
 
-```bash
-postgresql://postgres:postgres@localhost:5432/jef_fgc
-```
+Use a local disposable PostgreSQL connection configured through your local environment only; do not place credentials or remote connection strings in this repository.
 
 ## Production Commands
 
@@ -154,3 +153,5 @@ Core curriculum tables:
 The Next.js FGC workspace uses the direct `pg` service layer under `src/lib/fgc/*` for authenticated, role-scoped runtime queries. The legacy `src/services/merseta-fgc.ts` module is type-only and must not become a production operational data source.
 
 Assessor and moderator work queues intentionally return empty until a canonical assignment relationship is added. Historical review rows are not treated as assignment authority.
+
+Migration `009_review_assignment_workflows.sql` provides that canonical relationship. Assignment scope is copied from, and database-checked against, the assigned production submission. Reassignment supersedes the prior assignment and requires a reason; no assignment history is deleted.

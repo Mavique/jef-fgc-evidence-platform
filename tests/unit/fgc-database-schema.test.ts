@@ -10,6 +10,7 @@ const curriculumSchema = readFileSync(join(root, "db", "fgc", "005_curriculum_ma
 const curriculumSeed = readFileSync(join(root, "db", "fgc", "006_seed_curriculum_master.sql"), "utf8");
 const productionSchema = readFileSync(join(root, "db", "fgc", "007_production_hardening_schema.sql"), "utf8");
 const evidenceUploadLifecycleMigration = readFileSync(join(root, "db", "fgc", "008_evidence_upload_lifecycle.sql"), "utf8");
+const reviewAssignmentMigration = readFileSync(join(root, "db", "fgc", "009_review_assignment_workflows.sql"), "utf8");
 const migrationConfig = readFileSync(join(root, "scripts", "fgc", "config.mjs"), "utf8");
 
 describe("FGC PostgreSQL schema", () => {
@@ -83,6 +84,31 @@ describe("FGC evidence upload lifecycle migration", () => {
     expect(migrationList).not.toContain("seeds/");
     expect(migrationList).not.toContain("004_seed_tvet_reference.sql");
     expect(migrationList).not.toContain("006_seed_curriculum_master.sql");
+  });
+});
+
+describe("FGC review assignment workflow migration", () => {
+  it("uses canonical assignment records and preserves history", () => {
+    expect(reviewAssignmentMigration).toContain("CREATE TABLE IF NOT EXISTS fgc.review_assignments");
+    expect(reviewAssignmentMigration).toContain("submission_version_id uuid NOT NULL REFERENCES fgc.production_submission_versions(id)");
+    expect(reviewAssignmentMigration).toContain("assignment_type text NOT NULL CHECK (assignment_type IN ('ASSESSOR', 'MODERATOR'))");
+    expect(reviewAssignmentMigration).toContain("reassignment_of uuid REFERENCES fgc.review_assignments(id)");
+    expect(reviewAssignmentMigration).toContain("status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'REVOKED', 'SUPERSEDED')");
+    expect(reviewAssignmentMigration).toContain("CREATE UNIQUE INDEX IF NOT EXISTS idx_fgc_review_assignments_one_active_stage");
+    expect(reviewAssignmentMigration).toContain("CREATE TABLE IF NOT EXISTS fgc.assessor_reviews");
+    expect(reviewAssignmentMigration).toContain("CREATE TABLE IF NOT EXISTS fgc.moderation_records");
+    expect(reviewAssignmentMigration).toContain("validate_review_assignment_version");
+    expect(reviewAssignmentMigration).toContain("validate_review_record_assignment");
+    expect(reviewAssignmentMigration).toContain("assessor review does not match its assessor assignment");
+    expect(reviewAssignmentMigration).toContain("moderation record requires a submitted assessor review");
+    expect(reviewAssignmentMigration).not.toContain("evidence_reviews");
+  });
+
+  it("is registered after evidence lifecycle without registering demo seeds", () => {
+    const migrationList = migrationConfig.slice(migrationConfig.indexOf("export const migrationFiles"), migrationConfig.indexOf("export const referenceSeedFiles"));
+    expect(migrationList).toContain('"009_review_assignment_workflows.sql"');
+    expect(migrationList.indexOf("008_evidence_upload_lifecycle.sql")).toBeLessThan(migrationList.indexOf("009_review_assignment_workflows.sql"));
+    expect(migrationList).not.toContain("002_seed_demo.sql");
   });
 });
 

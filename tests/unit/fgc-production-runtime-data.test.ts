@@ -119,12 +119,13 @@ describe("FGC production runtime data boundaries", () => {
     expect(submissionQuery?.[1]).toEqual(["college-1", "campus-1"]);
   });
 
-  it("returns empty operational scopes for assessor and moderator until canonical assignment exists", async () => {
+  it("uses only canonical active assignments for assessor and moderator queues", async () => {
     const { assertSubmissionVisibleToAccess, getFgcRoleWorkbench } = await import("@/lib/fgc/workbench");
 
     await getFgcRoleWorkbench(access("ASSESSOR_ACTIVE", role({ code: "ASSESSOR", name: "Assessor" })));
-    const assessorQuery = db.fgcQuery.mock.calls.find(([sql]) => String(sql).includes("SELECT ps.id::text"));
-    expect(String(assessorQuery?.[0])).toContain("WHERE false");
+    const assessorQuery = db.fgcQuery.mock.calls.find(([sql]) => String(sql).includes("FROM fgc.review_assignments"));
+    expect(String(assessorQuery?.[0])).toContain("ra.assignee_user_id = $2");
+    expect(String(assessorQuery?.[0])).toContain("ra.status IN ('ASSIGNED', 'IN_PROGRESS')");
 
     await expect(assertSubmissionVisibleToAccess(access("MODERATOR_ACTIVE", role({ code: "MODERATOR", name: "Moderator" })), "submission-2")).rejects.toMatchObject({
       status: 404,
@@ -207,6 +208,14 @@ describe("FGC production runtime data boundaries", () => {
       status: 403,
       code: "FGC_ACTION_FORBIDDEN"
     });
+  });
+
+  it("does not allow the legacy workbench action to bypass canonical review assignments", async () => {
+    const { recordFgcWorkbenchDecision } = await import("@/lib/fgc/workbench");
+    const jef = access("JEF_ADMIN_ACTIVE", role({ code: "JEF_ADMINISTRATOR", name: "JEF Administrator", collegeId: "college-1" }));
+    const assessor = access("ASSESSOR_ACTIVE", role({ code: "ASSESSOR", name: "Assessor" }));
+    await expect(recordFgcWorkbenchDecision(jef, { submissionId: "submission-1", action: "ASSESSOR_REVIEW", decision: "handoff", notes: "legacy bypass" })).rejects.toMatchObject({ status: 403, code: "FGC_ACTION_FORBIDDEN" });
+    await expect(recordFgcWorkbenchDecision(assessor, { submissionId: "submission-1", action: "MODERATOR_FINALISE", decision: "handoff", notes: "legacy bypass" })).rejects.toMatchObject({ status: 403, code: "FGC_ACTION_FORBIDDEN" });
   });
 
   it("keeps scoped merSETA read-only and denies out-of-scope submissions when no configured institution scope exists", async () => {

@@ -35,6 +35,7 @@ import type { FgcLecturerDraftValues } from "@/lib/fgc/lecturer-form";
 import type { LecturerFormState } from "@/lib/fgc/lecturer-submissions";
 import type { FgcRoleWorkbench, FgcSubmissionDetail, FgcWorkbenchSubmission } from "@/lib/fgc/workbench";
 import { FgcEkmApp } from "@/components/merseta-fgc/FgcEkmApp";
+import { FgcReviewWorkflowPanel } from "@/components/merseta-fgc/FgcReviewWorkflowPanel";
 
 const requestedRoles = [
   { code: "LECTURER", label: "Lecturer" },
@@ -1254,15 +1255,12 @@ function decisionActions(access: ResolvedProductionAccess) {
     actions.push({ action: "REQUEST_CLARIFICATION", label: "Request clarification", decision: "College clarification requested", tone: "bg-amber text-ink" });
   }
   if (state === "ASSESSOR_ACTIVE") {
-    actions.push({ action: "ASSESSOR_REVIEW", label: "Send to moderation", decision: "Assessor review complete", tone: "bg-lime text-ink" });
-    actions.push({ action: "REQUEST_CLARIFICATION", label: "Return for evidence", decision: "Assessor clarification requested", tone: "bg-amber text-ink" });
+    return actions;
   }
   if (state === "MODERATOR_ACTIVE") {
-    actions.push({ action: "MODERATOR_FINALISE", label: "Finalise moderation", decision: "Moderator final decision recorded", tone: "bg-lime text-ink" });
-    actions.push({ action: "REQUEST_CLARIFICATION", label: "Request reassessment", decision: "Moderator requested reassessment", tone: "bg-amber text-ink" });
+    return actions;
   }
   if (state === "JEF_ADMIN_ACTIVE") {
-    actions.push({ action: "ASSESSOR_REVIEW", label: "Escalate to moderation", decision: "JEF review accepted assessor handover", tone: "bg-lime text-ink" });
     actions.push({ action: "REQUEST_CLARIFICATION", label: "Request clarification", decision: "JEF clarification requested", tone: "bg-amber text-ink" });
     actions.push({ action: "JEF_REOPEN", label: "Reopen record", decision: "JEF reopened production record", tone: "bg-white/[0.08] text-paper ring-1 ring-white/[0.12]" });
   }
@@ -1585,6 +1583,8 @@ function ProductionRoleWorkbench({ access }: { access: ResolvedProductionAccess 
           </article>
         ))}
       </div>
+
+      <FgcReviewWorkflowPanel accessState={access.access.accessState} selectedSubmissionId={selectedSubmission?.id ?? ""} submissions={workbench.submissions} onChanged={refreshWorkbench} />
 
       <div className="grid gap-4 md:grid-cols-3">
         {workbench.queues.map((queue) => (

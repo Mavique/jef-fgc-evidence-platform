@@ -119,11 +119,11 @@ function SubmissionsPanel({ workbench }: { workbench: FgcRoleWorkbench }) {
       {workbench.submissions.map((submission) => (
         <tr className="bg-white/[0.025]" key={submission.id}>
           <td className="px-4 py-4 font-mono text-cyan">{submission.id.slice(0, 8)}</td>
-          <td className="px-4 py-4"><span className="block font-semibold">{submission.submitterName}</span><span className="block text-xs text-paper/46">{submission.submitterEmail}</span></td>
+          <td className="px-4 py-4"><span className="block font-semibold">{submission.submitterName}</span>{submission.submitterEmail ? <span className="block text-xs text-paper/46">{submission.submitterEmail}</span> : null}</td>
           <td className="px-4 py-4">{[submission.collegeName, submission.campusName].filter(Boolean).join(" / ") || "Scope unavailable"}</td>
           <td className="px-4 py-4">{[submission.programmeName, submission.moduleName].filter(Boolean).join(" / ") || "Not captured"}</td>
           <td className="px-4 py-4">{formatStatus(submission.status)}</td>
-          <td className="px-4 py-4 font-mono text-cyan">{submission.completionPercent}%</td>
+          <td className="px-4 py-4 font-mono text-cyan">{submission.completionPercent === null ? "Unavailable" : `${submission.completionPercent}%`}</td>
           <td className="px-4 py-4">{new Date(submission.updatedAt).toLocaleString()}</td>
           <td className="px-4 py-4"><Link className="inline-flex min-h-10 items-center justify-center rounded-full bg-white/[0.08] px-4 text-xs font-bold text-paper ring-1 ring-white/[0.12]" href={`/fgc-ekm/tasks?submission=${submission.id}`}>Open record</Link></td>
         </tr>

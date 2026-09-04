@@ -4,6 +4,7 @@ import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
 import { getFgcRuntimeConfig } from "@/lib/fgc/env";
 import { fieldKey, fgcLecturerModules } from "@/lib/fgc/lecturer-form";
 import { getFgcProductionMetricsSummary } from "@/lib/fgc/metrics";
+import { listReviewQueue, type ReviewAssignmentType } from "@/lib/fgc/review-workflow";
 
 type Access = Extract<FgcCurrentUserResult, { ok: true }>;
 type FgcQueryExecutor = typeof fgcQuery;
@@ -27,7 +28,13 @@ export type FgcWorkbenchSubmission = {
   collegeName: string | null;
   campusName: string | null;
   templateName: string | null;
-  completionPercent: number;
+  completionPercent: number | null;
+  assignmentType?: ReviewAssignmentType;
+  assignmentStatus?: string;
+  assignedAt?: string;
+  dueAt?: string | null;
+  evidenceCount?: number;
+  evidencePendingCount?: number;
   evidenceManifest: string;
   programmeName: string;
   moduleName: string;
@@ -196,8 +203,8 @@ function snapshotValues(snapshot: Record<string, unknown> | null) {
 }
 
 function queues(access: Access, submissions: FgcWorkbenchSubmission[]) {
-  const reviewReady = submissions.filter((item) => ["SUBMITTED_BY_LECTURER", "COLLEGE_REVIEW_PENDING", "JEF_REVIEW_PENDING"].includes(item.status)).length;
-  const moderation = submissions.filter((item) => item.status === "MODERATION_PENDING").length;
+  const reviewReady = submissions.filter((item) => item.assignmentType === "ASSESSOR" || ["SUBMITTED_BY_LECTURER", "COLLEGE_REVIEW_PENDING", "JEF_REVIEW_PENDING"].includes(item.status)).length;
+  const moderation = submissions.filter((item) => item.assignmentType === "MODERATOR" || item.status === "MODERATION_PENDING").length;
   const clarification = submissions.filter((item) => item.status === "CLARIFICATION_REQUESTED").length;
   const draft = submissions.filter((item) => item.status === "DRAFT" || item.status === "READY_FOR_LECTURER_REVIEW").length;
   const submitted = submissions.filter((item) => item.status !== "DRAFT").length;
@@ -219,7 +226,7 @@ function queues(access: Access, submissions: FgcWorkbenchSubmission[]) {
   ];
   if (access.access.accessState === "MODERATOR_ACTIVE") return [
     { id: "moderation", label: "Moderation pending", count: moderation, description: "Assessor decisions awaiting QA." },
-    { id: "borderline", label: "Borderline", count: submissions.filter((item) => item.completionPercent < 100).length, description: "Cases with weaker evidence profiles." },
+    { id: "borderline", label: "Borderline", count: submissions.filter((item) => item.completionPercent !== null && item.completionPercent < 100).length, description: "Cases with weaker evidence profiles." },
     { id: "finalised", label: "Moderated", count: submissions.filter((item) => item.status === "MODERATED").length, description: "Moderation outcomes recorded." }
   ];
   if (access.access.accessState === "MERSETA_ACTIVE") return [
@@ -239,9 +246,11 @@ export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbe
   const scoped = scopeWhere(access);
   const reportScoped = generatedReportWhere(access);
   const auditScoped = auditEventWhere(access);
-  const [metrics, submissionsResult, notificationsResult, reportsResult, auditResult] = await Promise.all([
+  const reviewType = access.access.accessState === "ASSESSOR_ACTIVE" ? "ASSESSOR" : access.access.accessState === "MODERATOR_ACTIVE" ? "MODERATOR" : null;
+  const [metrics, reviewerQueue, submissionsResult, notificationsResult, reportsResult, auditResult] = await Promise.all([
     getFgcProductionMetricsSummary(access),
-    fgcQuery<{
+    reviewType ? listReviewQueue(access, reviewType) : Promise.resolve([]),
+    reviewType ? Promise.resolve(null) : fgcQuery<{
       id: string; assignment_id: string | null; submitter_name: string; submitter_email: string; status: string; current_version: number; updated_at: string; submitted_at: string | null; college_name: string | null; campus_name: string | null; template_name: string | null; snapshot: Record<string, unknown> | null;
     }>(`
       SELECT ps.id::text, ps.assignment_id::text, (u.first_name || ' ' || u.surname) AS submitter_name,
@@ -265,9 +274,9 @@ export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbe
     fgcQuery<{ id: string; subject: string; body: string; status: string; created_at: string }>(`
       SELECT id::text, subject, body, status::text, created_at::text
       FROM fgc.notifications
-      WHERE user_id = $1 OR $2 IN ('JEF_ADMIN_ACTIVE', 'PLATFORM_SUPER_ACTIVE')
+      WHERE user_id = $1
       ORDER BY created_at DESC LIMIT 20
-    `, [access.user.id, access.access.accessState]),
+    `, [access.user.id]),
     fgcQuery<{ id: string; report_identifier: string; report_type: string; scope: string; status: string; created_at: string }>(`
       SELECT gr.id::text, gr.report_identifier, gr.report_type, gr.scope, gr.status::text, gr.created_at::text
       FROM fgc.generated_reports gr
@@ -282,7 +291,30 @@ export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbe
     `, auditScoped.values)
   ]);
 
-  const submissions = submissionsResult.rows.map((row) => {
+  const submissions = reviewType ? reviewerQueue.map((row) => ({
+    id: row.submissionId,
+    assignmentId: row.id,
+    assignmentType: row.type,
+    assignmentStatus: row.status,
+    assignedAt: row.assignedAt,
+    dueAt: row.dueAt,
+    submitterName: row.lecturerName,
+    submitterEmail: "",
+    status: row.submissionStatus,
+    currentVersion: row.currentVersion,
+    updatedAt: row.updatedAt,
+    submittedAt: null,
+    collegeName: row.collegeName,
+    campusName: row.campusName,
+    templateName: null,
+    completionPercent: null,
+    evidenceManifest: "",
+    programmeName: row.programmeName ?? "",
+    moduleName: "",
+    sourceStatus: "Assigned persisted case",
+    evidenceCount: row.evidenceCount,
+    evidencePendingCount: row.evidencePendingCount
+  })) : submissionsResult?.rows.map((row) => {
     const parsed = snapshotValues(row.snapshot);
     return {
       id: row.id,
@@ -302,7 +334,7 @@ export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbe
       moduleName: parsed.values["learner_cohort.subject_or_module"] ?? "",
       sourceStatus: parsed.values["evidence_uploads.evidence_status"] ?? "Self-Reported"
     };
-  });
+  }) ?? [];
   const role = access.access.activeRole;
 
   return {
@@ -325,9 +357,9 @@ export async function recordFgcWorkbenchDecision(access: Access, input: { submis
   assertWorkbench(access);
   const allowed: Record<typeof input.action, string[]> = {
     COLLEGE_ENRICH: ["COLLEGE_ACTIVE"],
-    ASSESSOR_REVIEW: ["ASSESSOR_ACTIVE", "JEF_ADMIN_ACTIVE"],
-    REQUEST_CLARIFICATION: ["COLLEGE_ACTIVE", "ASSESSOR_ACTIVE", "MODERATOR_ACTIVE", "JEF_ADMIN_ACTIVE"],
-    MODERATOR_FINALISE: ["MODERATOR_ACTIVE", "JEF_ADMIN_ACTIVE"],
+    ASSESSOR_REVIEW: [],
+    REQUEST_CLARIFICATION: ["COLLEGE_ACTIVE", "JEF_ADMIN_ACTIVE"],
+    MODERATOR_FINALISE: [],
     JEF_REOPEN: ["JEF_ADMIN_ACTIVE"]
   };
   if (!allowed[input.action].includes(access.access.accessState)) {
