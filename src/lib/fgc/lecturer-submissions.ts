@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { fgcQuery, withFgcTransaction } from "@/lib/fgc/db";
+import { throwFgcIntegrationFault } from "@/lib/fgc/test-faults";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
 import { evaluateFgcLecturerDraft, fgcLecturerModules, fieldKey, type FgcLecturerDraftValues } from "@/lib/fgc/lecturer-form";
 
@@ -369,6 +370,7 @@ export async function submitLecturerForm(access: ResolvedProductionAccess, assig
 
   return withFgcTransaction(async (query) => {
     const saved = await saveLecturerDraftWithinTransaction(access, assignmentId, values, "Lecturer saved final submission snapshot", query);
+    throwFgcIntegrationFault("lecturer_submission_after_snapshot");
     await query(
       `
         UPDATE fgc.production_submissions

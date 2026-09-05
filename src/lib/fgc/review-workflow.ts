@@ -1,5 +1,6 @@
 import { FgcValidationError } from "@/lib/fgc/api";
 import { fgcQuery, withFgcTransaction } from "@/lib/fgc/db";
+import { throwFgcIntegrationFault } from "@/lib/fgc/test-faults";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
 
 type Access = Extract<FgcCurrentUserResult, { ok: true }>;
@@ -390,6 +391,7 @@ export async function submitAssessorReview(access: Access, assignmentId: string,
     const updated = await query<{ id: string }>("UPDATE fgc.review_assignments SET status = 'COMPLETED', completed_at = now(), concurrency_version = concurrency_version + 1, updated_at = now() WHERE id = $1 AND assignee_user_id = $2 AND status IN ('ASSIGNED', 'IN_PROGRESS') AND concurrency_version = $3 RETURNING id::text", [assignmentId, access.user.id, expectedConcurrencyVersion]);
     if (!updated.rows[0]) throw new FgcReviewWorkflowError(409, "FGC_ASSIGNMENT_CONFLICT", "The assessor assignment changed before handoff.");
     await query(`INSERT INTO fgc.assessor_reviews (assignment_id, submission_id, submission_version_id, assessor_user_id, status, decisions, rationale, submitted_at) VALUES ($1, $2, $3, $4, 'SUBMITTED', $5::jsonb, $6, now()) ON CONFLICT (assignment_id) DO UPDATE SET status = 'SUBMITTED', decisions = EXCLUDED.decisions, rationale = EXCLUDED.rationale, submitted_at = now(), updated_at = now()`, [assignmentId, assignment.submission_id, assignment.submission_version_id, access.user.id, JSON.stringify(decisions), rationale.trim()]);
+    throwFgcIntegrationFault("assessor_submission_after_review");
     const current = await query<{ status: string }>("SELECT status::text FROM fgc.production_submissions WHERE id = $1 FOR UPDATE", [assignment.submission_id]);
     await query("UPDATE fgc.production_submissions SET status = 'MODERATION_PENDING', updated_at = now() WHERE id = $1 AND status IN ('SUBMITTED_BY_LECTURER', 'COLLEGE_REVIEW_PENDING', 'JEF_REVIEW_PENDING', 'RESUBMITTED')", [assignment.submission_id]);
     await query("INSERT INTO fgc.production_submission_status_history (submission_id, previous_status, new_status, changed_by, changed_role, reason, comments) VALUES ($1, $2::fgc.submission_lifecycle_status, 'MODERATION_PENDING', $3, $4, 'Assessor review submitted', $5)", [assignment.submission_id, current.rows[0]?.status ?? "JEF_REVIEW_PENDING", access.user.id, roleCode(access), `Bound to submission version ${assignment.submission_version_id}.`]);
@@ -427,6 +429,7 @@ export async function finalizeModeration(access: Access, assignmentId: string, e
     const updated = await query<{ id: string }>("UPDATE fgc.review_assignments SET status = 'COMPLETED', completed_at = now(), concurrency_version = concurrency_version + 1, updated_at = now() WHERE id = $1 AND assignee_user_id = $2 AND status IN ('ASSIGNED', 'IN_PROGRESS') AND concurrency_version = $3 RETURNING id::text", [assignmentId, access.user.id, expectedConcurrencyVersion]);
     if (!updated.rows[0]) throw new FgcReviewWorkflowError(409, "FGC_ASSIGNMENT_CONFLICT", "The moderator assignment changed before finalization.");
     await query(`INSERT INTO fgc.moderation_records (assignment_id, submission_id, submission_version_id, moderator_user_id, assessor_review_id, status, outcome, reason, finalized_at) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, now()) ON CONFLICT (assignment_id) DO UPDATE SET status = EXCLUDED.status, outcome = EXCLUDED.outcome, reason = EXCLUDED.reason, finalized_at = now(), updated_at = now()`, [assignmentId, assignment.submission_id, assignment.submission_version_id, access.user.id, assessor.rows[0].id, outcomeStatus, JSON.stringify(outcome), reason.trim()]);
+    throwFgcIntegrationFault("moderator_finalization_after_decision");
     const nextStatus = outcomeStatus === "CONFIRMED" || outcomeStatus === "CHANGED" ? "MODERATED" : "CLARIFICATION_REQUESTED";
     const current = await query<{ status: string }>("SELECT status::text FROM fgc.production_submissions WHERE id = $1 FOR UPDATE", [assignment.submission_id]);
     await query("UPDATE fgc.production_submissions SET status = $2::fgc.submission_lifecycle_status, updated_at = now() WHERE id = $1 AND status = 'MODERATION_PENDING'", [assignment.submission_id, nextStatus]);

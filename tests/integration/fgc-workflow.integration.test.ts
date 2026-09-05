@@ -44,7 +44,8 @@ const ids = {
   assignmentOther: "11111111-1111-4111-8111-111111111171",
   assignmentMulti: "11111111-1111-4111-8111-111111111172",
   selfSubmission: "11111111-1111-4111-8111-111111111173",
-  selfVersion: "11111111-1111-4111-8111-111111111174"
+  selfVersion: "11111111-1111-4111-8111-111111111174",
+  rollbackAssignment: "11111111-1111-4111-8111-111111111175"
 } as const;
 
 async function query<T extends QueryResultRow = QueryResultRow>(sql: string, values: unknown[] = []): Promise<QueryResult<T>> {
@@ -134,6 +135,8 @@ describe("authenticated FGC workflow against disposable PostgreSQL", () => {
       VALUES ('${ids.selfSubmission}', '${ids.assignmentMulti}', '${ids.multiRole}', '${ids.period}', '${ids.college}', '${ids.campus}', 'SUBMITTED_BY_LECTURER', 1, now(), now());
       INSERT INTO fgc.production_submission_versions (id, submission_id, version, status_at_snapshot, snapshot, snapshot_checksum, created_by)
       VALUES ('${ids.selfVersion}', '${ids.selfSubmission}', 1, 'SUBMITTED_BY_LECTURER', '{"values":{}}'::jsonb, 'integration-self-review', '${ids.multiRole}');
+      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, college_id, campus_id, status)
+      VALUES ('${ids.rollbackAssignment}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
     `);
     lecturerAccess = await accessFor(ids.lecturer, "lecturer");
     jefAccess = await accessFor(ids.jef, "jef");
@@ -227,5 +230,51 @@ describe("authenticated FGC workflow against disposable PostgreSQL", () => {
   it("rejects direct version and scope manipulation at the database boundary", async () => {
     const invalidVersion = "11111111-1111-4111-8111-111111111199";
     await expect(query("INSERT INTO fgc.review_assignments (submission_id, submission_version_id, assignment_type, assignee_user_id, assigned_by, reporting_period_id, college_id, campus_id, reason) VALUES ($1, $2, 'ASSESSOR', $3, $4, $5, $6, $7, 'Synthetic invalid version')", [submissionId, invalidVersion, ids.assessor, ids.jef, ids.period, ids.college, ids.campus])).rejects.toThrow(/version|submission/i);
+  });
+
+  it("rolls back each real workflow transaction at its dependent-write fault point", async () => {
+    try {
+      process.env.FGC_TEST_FAULT_POINT = "lecturer_submission_after_snapshot";
+      await saveLecturerDraft(lecturerAccess, ids.rollbackAssignment, values);
+      await expect(submitLecturerForm(lecturerAccess, ids.rollbackAssignment, values)).rejects.toThrow("lecturer_submission_after_snapshot");
+      const lecturerRollback = await query<{ id: string; status: string; current_version: number }>("SELECT ps.id::text, ps.status::text, ps.current_version FROM fgc.production_submissions ps WHERE ps.assignment_id = $1", [ids.rollbackAssignment]);
+      expect(lecturerRollback.rows).toHaveLength(1);
+      expect(lecturerRollback.rows[0]).toMatchObject({ status: "READY_FOR_LECTURER_REVIEW", current_version: 1 });
+      const rollbackSubmissionId = lecturerRollback.rows[0].id;
+      expect((await query("SELECT 1 FROM fgc.production_submission_versions WHERE submission_id = $1", [rollbackSubmissionId])).rowCount).toBe(1);
+      expect((await query("SELECT 1 FROM fgc.notifications WHERE related_object_id = $1 AND notification_type = 'LECTURER_SUBMISSION_RECEIVED'", [rollbackSubmissionId])).rowCount).toBe(0);
+      expect((await query("SELECT 1 FROM fgc.production_submission_status_history WHERE submission_id = $1 AND new_status = 'SUBMITTED_BY_LECTURER'", [rollbackSubmissionId])).rowCount).toBe(0);
+      expect((await query("SELECT 1 FROM fgc.production_audit_events WHERE object_id = $1 AND action = 'SUBMIT_LECTURER_FORM'", [rollbackSubmissionId])).rowCount).toBe(0);
+      delete process.env.FGC_TEST_FAULT_POINT;
+      await submitLecturerForm(lecturerAccess, ids.rollbackAssignment, values);
+      const submittedRollback = await query<{ status: string; current_version: number }>("SELECT status::text, current_version FROM fgc.production_submissions WHERE id = $1", [rollbackSubmissionId]);
+      expect(submittedRollback.rows[0]).toMatchObject({ status: "SUBMITTED_BY_LECTURER", current_version: 2 });
+
+      const assessorCase = await assignReviewCase(jefAccess, { type: "ASSESSOR", submissionId: rollbackSubmissionId, assigneeId: ids.assessor, reason: "Synthetic rollback assessor assignment" });
+      process.env.FGC_TEST_FAULT_POINT = "assessor_submission_after_review";
+      await expect(submitAssessorReview(assessorAccess, assessorCase.assignmentId, 1, { capability: "NOT_ASSESSED" }, "Synthetic rollback assessor rationale")).rejects.toThrow("assessor_submission_after_review");
+      expect((await query("SELECT 1 FROM fgc.assessor_reviews WHERE assignment_id = $1 AND status = 'SUBMITTED'", [assessorCase.assignmentId])).rowCount).toBe(0);
+      expect((await query("SELECT status::text FROM fgc.production_submissions WHERE id = $1", [rollbackSubmissionId])).rows[0].status).toBe("JEF_REVIEW_PENDING");
+      expect((await query("SELECT 1 FROM fgc.notifications WHERE related_object_id = $1 AND notification_type = 'MODERATION_READY'", [rollbackSubmissionId])).rowCount).toBe(0);
+      expect((await query("SELECT 1 FROM fgc.production_audit_events WHERE object_id = $1 AND action = 'SUBMIT_ASSESSOR_REVIEW'", [assessorCase.assignmentId])).rowCount).toBe(0);
+      delete process.env.FGC_TEST_FAULT_POINT;
+      await submitAssessorReview(assessorAccess, assessorCase.assignmentId, 1, { capability: "NOT_ASSESSED" }, "Synthetic successful assessor rationale");
+      expect((await query("SELECT 1 FROM fgc.assessor_reviews WHERE assignment_id = $1 AND status = 'SUBMITTED'", [assessorCase.assignmentId])).rowCount).toBe(1);
+
+      const moderatorCase = await assignReviewCase(jefAccess, { type: "MODERATOR", submissionId: rollbackSubmissionId, assigneeId: ids.moderator, reason: "Synthetic rollback moderator assignment" });
+      process.env.FGC_TEST_FAULT_POINT = "moderator_finalization_after_decision";
+      await expect(finalizeModeration(moderatorAccess, moderatorCase.assignmentId, 1, "CHANGED", { capability: "NOT_ASSESSED" }, "Synthetic rollback moderation rationale")).rejects.toThrow("moderator_finalization_after_decision");
+      expect((await query("SELECT 1 FROM fgc.moderation_records WHERE assignment_id = $1 AND finalized_at IS NOT NULL", [moderatorCase.assignmentId])).rowCount).toBe(0);
+      expect((await query("SELECT status::text FROM fgc.production_submissions WHERE id = $1", [rollbackSubmissionId])).rows[0].status).toBe("MODERATION_PENDING");
+      expect((await query("SELECT 1 FROM fgc.notifications WHERE related_object_id = $1 AND notification_type = 'MODERATION_OUTCOME'", [rollbackSubmissionId])).rowCount).toBe(0);
+      expect((await query("SELECT 1 FROM fgc.production_audit_events WHERE object_id = $1 AND action = 'FINALIZE_MODERATION'", [moderatorCase.assignmentId])).rowCount).toBe(0);
+      delete process.env.FGC_TEST_FAULT_POINT;
+      const final = await finalizeModeration(moderatorAccess, moderatorCase.assignmentId, 1, "CHANGED", { capability: "NOT_ASSESSED" }, "Synthetic successful moderation rationale");
+      expect(final.nextWorkflowStatus).toBe("MODERATED");
+      expect((await query("SELECT 1 FROM fgc.moderation_records WHERE assignment_id = $1 AND status = 'CHANGED' AND finalized_at IS NOT NULL", [moderatorCase.assignmentId])).rowCount).toBe(1);
+      expect((await query("SELECT 1 FROM fgc.notifications WHERE related_object_id = $1 AND notification_type = 'MODERATION_OUTCOME'", [rollbackSubmissionId])).rowCount).toBe(1);
+    } finally {
+      delete process.env.FGC_TEST_FAULT_POINT;
+    }
   });
 });
