@@ -6,7 +6,7 @@ Date: 2026-08-31
 
 Ready after listed fixes. Do not deploy to Cloudflare Workers yet.
 
-The Next.js application surface is mostly compatible with vinext, but the request-time data layer currently uses direct `pg.Pool` PostgreSQL connections and Node runtime crypto. The platform should move to a verified Cloudflare-compatible database path before staging: Cloudflare Hyperdrive with `nodejs_compat`, or a Supabase HTTPS/RPC data access layer. Evidence binary storage also remains incomplete: the application records evidence manifests and metadata, but does not yet provide governed direct-to-private-storage upload and signed download flows.
+The Next.js application surface is compatible with vinext with a documented image-optimizer limitation. Request-time persistence uses `pg.Pool` through the configured Cloudflare Hyperdrive path and is covered by a disposable PostgreSQL application-adapter integration test; Cloudflare runtime behavior still requires staging verification. Evidence binary storage uses private Supabase Storage with governed upload metadata and signed downloads; provider bucket policy and staging retrieval tests remain external gates.
 
 ## Detected Framework
 
@@ -33,13 +33,14 @@ The Next.js application surface is mostly compatible with vinext, but the reques
 | `npm run typecheck` | Passed | TypeScript completed successfully. |
 | `npm test -- --run` | Passed | 7 test files, 45 tests passed. |
 | `npm run build` | Passed | Production build completed; `/health` and `/health/ready` compiled as dynamic routes. |
-| `npx vinext check` | Passed with partial support | 93% compatible; partial: `next/font/google`, `images` config. |
+| `npx vinext check` | Passed with partial support | 96% compatible; partial: `images` config. |
+| `npm run test:db:integration` | Passed | Fresh local PostgreSQL container; canonical migrations through 009, application adapter queries and rollback; container removed afterward. |
 | `npm run db:verify` | Passed | Read-only schema/reference verification passed; no demo records reported by the verifier. |
 
 ## `vinext check` Summary
 
 - Imports: 5/6 fully supported.
-- Partial import: `next/font/google`; fonts loaded from CDN, not self-hosted at build time.
+- No `next/font/google` import remains; typography uses deterministic system stacks for network-independent builds.
 - Config: `images` is partial; remote patterns are validated, but on-the-fly optimization requires Cloudflare Images or passthrough.
 - Libraries flagged by vinext as compatible: Tailwind CSS, lucide-react, zod, react-hook-form.
 - Structure: App Router, 21 pages, 20 route handlers.
@@ -52,15 +53,15 @@ Manual audit still finds runtime risks that `vinext check` did not classify as d
 | Area | Current State | Cloudflare Workers Classification | Required Action |
 | --- | --- | --- | --- |
 | Next.js App Router | Uses `src/app`, route handlers and client components. | Compatible through vinext. | Keep Next local workflow; initialize vinext only after runtime blockers are resolved. |
-| `next/font/google` | Present in layout imports. | Partial support. | Self-host fonts or accept CDN loading in staging. |
+| Typography | Local system font stacks; no build-time font download. | Compatible. | None for deployment; exact external typefaces are intentionally not bundled. |
 | `next/image` remote patterns | Present. | Partial support. | Configure Cloudflare Images or use passthrough image behavior. |
-| Database | `src/lib/fgc/db.ts` uses `pg.Pool`. | Requires architecture decision. | Use Cloudflare Hyperdrive with `nodejs_compat`, or move request-time data access to Supabase HTTPS/RPC. Keep migrations outside Worker. |
-| Transactions | Submission/versioning/decisions use database transactions. | Requires verified DB path. | Prove transaction behavior under the selected Workers database strategy before staging. |
+| Database | `src/lib/fgc/db.ts` uses `pg.Pool`; Worker receives the Hyperdrive connection string. | Compatible with `nodejs_compat`, pending staging proof. | Verify Hyperdrive/Supabase transaction behavior in a non-production Worker environment. |
+| Transactions | Submission/versioning/decisions use database transactions; application adapter rollback is proven against disposable PostgreSQL. | Local integration proven; Worker runtime pending. | Exercise concurrent workflow transactions in staging. |
 | Migrations | Node scripts read SQL from disk and connect through `pg`. | Compatible as migration-only, not Worker runtime. | Run locally or in controlled CI, never inside request handlers. |
 | Auth sessions | Server-side DB sessions plus HttpOnly cookies. | Compatible after DB path is fixed. | Confirm cookie behavior on Cloudflare preview and canonical production origin. |
 | Password hashing | Node `crypto.scrypt`. | Compatible only if Node crypto support is verified. | Test under Workers `nodejs_compat`; otherwise use a Workers-compatible password hashing strategy. |
 | Email | Resend via HTTPS `fetch`. | Compatible unchanged. | Store API key as Worker secret; test delivery in staging. |
-| Evidence files | Metadata and manifest exist; binary upload/download flow is incomplete. | Blocks full production evidence workflow. | Implement Supabase private storage signed upload/download, MIME/size/checksum validation and audit. |
+| Evidence files | Binary upload, checksum, versioned metadata and signed private download are implemented. | Compatible over HTTPS; provider policy pending. | Configure and verify private bucket policies and staging object lifecycle. |
 | Reports | Current report generation stores JSON snapshots, not binary PDF/DOCX. | Compatible for snapshot records. | For future PDFs/DOCX, use Worker-compatible generation or async external job boundary. |
 | Background jobs | No permanent server loops found in app runtime. | Compatible unchanged. | Use Cloudflare Cron/Workflows only for future scheduled tasks. |
 | Browser localStorage | Still used for legacy/demo dashboard state. | Client-only; compatible. | Keep production sessions on server data; do not use localStorage for governed evidence. |
@@ -217,8 +218,7 @@ Database rollback:
 ## Unresolved Blockers
 
 - Request-time database access is not yet proven in Cloudflare Workers.
-- Evidence binary upload/download is not yet fully implemented for private Supabase Storage.
-- `npm ci` failed locally due a locked Next SWC binary; this must be re-run with the local server/editor lock removed.
+- Supabase private bucket policies and staging evidence retrieval are not yet verified.
 - Full role-based end-to-end workflow suite is not yet automated.
 - Cloudflare preview deployment has not been created or tested.
 - `vinext init` has not been run by design.

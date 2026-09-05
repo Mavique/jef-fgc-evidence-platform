@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       originWarning: originMatchesConfig ? null : "FGC_APP_URL does not match the current request origin. Use one canonical local host for signup, verification, login and portal access.",
       databaseTime: result.rows[0]?.database_time
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         ok: false,
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         appUrl: configuredOrigin,
         requestOrigin: origin,
         originMatchesConfig,
-        message: error instanceof Error ? error.message : "FGC database health check failed."
+        message: "FGC database health check failed."
       },
       { status: 503 }
     );

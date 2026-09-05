@@ -47,3 +47,5 @@ jobs:
       - name: Migration files validation
         run: npm run test:db
 
+      - name: Disposable PostgreSQL application integration
+        run: npm run test:db:integration
