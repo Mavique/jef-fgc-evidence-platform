@@ -101,6 +101,13 @@ BEGIN
     RAISE EXCEPTION 'review assignment scope must match submission scope';
   END IF;
 
+  IF EXISTS (
+    SELECT 1 FROM fgc.production_submissions
+    WHERE id = NEW.submission_id AND submitted_by = NEW.assignee_user_id
+  ) THEN
+    RAISE EXCEPTION 'the submitting lecturer cannot be assigned as a reviewer';
+  END IF;
+
   SELECT u.account_state, r.code
   INTO assignee_state, assignee_role_code
   FROM fgc.production_users u

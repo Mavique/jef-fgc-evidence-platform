@@ -104,6 +104,37 @@ describe("FGC review assignment workflow migration", () => {
     expect(reviewAssignmentMigration).not.toContain("evidence_reviews");
   });
 
+  it("enforces lecturer self-review rejection in the assignment trigger", () => {
+    const triggerStart = reviewAssignmentMigration.indexOf(
+      "CREATE OR REPLACE FUNCTION fgc.validate_review_assignment_version",
+    );
+    const triggerEnd = reviewAssignmentMigration.indexOf(
+      "$$;\n\nDROP TRIGGER IF EXISTS trg_fgc_review_assignment_version",
+    );
+    const triggerBody = reviewAssignmentMigration.slice(triggerStart, triggerEnd);
+    const selfReviewCheck = triggerBody.match(
+      /IF EXISTS \([\s\S]*?submitted_by = NEW\.assignee_user_id[\s\S]*?END IF;/,
+    )?.[0];
+
+    expect(triggerStart).toBeGreaterThanOrEqual(0);
+    expect(triggerEnd).toBeGreaterThan(triggerStart);
+    expect(selfReviewCheck).toBeDefined();
+    expect(selfReviewCheck).toContain("FROM fgc.production_submissions");
+    expect(selfReviewCheck).toContain("id = NEW.submission_id");
+    expect(selfReviewCheck).toContain("RAISE EXCEPTION");
+    expect(selfReviewCheck).toContain(
+      "the submitting lecturer cannot be assigned as a reviewer",
+    );
+    expect(selfReviewCheck).not.toContain("assignment_type");
+    expect(reviewAssignmentMigration).toContain(
+      "CREATE TRIGGER trg_fgc_review_assignment_version",
+    );
+    expect(reviewAssignmentMigration).toContain("BEFORE INSERT OR UPDATE");
+    expect(reviewAssignmentMigration).toContain(
+      "EXECUTE FUNCTION fgc.validate_review_assignment_version()",
+    );
+  });
+
   it("is registered after evidence lifecycle without registering demo seeds", () => {
     const migrationList = migrationConfig.slice(migrationConfig.indexOf("export const migrationFiles"), migrationConfig.indexOf("export const referenceSeedFiles"));
     expect(migrationList).toContain('"009_review_assignment_workflows.sql"');
