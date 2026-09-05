@@ -109,8 +109,8 @@ function submissionScope(access: Access) {
   const role = access.access.activeRole;
   if (!role?.collegeId) throw new FgcReviewWorkflowError(403, "FGC_ASSIGNMENT_SCOPE_REQUIRED", "A scoped institution role is required for this operation.");
   return role.campusId
-    ? { sql: "ps.college_id = $2 AND ps.campus_id = $3", values: [access.user.id, role.collegeId, role.campusId] }
-    : { sql: "ps.college_id = $2", values: [access.user.id, role.collegeId] };
+    ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
+    : { sql: "ps.college_id = $1", values: [role.collegeId] };
 }
 
 function mapAssignment(row: AssignmentRow) {
@@ -147,7 +147,7 @@ const assignmentSelect = `
     ra.completed_at::text, ra.reason, ra.concurrency_version,
     'FGC-' || COALESCE(EXTRACT(YEAR FROM ps.created_at)::int::text, 'UNKNOWN') || '-' || UPPER(LEFT(ps.id::text, 8)) AS submission_reference,
     TRIM(u.first_name || ' ' || u.surname) AS lecturer_name,
-    c.official_name AS college_name, cs.official_name AS campus_name, cp.name AS programme_name,
+    c.official_name AS college_name, cs.official_name AS campus_name, cp.official_title AS programme_name,
     rp.name AS reporting_period_name, ps.status::text AS submission_status, ps.current_version, ps.updated_at::text,
     COUNT(DISTINCT ef.id)::text AS evidence_count,
     COUNT(DISTINCT ef.id) FILTER (WHERE ef.review_status IN ('UPLOADED', 'PENDING_REVIEW') OR ef.upload_status <> 'COMPLETED')::text AS evidence_pending_count
@@ -199,7 +199,7 @@ async function getSubmissionForJef(access: Access, submissionId: string, query: 
       FROM fgc.production_submissions ps
       LEFT JOIN fgc.production_submission_versions psv ON psv.submission_id = ps.id AND psv.version = ps.current_version
       WHERE ps.id = $${scope.values.length + 1} AND ${scope.sql}
-      FOR UPDATE
+      FOR UPDATE OF ps
     `,
     [...scope.values, submissionId]
   );
@@ -297,7 +297,7 @@ async function getAssignedCase(access: Access, assignmentId: string, type: Revie
         ra.completed_at::text, ra.reason, ra.concurrency_version,
         'FGC-' || COALESCE(EXTRACT(YEAR FROM ps.created_at)::int::text, 'UNKNOWN') || '-' || UPPER(LEFT(ps.id::text, 8)) AS submission_reference,
         TRIM(u.first_name || ' ' || u.surname) AS lecturer_name, c.official_name AS college_name,
-        cs.official_name AS campus_name, cp.name AS programme_name, rp.name AS reporting_period_name,
+        cs.official_name AS campus_name, cp.official_title AS programme_name, rp.name AS reporting_period_name,
         ps.status::text AS submission_status, ps.current_version, ps.updated_at::text,
         (SELECT COUNT(*)::text FROM fgc.evidence_files ef WHERE ef.submission_id = ps.id AND ef.submission_version_id = ra.submission_version_id AND ef.deleted_at IS NULL) AS evidence_count,
         (SELECT COUNT(*)::text FROM fgc.evidence_files ef WHERE ef.submission_id = ps.id AND ef.submission_version_id = ra.submission_version_id AND ef.deleted_at IS NULL AND (ef.review_status IN ('UPLOADED', 'PENDING_REVIEW') OR ef.upload_status <> 'COMPLETED')) AS evidence_pending_count,

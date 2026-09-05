@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { projectRoot, migrationFiles } from "./config.mjs";
 
 const container = `fgc-pg-integration-${process.pid}-${Date.now()}`;
+const suite = process.argv[2] === "workflow" ? "tests/integration/fgc-workflow.integration.test.ts" : "tests/integration/fgc-db.integration.test.ts";
 let port;
 
 function run(args, options = {}) {
@@ -62,13 +63,14 @@ try {
   databaseUrl.hostname = "127.0.0.1";
   databaseUrl.port = port;
   databaseUrl.pathname = "/fgc_integration_test";
-  const test = spawnSync(process.execPath, [join(projectRoot, "node_modules", "vitest", "vitest.mjs"), "run", "--config", "vitest.integration.config.ts", "tests/integration/fgc-db.integration.test.ts"], {
+  const test = spawnSync(process.execPath, [join(projectRoot, "node_modules", "vitest", "vitest.mjs"), "run", "--config", "vitest.integration.config.ts", suite], {
     cwd: projectRoot,
     env: {
       ...process.env,
       NODE_ENV: "test",
       FGC_INTEGRATION_TEST: "1",
-      FGC_TEST_DATABASE_URL: databaseUrl.toString()
+      FGC_TEST_DATABASE_URL: databaseUrl.toString(),
+      FGC_SESSION_SECRET: password
     },
     stdio: "inherit"
   });

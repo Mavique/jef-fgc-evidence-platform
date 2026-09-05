@@ -97,6 +97,7 @@ export async function resolveFgcCurrentUserFromToken(token: string | undefined):
         AND s.revoked_at IS NULL
         AND s.expires_at > now()
         AND u.deleted_at IS NULL
+        AND u.account_state NOT IN ('SUSPENDED', 'DEACTIVATED')
       LIMIT 1
     `,
     [sessionHash]
