@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { QueryResult, QueryResultRow } from "pg";
@@ -41,6 +42,9 @@ let jef: Access;
 let merseta: Access;
 let failNextUpload = false;
 const objects = new Map<string, Buffer>();
+const signingSecret = "local-storage-boundary-signing-secret";
+
+function sign(payload: string) { return createHmac("sha256", signingSecret).update(payload).digest("base64url"); }
 
 function query<T extends QueryResultRow = QueryResultRow>(sql: string, values: unknown[] = []): Promise<QueryResult<T>> { return fgcQuery<T>(sql, values); }
 
@@ -74,12 +78,17 @@ async function storageHandler(request: IncomingMessage, response: ServerResponse
   if (request.method === "POST" && path.startsWith(signPrefix)) {
     const key = decodeURIComponent(path.slice(signPrefix.length));
     if (!objects.has(key)) { send(response, 404, {}); return; }
-    const token = Buffer.from(JSON.stringify({ key, expires: Date.now() + 300_000 })).toString("base64url");
+    const payload = Buffer.from(JSON.stringify({ key, expires: Date.now() + 300_000 })).toString("base64url");
+    const token = `${payload}.${sign(payload)}`;
     send(response, 200, { signedURL: `/storage/v1/signed/object/${token}` }); return;
   }
   if (request.method === "GET" && path.startsWith("/storage/v1/signed/object/")) {
     try {
-      const decoded = JSON.parse(Buffer.from(path.slice("/storage/v1/signed/object/".length), "base64url").toString("utf8")) as { key: string; expires: number };
+      const [payload, signature] = path.slice("/storage/v1/signed/object/".length).split(".");
+      const expected = Buffer.from(sign(payload));
+      const actual = Buffer.from(signature ?? "");
+      if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) { send(response, 403, { error: "invalid signature" }); return; }
+      const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { key: string; expires: number };
       if (decoded.expires <= Date.now() || !objects.has(decoded.key)) { send(response, 403, { error: "expired or invalid signature" }); return; }
       response.statusCode = 200; response.setHeader("content-type", "application/pdf"); response.end(objects.get(decoded.key)); return;
     } catch { send(response, 403, { error: "invalid signature" }); return; }
@@ -175,6 +184,8 @@ describe("authenticated private FGC evidence lifecycle", () => {
     expect((await createFgcEvidenceFileViewUrl(moderator, result.id)).url).toContain("signed/object");
     expect((await query("SELECT 1 FROM fgc.production_audit_events WHERE object_id = $1 AND action IN ('INITIATE_EVIDENCE_UPLOAD', 'COMPLETE_EVIDENCE_UPLOAD', 'DOWNLOAD_EVIDENCE_FILE')", [result.id])).rowCount).toBeGreaterThanOrEqual(2);
     const tampered = `${signed.url.slice(0, -1)}x`; expect((await fetch(tampered)).status).toBe(403);
+    const expiredPayload = Buffer.from(JSON.stringify({ key: row.storage_key, expires: Date.now() - 1 })).toString("base64url");
+    expect((await fetch(`${baseUrl}/storage/v1/signed/object/${expiredPayload}.${sign(expiredPayload)}`)).status).toBe(403);
   });
 
   it("enforces reviewer, JEF and merSETA scope and preserves replacement history", async () => {
