@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jef-fgc-production",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./worker.ts",
+  "vars": {
+    "FGC_ENVIRONMENT": "production",
+    "FGC_APP_URL": "https://REPLACE-WITH-PRODUCTION-HOSTNAME",
+    "NEXT_PUBLIC_APP_URL": "https://REPLACE-WITH-PRODUCTION-HOSTNAME",
+    "FGC_EMAIL_PROVIDER": "resend",
+    "FGC_EMAIL_FROM": "REPLACE-WITH-PRODUCTION-SENDER",
+    "FGC_EVIDENCE_STORAGE_PROVIDER": "supabase",
+    "FGC_EVIDENCE_STORAGE_BUCKET": "REPLACE-WITH-PRODUCTION-PRIVATE-BUCKET",
+    "FGC_MAX_UPLOAD_BYTES": "10000000"
+  },
+  "assets": {"directory": "dist/client", "not_found_handling": "none", "binding": "ASSETS"},
+  "cache": {"enabled": true},
+  "images": {"binding": "IMAGES"},
+  "kv_namespaces": [{"binding": "VINEXT_KV_CACHE", "id": "REPLACE_WITH_PRODUCTION_KV_NAMESPACE_ID"}],
+  "hyperdrive": [{"binding": "HYPERDRIVE", "id": "REPLACE_WITH_PRODUCTION_HYPERDRIVE_ID"}]
+}

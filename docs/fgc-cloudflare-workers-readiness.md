@@ -79,8 +79,6 @@ Configure with `wrangler secret put`; never commit values.
 - `FGC_SESSION_SECRET`
 - `FGC_EMAIL_API_KEY`
 - `FGC_SUPABASE_SERVICE_ROLE_KEY`
-- `FGC_REPORT_SIGNING_SECRET`
-- `FGC_INTERNAL_WEBHOOK_SECRET`
 - `FGC_ADMIN_BOOTSTRAP_TOKEN`
 
 ### Non-Secret Worker Variables
@@ -96,6 +94,9 @@ Configure with `wrangler secret put`; never commit values.
 - `FGC_VERIFICATION_TOKEN_TTL_SECONDS`
 - `FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS`
 - `FGC_SUPABASE_URL`
+- `FGC_CF_KV_NAMESPACE_ID`
+- `FGC_CF_HYPERDRIVE_ID`
+- `FGC_CF_IMAGES_CONFIGURED`
 
 ### Migration-Only Secrets
 
@@ -106,6 +107,10 @@ If Hyperdrive is chosen, request-time database binding details belong in Cloudfl
 ## Secrets Requiring Rotation
 
 Secret-like values were found in the local untracked `.env.local`. Treat those local values as sensitive and rotate before any GitHub or Cloudflare deployment if there is any chance they were copied into logs, screenshots, chat, or commits.
+
+The committed base `wrangler.jsonc` is local-only and contains no Cloudflare resource identifiers. Use an untracked target-specific configuration derived from the staging or production template, with distinct KV and Hyperdrive identifiers. The gate rejects placeholders, missing bindings, public evidence mode, and URL cross-environment reuse.
+
+`FGC_REPORT_SIGNING_SECRET` and `FGC_INTERNAL_WEBHOOK_SECRET` are reserved and unused by the current runtime; they are intentionally excluded from active deployment configuration.
 
 The broader pattern scan also matched schema, seed, documentation and test files containing words such as `token`, `password_hash`, `storage_key`, `postgresql://` examples and placeholder keys. Those are not automatically credential leaks, but they should be reviewed before the first private GitHub push. Do not commit Python cache files under `tests/__pycache__`.
 

@@ -28,14 +28,19 @@ export function createSessionToken() {
   };
 }
 
+export function getSessionTtlSeconds() {
+  return getFgcRuntimeConfig().sessionTtlSeconds;
+}
+
 export async function setFgcSessionCookie(token: string) {
   const cookieStore = await cookies();
+  const { environment } = getFgcRuntimeConfig();
   cookieStore.set(fgcSessionCookieName, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: environment === "production" || environment === "staging",
     path: "/",
-    maxAge: 60 * 60 * 8
+    maxAge: getSessionTtlSeconds()
   });
 }
 

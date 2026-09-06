@@ -4,9 +4,9 @@ This runbook is a release boundary for the existing JEF Website and FGC App. It 
 
 ## A. Local Validation
 
-Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:db`, `npm run test:db:integration`, `npm run build`, `npm run cf:check`, `npm run build:vinext` and `npx tsc -p tsconfig.worker.json --noEmit`. The integration command creates a local PostgreSQL container, applies only migrations 001, 003, 005, 007, 008 and 009, excludes all seeds, and removes the container on exit.
+Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:db`, `npm run test:db:integration`, `npm run build`, `npm run cf:check`, `npm run build:vinext` and `npx tsc -p tsconfig.worker.json --noEmit`. The integration command creates a local PostgreSQL container, applies only migrations 001, 003, 005, 007, 008, 009 and 010, excludes all seeds, and removes the container on exit.
 
-Run `npm run deploy:check` only from a clean reviewed branch after staging verification. The gate refuses production mode and requires `FGC_STAGING_VERIFIED_AT` without accepting or printing its value.
+Run `npm run deploy:check` only from a clean reviewed branch after staging verification. The gate refuses production mode and requires `FGC_STAGING_VERIFIED_AT`, target-specific Cloudflare binding identifiers and explicit image-binding confirmation without accepting or printing secret values.
 
 ## B. GitHub Push and CI
 
@@ -20,7 +20,7 @@ The storage contract test must create one uniquely marked staging object, verify
 
 ## D. Cloudflare Staging Deployment
 
-Build from the reviewed commit with the configured compatibility date and `nodejs_compat`. Configure Hyperdrive, `VINEXT_KV_CACHE` and `IMAGES` bindings as available, and provide only the documented non-secret variables and Worker secrets. Keep staging `FGC_APP_URL` and `NEXT_PUBLIC_APP_URL` distinct from production. Do not use production database or storage credentials in preview.
+Build from the reviewed commit with the configured compatibility date and `nodejs_compat`. Use `wrangler.staging.example.jsonc` as the staging template and `wrangler.production.example.jsonc` only for a separately reviewed production release. Replace binding placeholders outside Git, and pass `FGC_CF_KV_NAMESPACE_ID`, `FGC_CF_HYPERDRIVE_ID` and `FGC_CF_IMAGES_CONFIGURED=true` only for the selected target. Keep staging `FGC_APP_URL` and `NEXT_PUBLIC_APP_URL` distinct from production. Do not use production database or storage credentials in preview.
 
 ## E. Staging Smoke Tests
 
@@ -56,6 +56,12 @@ Browser-safe: `NEXT_PUBLIC_APP_URL`.
 
 Non-secret Worker variables: `FGC_APP_URL`, `FGC_ENVIRONMENT`, `FGC_EMAIL_PROVIDER`, `FGC_EMAIL_FROM`, `FGC_EVIDENCE_STORAGE_PROVIDER`, `FGC_EVIDENCE_STORAGE_BUCKET`, `FGC_MAX_UPLOAD_BYTES`, `FGC_SESSION_TTL_SECONDS`, `FGC_VERIFICATION_TOKEN_TTL_SECONDS`, `FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS`, `FGC_SUPABASE_URL`.
 
-Worker secrets: `FGC_SESSION_SECRET`, `FGC_EMAIL_API_KEY`, `FGC_SUPABASE_SERVICE_ROLE_KEY`, `FGC_REPORT_SIGNING_SECRET`, `FGC_INTERNAL_WEBHOOK_SECRET`, `FGC_ADMIN_BOOTSTRAP_TOKEN`.
+Worker secrets: `FGC_SESSION_SECRET`, `FGC_EMAIL_API_KEY`, `FGC_SUPABASE_SERVICE_ROLE_KEY`, `FGC_ADMIN_BOOTSTRAP_TOKEN`.
 
 Migration-only: `DATABASE_URL`. It must never be exposed to browser code or configured as a Worker public variable.
+
+Cloudflare staging non-secret variables: `FGC_CF_KV_NAMESPACE_ID`, `FGC_CF_HYPERDRIVE_ID`, `FGC_CF_IMAGES_CONFIGURED`, `FGC_STAGING_APP_URL`, `FGC_PRODUCTION_APP_URL`.
+
+Reserved/unused: `FGC_REPORT_SIGNING_SECRET` and `FGC_INTERNAL_WEBHOOK_SECRET` are not consumed by the current application and must not be configured until a reviewed feature owns them. `FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS` is retained for the future password-reset token issuer; no password-reset issuer is currently implemented.
+
+The base `wrangler.jsonc` is local-only and deliberately contains no resource identifiers. The staging and production templates retain the binding names `VINEXT_KV_CACHE`, `HYPERDRIVE` and `IMAGES`, but placeholder identifiers must be replaced only in an untracked, target-specific copy. Staging and production identifiers must never be reused.

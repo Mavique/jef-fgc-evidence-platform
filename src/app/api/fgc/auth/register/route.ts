@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const passwordHash = await hashPassword(parsed.data.password);
     const verificationToken = createSecureToken();
     const verificationHash = hashToken(verificationToken);
-    const verificationUrl = `${config.appUrl.replace(/\/$/, "")}/api/fgc/auth/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${config.appUrl.replace(/\/$/, "")}/api/fgc/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
     const result = await withFgcTransaction(async (query) => {
       const role = await query<{ id: string }>("SELECT id::text FROM fgc.roles WHERE code = $1", [parsed.data.roleCode]);
@@ -125,15 +125,15 @@ export async function POST(request: Request) {
       await query(
         `
           INSERT INTO fgc.production_auth_tokens (user_id, purpose, token_hash, expires_at)
-          VALUES ($1, 'EMAIL_VERIFICATION', $2, now() + interval '24 hours')
+          VALUES ($1, 'EMAIL_VERIFICATION', $2, now() + ($3 * interval '1 second'))
         `,
-        [userId, verificationHash]
+        [userId, verificationHash, config.verificationTokenTtlSeconds]
       );
 
       await sendFgcMail({
         to: parsed.data.email,
         subject: "Verify your FGC Evidence Validation Platform account",
-        text: `Welcome to the FGC Evidence Validation Platform.\n\nVerify your email address here: ${verificationUrl}\n\nThis link expires in 24 hours.`
+        text: `Welcome to the FGC Evidence Validation Platform.\n\nVerify your email address here: ${verificationUrl}\n\nThis link expires in ${Math.round(config.verificationTokenTtlSeconds / 3600)} hours.`
       });
 
       return { userId };

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { FgcValidationError, jsonError, productionConfigError, routeError } from "@/lib/fgc/api";
 import { fgcQuery, withFgcTransaction } from "@/lib/fgc/db";
 import { getFgcRuntimeConfig } from "@/lib/fgc/env";
-import { hashPassword, passwordMeetsPolicy } from "@/lib/fgc/security";
+import { constantTimeEqual, hashPassword, passwordMeetsPolicy } from "@/lib/fgc/security";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     return jsonError(400, "FGC_INVALID_ADMIN_BOOTSTRAP", "Administrator bootstrap details are incomplete or invalid.", parsed.error.flatten());
   }
 
-  if (parsed.data.bootstrapToken !== configuredBootstrapToken) {
+  if (!constantTimeEqual(parsed.data.bootstrapToken, configuredBootstrapToken)) {
     return jsonError(403, "FGC_ADMIN_BOOTSTRAP_DENIED", "The one-time administrator bootstrap token was not accepted.");
   }
 

@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { getMissingProductionConfig } from "@/lib/fgc/env";
-import { createSecureToken, hashPassword, hashToken, passwordMeetsPolicy, verifyPassword } from "@/lib/fgc/security";
+import { fgcTtlBounds, getFgcRuntimeConfig, getFgcTtlSeconds, getMissingProductionConfig } from "@/lib/fgc/env";
+import { constantTimeEqual, createSecureToken, hashPassword, hashToken, passwordMeetsPolicy, verifyPassword } from "@/lib/fgc/security";
 
 const productionMigration = readFileSync(join(process.cwd(), "db", "fgc", "007_production_hardening_schema.sql"), "utf8");
 const lecturerSubmissionsSource = readFileSync(join(process.cwd(), "src", "lib", "fgc", "lecturer-submissions.ts"), "utf8");
@@ -33,6 +33,12 @@ describe("FGC production security helpers", () => {
     expect(hashToken(token)).toEqual(hashed);
   });
 
+  it("compares bootstrap secrets without a plain equality shortcut", () => {
+    expect(constantTimeEqual("test-bootstrap-token", "test-bootstrap-token")).toBe(true);
+    expect(constantTimeEqual("test-bootstrap-token", "wrong-bootstrap-token")).toBe(false);
+    expect(constantTimeEqual("short", "longer")).toBe(false);
+  });
+
   it("enforces the minimum production password policy", () => {
     expect(passwordMeetsPolicy("short")).toBe(false);
     expect(passwordMeetsPolicy("lowercase-only-password")).toBe(false);
@@ -44,6 +50,7 @@ describe("FGC production configuration", () => {
   it("reports missing infrastructure honestly", () => {
     expect(
       getMissingProductionConfig({
+        environment: "development",
         appUrl: "http://localhost:3000"
       })
     ).toEqual([
@@ -55,6 +62,22 @@ describe("FGC production configuration", () => {
       "FGC_EVIDENCE_STORAGE_PROVIDER",
       "FGC_EVIDENCE_STORAGE_BUCKET"
     ]);
+  });
+
+  it("uses bounded configurable TTLs and rejects unsafe deployment URLs", () => {
+    const original = { ...process.env };
+    process.env.FGC_SESSION_TTL_SECONDS = "1800";
+    process.env.FGC_VERIFICATION_TOKEN_TTL_SECONDS = "7200";
+    process.env.FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS = "3600";
+    expect(getFgcTtlSeconds()).toEqual({ session: 1800, verification: 7200, passwordReset: 3600 });
+    process.env.FGC_SESSION_TTL_SECONDS = "1";
+    expect(getFgcRuntimeConfig().sessionTtlSeconds).toBe(fgcTtlBounds.session.fallback);
+    process.env.FGC_ENVIRONMENT = "staging";
+    expect(getMissingProductionConfig(getFgcRuntimeConfig())).toEqual(expect.arrayContaining(["FGC_APP_URL_HTTPS", "FGC_APP_URL_PUBLIC_HOST"]));
+    for (const key of Object.keys(process.env)) {
+      if (original[key] === undefined) delete process.env[key];
+      else process.env[key] = original[key];
+    }
   });
 });
 
