@@ -159,6 +159,23 @@ function installDefaultDbMocks(options: { submissionStatus?: string; assignmentR
       });
     }
     if (sql.includes("FROM fgc.production_submission_versions")) return Promise.resolve({ rows: [{ submission_version_id: "66666666-6666-6666-6666-666666666666", response_value_id: "77777777-7777-7777-7777-777777777777" }] });
+    if (sql.includes("UPDATE fgc.evidence_files") && sql.includes("upload_status = 'COMPLETED'")) {
+      return Promise.resolve({
+        rows: [{
+          id: "88888888-8888-8888-8888-888888888888",
+          evidence_category: "LECTURER_SUPPORTING_EVIDENCE",
+          original_filename: "support.pdf",
+          mime_type: "application/pdf",
+          file_size_bytes: "6",
+          checksum_sha256: "abc123",
+          review_status: "PENDING_REVIEW",
+          upload_status: "COMPLETED",
+          scanner_status: "UNAVAILABLE",
+          evidence_version: options.replacement ? 2 : 1,
+          created_at: "2026-09-03T00:00:00.000Z"
+        }]
+      });
+    }
     if (sql.includes("INSERT INTO fgc.evidence_files")) {
       return Promise.resolve({
         rows: [
@@ -370,6 +387,8 @@ describe("FGC lecturer evidence upload", () => {
         });
       }
       if (sql.includes("FROM fgc.production_submission_versions")) return Promise.resolve({ rows: [] });
+      if (sql.includes("INSERT INTO fgc.evidence_files")) return Promise.resolve({ rows: [{ id: "88888888-8888-8888-8888-888888888888" }] });
+      if (sql.includes("UPDATE fgc.evidence_files") && sql.includes("upload_status = 'COMPLETED'")) return Promise.resolve({ rows: [{ id: "88888888-8888-8888-8888-888888888888", evidence_category: "RACE", original_filename: "support.pdf", mime_type: "application/pdf", file_size_bytes: "6", checksum_sha256: "abc123", review_status: "PENDING_REVIEW", upload_status: "COMPLETED", scanner_status: "UNAVAILABLE", evidence_version: 1, created_at: "2026-09-03T00:00:00.000Z" }] });
       return Promise.resolve({ rows: [] });
     });
     const { uploadLecturerEvidenceFile } = await import("@/lib/fgc/evidence-upload");
@@ -382,7 +401,8 @@ describe("FGC lecturer evidence upload", () => {
   it("cleans up storage if completed metadata persistence fails", async () => {
     installDefaultDbMocks();
     queryMock.mockImplementation((sql: string) => {
-      if (sql.includes("INSERT INTO fgc.evidence_files")) throw new Error("db failed");
+      if (sql.includes("INSERT INTO fgc.evidence_files")) return Promise.resolve({ rows: [{ id: "88888888-8888-8888-8888-888888888888" }] });
+      if (sql.includes("UPDATE fgc.evidence_files") && sql.includes("upload_status = 'COMPLETED'")) throw new Error("db failed");
       if (sql.includes("FROM fgc.form_assignments")) return Promise.resolve({ rows: [assignment] });
       if (sql.includes("FROM fgc.production_submissions")) return Promise.resolve({ rows: [submission] });
       if (sql.includes("FROM fgc.production_submission_versions")) return Promise.resolve({ rows: [] });
@@ -397,7 +417,8 @@ describe("FGC lecturer evidence upload", () => {
   it("audits storage cleanup failure after DB persistence failure", async () => {
     installDefaultDbMocks();
     queryMock.mockImplementation((sql: string) => {
-      if (sql.includes("INSERT INTO fgc.evidence_files")) throw new Error("db failed");
+      if (sql.includes("INSERT INTO fgc.evidence_files")) return Promise.resolve({ rows: [{ id: "88888888-8888-8888-8888-888888888888" }] });
+      if (sql.includes("UPDATE fgc.evidence_files") && sql.includes("upload_status = 'COMPLETED'")) throw new Error("db failed");
       if (sql.includes("FROM fgc.form_assignments")) return Promise.resolve({ rows: [assignment] });
       if (sql.includes("FROM fgc.production_submissions")) return Promise.resolve({ rows: [submission] });
       if (sql.includes("FROM fgc.production_submission_versions")) return Promise.resolve({ rows: [] });

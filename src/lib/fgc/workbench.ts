@@ -125,7 +125,18 @@ function scopeWhere(access: Access) {
       ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
       : { sql: "ps.college_id = $1", values: [role.collegeId] };
   }
-  if (access.access.accessState === "ASSESSOR_ACTIVE" || access.access.accessState === "MODERATOR_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "ASSESSOR_ACTIVE" || access.access.accessState === "MODERATOR_ACTIVE") {
+    return {
+      sql: `EXISTS (
+        SELECT 1
+        FROM fgc.review_assignments ra
+        WHERE ra.submission_id = ps.id
+          AND ra.assignee_user_id = $1
+          AND ra.status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED')
+      )`,
+      values: [access.user.id]
+    };
+  }
   if (access.access.accessState === "MERSETA_ACTIVE") {
     return { sql: mersetaScopeForAlias("ps"), values: [access.user.id] };
   }
@@ -557,9 +568,9 @@ function encodeStorageKey(storageKey: string) {
 export async function createFgcEvidenceFileViewUrl(access: Access, fileId: string) {
   assertWorkbench(access);
   const fileResult = await fgcQuery<{
-    id: string; submission_id: string | null; storage_provider: string; storage_bucket: string; storage_key: string; original_filename: string; mime_type: string;
+    id: string; submission_id: string | null; submission_version_id: string | null; storage_provider: string; storage_bucket: string; storage_key: string; original_filename: string; mime_type: string; confidentiality_classification: string;
   }>(`
-    SELECT id::text, submission_id::text, storage_provider, storage_bucket, storage_key, original_filename, mime_type
+    SELECT id::text, submission_id::text, submission_version_id::text, storage_provider, storage_bucket, storage_key, original_filename, mime_type, confidentiality_classification
     FROM fgc.evidence_files
     WHERE id = $1 AND deleted_at IS NULL AND upload_status = 'COMPLETED'
     LIMIT 1
@@ -567,6 +578,41 @@ export async function createFgcEvidenceFileViewUrl(access: Access, fileId: strin
   const file = fileResult.rows[0];
   if (!file?.submission_id) throw new FgcWorkbenchAccessError(404, "FGC_EVIDENCE_FILE_NOT_FOUND", "The selected evidence document was not found.");
   await assertSubmissionVisibleToAccess(access, file.submission_id);
+
+  if (access.access.accessState === "ASSESSOR_ACTIVE" || access.access.accessState === "MODERATOR_ACTIVE") {
+    const assignment = await fgcQuery<{ id: string }>(
+      `SELECT ra.id::text
+       FROM fgc.review_assignments ra
+       WHERE ra.submission_id = $1
+         AND ra.submission_version_id = $2
+         AND ra.assignee_user_id = $3
+         AND ra.status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED')
+       LIMIT 1`,
+      [file.submission_id, file.submission_version_id, access.user.id]
+    );
+    if (!assignment.rows[0]) throw new FgcWorkbenchAccessError(404, "FGC_EVIDENCE_FILE_NOT_FOUND", "The selected evidence document was not found for this assigned review version.");
+  }
+
+  if (access.access.accessState === "MERSETA_ACTIVE") {
+    const detailAccess = await fgcQuery<{ id: string }>(
+      `SELECT mas.id::text
+       FROM fgc.merseta_access_scopes mas
+       JOIN fgc.production_submissions ps ON ps.id = $2
+       WHERE mas.user_id = $1
+         AND mas.status = 'ACTIVE'
+         AND mas.valid_from <= now()
+         AND (mas.valid_until IS NULL OR mas.valid_until > now())
+         AND mas.evidence_detail_permission = 'DETAIL'
+         AND mas.tvet_college_id = ps.college_id
+         AND (mas.campus_id IS NULL OR mas.campus_id = ps.campus_id)
+         AND (mas.programme_id IS NULL OR mas.programme_id = ps.programme_id)
+         AND (mas.reporting_period_id IS NULL OR mas.reporting_period_id = ps.reporting_period_id)
+         AND $3 <> 'RESTRICTED'
+       LIMIT 1`,
+      [access.user.id, file.submission_id, file.confidentiality_classification]
+    );
+    if (!detailAccess.rows[0]) throw new FgcWorkbenchAccessError(403, "FGC_EVIDENCE_DETAIL_FORBIDDEN", "This evidence document is not available at the current merSETA confidentiality level.");
+  }
 
   const config = getFgcRuntimeConfig();
   if (file.storage_provider !== "supabase" || !config.supabaseUrl || !config.supabaseServiceRoleKey) {

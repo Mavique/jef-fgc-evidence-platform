@@ -23,6 +23,7 @@
     "test:db": "vitest run tests/unit/fgc-database-schema.test.ts tests/unit/fgc-production-hardening.test.ts",
     "test:db:integration": "node scripts/fgc/test-integration.mjs",
     "test:fgc:workflow": "node scripts/fgc/test-integration.mjs workflow",
+    "test:fgc:evidence": "node scripts/fgc/test-integration.mjs evidence",
     "deploy:check": "node scripts/fgc/deployment-gate.mjs",
     "format": "prettier --write .",
     "dev:vinext": "vinext dev --port 3001",

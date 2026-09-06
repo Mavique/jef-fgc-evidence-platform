@@ -140,7 +140,8 @@ describe("FGC production runtime data boundaries", () => {
       code: "FGC_SUBMISSION_NOT_VISIBLE"
     });
     const query = db.fgcQuery.mock.calls[0];
-    expect(String(query[0])).toContain("AND false");
+    expect(String(query[0])).toContain("ra.assignee_user_id = $1");
+    expect(String(query[0])).toContain("ra.status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED')");
   });
 
   it("returns 401 from the workbench API without fallback records", async () => {

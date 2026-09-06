@@ -5,7 +5,11 @@ import { join } from "node:path";
 import { projectRoot, migrationFiles } from "./config.mjs";
 
 const container = `fgc-pg-integration-${process.pid}-${Date.now()}`;
-const suite = process.argv[2] === "workflow" ? "tests/integration/fgc-workflow.integration.test.ts" : "tests/integration/fgc-db.integration.test.ts";
+const suite = process.argv[2] === "workflow"
+  ? "tests/integration/fgc-workflow.integration.test.ts"
+  : process.argv[2] === "evidence"
+    ? "tests/integration/fgc-evidence.integration.test.ts"
+    : "tests/integration/fgc-db.integration.test.ts";
 let port;
 
 function run(args, options = {}) {

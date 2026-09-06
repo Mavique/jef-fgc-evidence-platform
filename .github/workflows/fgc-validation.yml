@@ -49,3 +49,6 @@ jobs:
 
       - name: Disposable PostgreSQL application integration
         run: npm run test:db:integration
+
+      - name: Private evidence storage integration
+        run: npm run test:fgc:evidence

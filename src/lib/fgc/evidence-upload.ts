@@ -45,6 +45,7 @@ type AssignmentRow = {
   assigned_to: string;
   assignment_status: string;
   reporting_period_id: string | null;
+  programme_id: string | null;
   college_id: string | null;
   campus_id: string | null;
 };
@@ -54,6 +55,7 @@ type SubmissionRow = {
   status: string;
   current_version: number;
   reporting_period_id: string | null;
+  programme_id: string | null;
   college_id: string | null;
   campus_id: string | null;
 };
@@ -345,7 +347,7 @@ async function getAssignment(assignmentId: string, userId: string, query: FgcQue
   const result = await query<AssignmentRow>(
     `
       SELECT id::text, assigned_to::text, status AS assignment_status,
-        reporting_period_id::text, college_id::text, campus_id::text
+        reporting_period_id::text, programme_id::text, college_id::text, campus_id::text
       FROM fgc.form_assignments
       WHERE id = $1 AND assigned_to = $2
       LIMIT 1
@@ -358,7 +360,7 @@ async function getAssignment(assignmentId: string, userId: string, query: FgcQue
 async function getOrCreateEditableSubmission(assignment: AssignmentRow, userId: string, query: FgcQueryExecutor) {
   const current = await query<SubmissionRow>(
     `
-      SELECT id::text, status::text, current_version, reporting_period_id::text, college_id::text, campus_id::text
+      SELECT id::text, status::text, current_version, reporting_period_id::text, programme_id::text, college_id::text, campus_id::text
       FROM fgc.production_submissions
       WHERE assignment_id = $1
         AND submitted_by = $2
@@ -379,12 +381,12 @@ async function getOrCreateEditableSubmission(assignment: AssignmentRow, userId: 
   const created = await query<SubmissionRow>(
     `
       INSERT INTO fgc.production_submissions (
-        assignment_id, submitted_by, reporting_period_id, college_id, campus_id, status, current_version
+        assignment_id, submitted_by, reporting_period_id, programme_id, college_id, campus_id, status, current_version
       )
-      VALUES ($1, $2, $3, $4, $5, 'DRAFT', 0)
-      RETURNING id::text, status::text, current_version, reporting_period_id::text, college_id::text, campus_id::text
+      VALUES ($1, $2, $3, $4, $5, $6, 'DRAFT', 0)
+      RETURNING id::text, status::text, current_version, reporting_period_id::text, programme_id::text, college_id::text, campus_id::text
     `,
-    [assignment.id, userId, assignment.reporting_period_id, assignment.college_id, assignment.campus_id]
+    [assignment.id, userId, assignment.reporting_period_id, assignment.programme_id, assignment.college_id, assignment.campus_id]
   );
   await query("UPDATE fgc.form_assignments SET status = 'IN_PROGRESS' WHERE id = $1 AND status = 'ASSIGNED'", [assignment.id]);
   return created.rows[0];
@@ -526,6 +528,7 @@ export async function uploadLecturerEvidenceFile(access: Access, input: FgcEvide
   const checksumSha256 = await sha256Hex(arrayBuffer);
 
   let storageKey = "";
+  let evidenceId = "";
   try {
     const prepared = await withFgcTransaction(async (query) => {
       const assignment = await getAssignment(input.assignmentId, access.user.id, query);
@@ -564,10 +567,33 @@ export async function uploadLecturerEvidenceFile(access: Access, input: FgcEvide
         `,
         [access.user.id, submission.id, JSON.stringify({ assignmentId: input.assignmentId, filename: originalFilename, mimeType, fileSizeBytes: input.file.size, evidenceCategory, sectionCode: link.sectionCode, fieldCode: link.fieldCode, replacementForFileId: input.replacementForFileId ?? null })]
       );
-      return { assignment, submission, replacementFile, responseLink, storageKey: key, evidenceVersion: latestVersion };
+      const initiated = await query<{ id: string }>(
+        `
+          INSERT INTO fgc.evidence_files (
+            submission_id, uploaded_by, college_id, campus_id, evidence_category, original_filename,
+            stored_filename, storage_provider, storage_bucket, storage_key, mime_type, file_size_bytes,
+            checksum_sha256, document_date, reporting_period_id, description, confidentiality_classification,
+            review_status, replaced_file_id, submission_version_id, response_value_id, section_code, field_code,
+            upload_status, scanner_status, evidence_version
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, 'supabase', $8, $9, $10, $11, $12, $13::date, $14, $15, $16,
+            'PENDING_REVIEW', $17, $18, $19, $20, $21, 'INITIATED', 'UNAVAILABLE', $22)
+          RETURNING id::text
+        `,
+        [
+          submission.id, access.user.id, submission.college_id, submission.campus_id, evidenceCategory,
+          originalFilename, key.split("/").at(-1) ?? key, getFgcRuntimeConfig().evidenceStorageBucket,
+          key, mimeType, input.file.size, checksumSha256, documentDate, submission.reporting_period_id,
+          input.description?.trim() || null, confidentiality, replacementFile?.id ?? null,
+          responseLink.submissionVersionId, responseLink.responseValueId, link.sectionCode, link.fieldCode,
+          latestVersion
+        ]
+      );
+      return { assignment, submission, replacementFile, responseLink, storageKey: key, evidenceVersion: latestVersion, evidenceId: initiated.rows[0].id };
     });
 
     storageKey = prepared.storageKey;
+    evidenceId = prepared.evidenceId;
     await uploadToSupabaseStorage({ arrayBuffer, storageKey, contentType: mimeType });
 
     const inserted = await withFgcTransaction(async (query) => {
@@ -578,7 +604,6 @@ export async function uploadLecturerEvidenceFile(access: Access, input: FgcEvide
       if (submission.id !== prepared.submission.id) {
         throw new FgcEvidenceUploadError(409, "FGC_EVIDENCE_UPLOAD_STATE_CHANGED", "Submission state changed during upload. Please retry.");
       }
-      const responseLink = await getLatestResponseLink(submission.id, link.sectionCode, link.fieldCode, query);
       await assertNoDuplicateCompletedEvidence({ submissionId: submission.id, uploadedBy: access.user.id, evidenceCategory, checksumSha256 }, query);
       const replacement = input.replacementForFileId
         ? await query<ReplacementRow>(
@@ -599,71 +624,18 @@ export async function uploadLecturerEvidenceFile(access: Access, input: FgcEvide
       if (replacementFile?.replaced_by_file_id) {
         throw new FgcEvidenceUploadError(409, "FGC_EVIDENCE_ALREADY_REPLACED", "This evidence file already has a replacement version.");
       }
-      const evidenceVersion = Math.max(1, (replacementFile?.evidence_version ?? 0) + 1);
       const row = await query<InsertedEvidenceRow>(
         `
-          INSERT INTO fgc.evidence_files (
-            submission_id,
-            uploaded_by,
-            college_id,
-            campus_id,
-            evidence_category,
-            original_filename,
-            stored_filename,
-            storage_provider,
-            storage_bucket,
-            storage_key,
-            mime_type,
-            file_size_bytes,
-            checksum_sha256,
-            document_date,
-            reporting_period_id,
-            description,
-            confidentiality_classification,
-            review_status,
-            replaced_file_id,
-            submission_version_id,
-            response_value_id,
-            section_code,
-            field_code,
-            upload_status,
-            upload_completed_at,
-            scanner_status,
-            evidence_version
-          )
-          VALUES (
-            $1, $2, $3, $4, $5, $6, $7, 'supabase', $8, $9, $10, $11, $12, $13::date, $14, $15, $16,
-            'PENDING_REVIEW', $17, $18, $19, $20, $21, 'COMPLETED', now(), 'UNAVAILABLE', $22
-          )
+          UPDATE fgc.evidence_files
+          SET upload_status = 'COMPLETED', upload_completed_at = now()
+          WHERE id = $1 AND submission_id = $2 AND uploaded_by = $3 AND upload_status = 'INITIATED'
           RETURNING id::text, evidence_category, original_filename, mime_type, file_size_bytes::text, checksum_sha256,
             review_status::text, upload_status, scanner_status, evidence_version, created_at::text
         `,
-        [
-          submission.id,
-          access.user.id,
-          submission.college_id,
-          submission.campus_id,
-          evidenceCategory,
-          originalFilename,
-          storageKey.split("/").at(-1) ?? storageKey,
-          getFgcRuntimeConfig().evidenceStorageBucket,
-          storageKey,
-          mimeType,
-          input.file.size,
-          checksumSha256,
-          documentDate,
-          submission.reporting_period_id,
-          input.description?.trim() || null,
-          confidentiality,
-          replacementFile?.id ?? null,
-          responseLink.submissionVersionId,
-          responseLink.responseValueId,
-          link.sectionCode,
-          link.fieldCode,
-          evidenceVersion
-        ]
+        [evidenceId, submission.id, access.user.id]
       );
       const evidenceFile = row.rows[0];
+      if (!evidenceFile) throw new FgcEvidenceUploadError(409, "FGC_EVIDENCE_UPLOAD_STATE_CHANGED", "Evidence upload state changed before completion. Please retry.");
       if (replacementFile) {
         await query(
           "UPDATE fgc.evidence_files SET review_status = 'REPLACED', replaced_by_file_id = $2 WHERE id = $1",
@@ -674,7 +646,7 @@ export async function uploadLecturerEvidenceFile(access: Access, input: FgcEvide
             INSERT INTO fgc.production_audit_events (actor_user_id, actor_role, action, object_type, object_id, reason, metadata)
             VALUES ($1, 'LECTURER', 'REPLACE_EVIDENCE_FILE', 'evidence_file', $2, 'Lecturer uploaded a replacement evidence version.', $3::jsonb)
           `,
-          [access.user.id, evidenceFile.id, JSON.stringify({ previousFileId: replacementFile.id, submissionId: submission.id, evidenceVersion })]
+          [access.user.id, evidenceFile.id, JSON.stringify({ previousFileId: replacementFile.id, submissionId: submission.id, evidenceVersion: evidenceFile.evidence_version })]
         );
       }
       await query(
@@ -702,6 +674,12 @@ export async function uploadLecturerEvidenceFile(access: Access, input: FgcEvide
       viewUrl: `/api/fgc/evidence/files/${inserted.id}/download`
     };
   } catch (error) {
+    if (evidenceId) {
+      await fgcQuery(
+        "UPDATE fgc.evidence_files SET upload_status = 'FAILED', upload_failure_reason = $2 WHERE id = $1 AND upload_status <> 'COMPLETED'",
+        [evidenceId, error instanceof FgcEvidenceUploadError ? error.code : "FGC_EVIDENCE_UPLOAD_FAILED"]
+      ).catch(() => undefined);
+    }
     if (storageKey) {
       try {
         await deleteSupabaseObject(storageKey);
