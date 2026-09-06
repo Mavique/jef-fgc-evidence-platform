@@ -26,6 +26,13 @@ export function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+export function constantTimeEqual(left: string, right: string) {
+  const leftBytes = Buffer.from(left);
+  const rightBytes = Buffer.from(right);
+  if (leftBytes.length !== rightBytes.length) return false;
+  return timingSafeEqual(leftBytes, rightBytes);
+}
+
 export function passwordMeetsPolicy(password: string) {
   return password.length >= 12 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
 }

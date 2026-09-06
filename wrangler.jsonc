@@ -6,6 +6,11 @@
 		"nodejs_compat"
 	],
 	"main": "./worker.ts",
+	// This base config is local-only. Staging and production bindings are supplied
+	// through the environment-specific templates and deployment gate.
+	"vars": {
+		"FGC_ENVIRONMENT": "development"
+	},
 	"assets": {
 		"directory": "dist/client",
 		"not_found_handling": "none",
@@ -17,16 +22,6 @@
 	"images": {
 		"binding": "IMAGES"
 	},
-	"kv_namespaces": [
-		{
-			"binding": "VINEXT_KV_CACHE",
-			"id": "82293750e5a14043809f4ef9c267937d"
-		}
-	],
-	"hyperdrive": [
-		{
-			"binding": "HYPERDRIVE",
-			"id": "43257d70cdaf438888c9f9db80ad3a22"
-		}
-	]
+	"kv_namespaces": [],
+	"hyperdrive": []
 }

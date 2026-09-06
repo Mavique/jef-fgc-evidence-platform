@@ -84,12 +84,13 @@ export async function POST(request: Request) {
     }
 
     const session = createSessionToken();
+    const sessionTtlSeconds = config.sessionTtlSeconds;
     await fgcQuery(
       `
         INSERT INTO fgc.production_sessions (user_id, session_hash, expires_at)
-        VALUES ($1, $2, now() + interval '8 hours')
+        VALUES ($1, $2, now() + ($3 * interval '1 second'))
       `,
-      [row.id, session.sessionHash]
+      [row.id, session.sessionHash, sessionTtlSeconds]
     );
 
     await fgcQuery(
