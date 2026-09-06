@@ -1,5 +1,6 @@
 import { fgcQuery } from "@/lib/fgc/db";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
+import { mersetaAffiliatedUserScope, mersetaScopeForAlias } from "@/lib/fgc/merseta-scope";
 
 type ResolvedProductionAccess = Extract<FgcCurrentUserResult, { ok: true }>;
 
@@ -64,7 +65,8 @@ function userWhere(access: ResolvedProductionAccess) {
       ? { sql: "u.deleted_at IS NULL AND EXISTS (SELECT 1 FROM fgc.production_role_assignments scoped_pra WHERE scoped_pra.user_id = u.id AND scoped_pra.tvet_college_id = $1 AND scoped_pra.campus_id = $2)", values: [role.collegeId, role.campusId] }
       : { sql: "u.deleted_at IS NULL AND EXISTS (SELECT 1 FROM fgc.production_role_assignments scoped_pra WHERE scoped_pra.user_id = u.id AND scoped_pra.tvet_college_id = $1)", values: [role.collegeId] };
   }
-  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+  if (access.access.accessState === "MERSETA_ACTIVE") return { sql: `${mersetaAffiliatedUserScope()} AND u.deleted_at IS NULL`, values: [access.user.id] };
+  if (access.access.accessState === "COLLEGE_ACTIVE") {
     const role = access.access.activeRole;
     if (!role?.collegeId) return { sql: "false", values: [] as string[] };
     return role.campusId
@@ -83,7 +85,8 @@ function roleWhere(access: ResolvedProductionAccess) {
       ? { sql: "pra.tvet_college_id = $1 AND pra.campus_id = $2", values: [role.collegeId, role.campusId] }
       : { sql: "pra.tvet_college_id = $1", values: [role.collegeId] };
   }
-  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+  if (access.access.accessState === "MERSETA_ACTIVE") return { sql: mersetaScopeForAlias("pra", "$1", { programme: false, reportingPeriod: false, collegeColumn: "pra.tvet_college_id" }), values: [access.user.id] };
+  if (access.access.accessState === "COLLEGE_ACTIVE") {
     const role = access.access.activeRole;
     if (!role?.collegeId) return { sql: "false", values: [] as string[] };
     return role.campusId
@@ -103,7 +106,8 @@ function assignmentWhere(access: ResolvedProductionAccess) {
       : { sql: "fa.college_id = $1", values: [role.collegeId] };
   }
   if (access.access.accessState === "LECTURER_ACTIVE") return { sql: "fa.assigned_to = $1", values: [access.user.id] };
-  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+  if (access.access.accessState === "MERSETA_ACTIVE") return { sql: mersetaScopeForAlias("fa", "$1", { programme: false }), values: [access.user.id] };
+  if (access.access.accessState === "COLLEGE_ACTIVE") {
     const role = access.access.activeRole;
     if (!role?.collegeId) return { sql: "false", values: [] as string[] };
     return role.campusId
@@ -123,7 +127,8 @@ function submissionWhere(access: ResolvedProductionAccess) {
       : { sql: "ps.college_id = $1", values: [role.collegeId] };
   }
   if (access.access.accessState === "LECTURER_ACTIVE") return { sql: "ps.submitted_by = $1", values: [access.user.id] };
-  if (access.access.accessState === "COLLEGE_ACTIVE" || access.access.accessState === "MERSETA_ACTIVE") {
+  if (access.access.accessState === "MERSETA_ACTIVE") return { sql: mersetaScopeForAlias("ps"), values: [access.user.id] };
+  if (access.access.accessState === "COLLEGE_ACTIVE") {
     const role = access.access.activeRole;
     if (!role?.collegeId) return { sql: "false", values: [] as string[] };
     return role.campusId

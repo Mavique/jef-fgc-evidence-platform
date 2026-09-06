@@ -5,6 +5,7 @@ import { createSessionToken } from "@/lib/fgc/session";
 import { resolveFgcCurrentUserFromToken } from "@/lib/fgc/current-user";
 import { fieldKey, fgcLecturerModules, type FgcLecturerDraftValues } from "@/lib/fgc/lecturer-form";
 import { getLecturerFormState, saveLecturerDraft, submitLecturerForm } from "@/lib/fgc/lecturer-submissions";
+import { assertSubmissionVisibleToAccess, getFgcRoleWorkbench, generateFgcWorkbenchReport } from "@/lib/fgc/workbench";
 import {
   assignReviewCase,
   finalizeModeration,
@@ -45,7 +46,8 @@ const ids = {
   assignmentMulti: "11111111-1111-4111-8111-111111111172",
   selfSubmission: "11111111-1111-4111-8111-111111111173",
   selfVersion: "11111111-1111-4111-8111-111111111174",
-  rollbackAssignment: "11111111-1111-4111-8111-111111111175"
+  rollbackAssignment: "11111111-1111-4111-8111-111111111175",
+  mersetaScope: "11111111-1111-4111-8111-111111111176"
 } as const;
 
 async function query<T extends QueryResultRow = QueryResultRow>(sql: string, values: unknown[] = []): Promise<QueryResult<T>> {
@@ -82,6 +84,8 @@ describe("authenticated FGC workflow against disposable PostgreSQL", () => {
   let assessorAccess: Extract<Awaited<ReturnType<typeof accessFor>>, { ok: true }>;
   let moderatorAccess: Extract<Awaited<ReturnType<typeof accessFor>>, { ok: true }>;
   let otherAssessorAccess: Extract<Awaited<ReturnType<typeof accessFor>>, { ok: true }>;
+  let mersetaAccess: Extract<Awaited<ReturnType<typeof accessFor>>, { ok: true }>;
+  let outOfScopeMersetaAccess: Extract<Awaited<ReturnType<typeof accessFor>>, { ok: true }>;
   let submissionId: string;
   let versionId: string;
   let assessorAssignmentId: string;
@@ -125,18 +129,20 @@ describe("authenticated FGC workflow against disposable PostgreSQL", () => {
         ('${ids.mersetaOther}', '${ids.roleMerseta}', '${ids.organisation}', '${ids.collegeOther}', NULL, 'APPROVED', now()),
         ('${ids.multiRole}', '${ids.roleLecturer}', '${ids.organisation}', '${ids.college}', '${ids.campus}', 'APPROVED', now()),
         ('${ids.multiRole}', '${ids.roleAssessor}', '${ids.organisation}', '${ids.college}', '${ids.campus}', 'APPROVED', now());
-      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, college_id, campus_id, status)
-      VALUES ('${ids.assignment}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
-      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, college_id, campus_id, status)
-      VALUES ('${ids.assignmentOther}', '${ids.template}', '${ids.lecturerOther}', '${ids.jef}', '${ids.period}', '${ids.collegeOther}', '${ids.campusOther}', 'ASSIGNED');
-      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, college_id, campus_id, status)
-      VALUES ('${ids.assignmentMulti}', '${ids.template}', '${ids.multiRole}', '${ids.jef}', '${ids.period}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
+      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, programme_id, college_id, campus_id, status)
+      VALUES ('${ids.assignment}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
+      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, programme_id, college_id, campus_id, status)
+      VALUES ('${ids.assignmentOther}', '${ids.template}', '${ids.lecturerOther}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.collegeOther}', '${ids.campusOther}', 'ASSIGNED');
+      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, programme_id, college_id, campus_id, status)
+      VALUES ('${ids.assignmentMulti}', '${ids.template}', '${ids.multiRole}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
       INSERT INTO fgc.production_submissions (id, assignment_id, submitted_by, reporting_period_id, college_id, campus_id, status, current_version, locked_at, submitted_at)
       VALUES ('${ids.selfSubmission}', '${ids.assignmentMulti}', '${ids.multiRole}', '${ids.period}', '${ids.college}', '${ids.campus}', 'SUBMITTED_BY_LECTURER', 1, now(), now());
       INSERT INTO fgc.production_submission_versions (id, submission_id, version, status_at_snapshot, snapshot, snapshot_checksum, created_by)
       VALUES ('${ids.selfVersion}', '${ids.selfSubmission}', 1, 'SUBMITTED_BY_LECTURER', '{"values":{}}'::jsonb, 'integration-self-review', '${ids.multiRole}');
-      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, college_id, campus_id, status)
-      VALUES ('${ids.rollbackAssignment}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
+      INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, programme_id, college_id, campus_id, status)
+      VALUES ('${ids.rollbackAssignment}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
+      INSERT INTO fgc.merseta_access_scopes (id, user_id, tvet_college_id, campus_id, programme_id, reporting_period_id, evidence_detail_permission, granted_by, reason)
+      VALUES ('${ids.mersetaScope}', '${ids.merseta}', '${ids.college}', '${ids.campus}', '${ids.programme}', '${ids.period}', 'METADATA', '${ids.jef}', 'Synthetic governed merSETA scope');
     `);
     lecturerAccess = await accessFor(ids.lecturer, "lecturer");
     jefAccess = await accessFor(ids.jef, "jef");
@@ -144,6 +150,8 @@ describe("authenticated FGC workflow against disposable PostgreSQL", () => {
     assessorAccess = await accessFor(ids.assessor, "assessor");
     moderatorAccess = await accessFor(ids.moderator, "moderator");
     otherAssessorAccess = await accessFor(ids.multiRole, "multi-role");
+    mersetaAccess = await accessFor(ids.merseta, "merseta");
+    outOfScopeMersetaAccess = await accessFor(ids.mersetaOther, "out-of-scope-merseta");
     values = completeValues();
   });
 
@@ -276,5 +284,27 @@ describe("authenticated FGC workflow against disposable PostgreSQL", () => {
     } finally {
       delete process.env.FGC_TEST_FAULT_POINT;
     }
+  });
+
+  it("propagates the canonical moderated submission into scoped merSETA metrics and reports", async () => {
+    const merSETAWorkbench = await getFgcRoleWorkbench(mersetaAccess);
+    expect(merSETAWorkbench.readOnly).toBe(true);
+    expect(merSETAWorkbench.submissions.map((row) => row.id)).toContain(submissionId);
+    expect(merSETAWorkbench.submissions.find((row) => row.id === submissionId)?.currentVersion).toBe(2);
+    expect(merSETAWorkbench.metrics.metrics.map((metric) => metric.id)).toContain("submitted-evidence-packs");
+    const report = await generateFgcWorkbenchReport(jefAccess, "MODERATED");
+    const afterReport = await getFgcRoleWorkbench(mersetaAccess);
+    const visibleReport = afterReport.reports.find((row) => row.id === report.id);
+    expect(visibleReport?.status).toBe("READY");
+    const reportRecord = await query<{ source_snapshot: { notice?: string }; source_record_refs: Array<{ submissionId: string; submissionVersion: number }>; version: number }>("SELECT source_snapshot, source_record_refs, version FROM fgc.generated_reports WHERE id = $1", [report.id]);
+    expect(reportRecord.rows[0].source_snapshot.notice).toBe("PRELIMINARY – BASED ON LECTURER-SUBMITTED INFORMATION AND CURRENT REVIEW STATUS");
+    expect(reportRecord.rows[0].source_record_refs).toContainEqual({ submissionId, submissionVersion: 2 });
+    const regenerated = await generateFgcWorkbenchReport(jefAccess, "MODERATED");
+    expect(regenerated.id).not.toBe(report.id);
+    expect((await query<{ status: string; version: number; report_version_of: string | null }>("SELECT status::text, version, report_version_of::text FROM fgc.generated_reports WHERE id = $1", [report.id])).rows[0]).toMatchObject({ status: "SUPERSEDED", version: 1, report_version_of: null });
+    expect((await query<{ version: number; report_version_of: string | null }>("SELECT version, report_version_of::text FROM fgc.generated_reports WHERE id = $1", [regenerated.id])).rows[0]).toMatchObject({ version: 2, report_version_of: report.id });
+    const outOfScopeWorkbench = await getFgcRoleWorkbench(outOfScopeMersetaAccess);
+    expect(outOfScopeWorkbench.submissions).toHaveLength(0);
+    await expect(assertSubmissionVisibleToAccess(outOfScopeMersetaAccess, submissionId)).rejects.toMatchObject({ status: 404, code: "FGC_SUBMISSION_NOT_VISIBLE" });
   });
 });

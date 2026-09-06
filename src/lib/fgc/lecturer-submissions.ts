@@ -17,6 +17,7 @@ type AssignmentRow = {
   due_at: string | null;
   reporting_period_id: string | null;
   reporting_period_name: string | null;
+  programme_id: string | null;
   college_id: string | null;
   college_name: string | null;
   campus_id: string | null;
@@ -120,6 +121,7 @@ async function getAssignmentForUser(assignmentId: string, userId: string, query:
         fa.due_at::text,
         fa.reporting_period_id::text,
         rp.name AS reporting_period_name,
+        fa.programme_id::text,
         fa.college_id::text,
         c.official_name AS college_name,
         fa.campus_id::text,
@@ -287,15 +289,16 @@ async function saveLecturerDraftWithinTransaction(
             assignment_id,
             submitted_by,
             reporting_period_id,
+            programme_id,
             college_id,
             campus_id,
             status,
             current_version
           )
-          VALUES ($1, $2, $3, $4, $5, 'DRAFT', 0)
+          VALUES ($1, $2, $3, $4, $5, $6, 'DRAFT', 0)
           RETURNING id::text, status::text, current_version, updated_at::text, submitted_at::text
         `,
-        [assignment.id, access.user.id, assignment.reporting_period_id, assignment.college_id, assignment.campus_id]
+        [assignment.id, access.user.id, assignment.reporting_period_id, assignment.programme_id, assignment.college_id, assignment.campus_id]
       );
       submission = created.rows[0];
     }

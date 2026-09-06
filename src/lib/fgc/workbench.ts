@@ -5,6 +5,7 @@ import { getFgcRuntimeConfig } from "@/lib/fgc/env";
 import { fieldKey, fgcLecturerModules } from "@/lib/fgc/lecturer-form";
 import { getFgcProductionMetricsSummary } from "@/lib/fgc/metrics";
 import { listReviewQueue, type ReviewAssignmentType } from "@/lib/fgc/review-workflow";
+import { mersetaScopeForAlias } from "@/lib/fgc/merseta-scope";
 
 type Access = Extract<FgcCurrentUserResult, { ok: true }>;
 type FgcQueryExecutor = typeof fgcQuery;
@@ -107,6 +108,8 @@ function checksum(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
+const preliminaryReportNotice = "PRELIMINARY – BASED ON LECTURER-SUBMITTED INFORMATION AND CURRENT REVIEW STATUS";
+
 function assertWorkbench(access: Access) {
   if (!access.access.canOpenProtectedWorkspace) {
     throw new FgcWorkbenchAccessError(403, "FGC_WORKBENCH_FORBIDDEN", "An approved production role is required.");
@@ -124,11 +127,7 @@ function scopeWhere(access: Access) {
   }
   if (access.access.accessState === "ASSESSOR_ACTIVE" || access.access.accessState === "MODERATOR_ACTIVE") return { sql: "false", values: [] as string[] };
   if (access.access.accessState === "MERSETA_ACTIVE") {
-    const role = access.access.activeRole;
-    if (!role?.collegeId) return { sql: "false", values: [] as string[] };
-    return role.campusId
-      ? { sql: "ps.college_id = $1 AND ps.campus_id = $2", values: [role.collegeId, role.campusId] }
-      : { sql: "ps.college_id = $1", values: [role.collegeId] };
+    return { sql: mersetaScopeForAlias("ps"), values: [access.user.id] };
   }
   if (access.access.accessState === "JEF_ADMIN_ACTIVE") {
     const role = access.access.activeRole;
@@ -148,6 +147,17 @@ function generatedReportWhere(access: Access) {
     return { sql: "gr.generated_by = $1", values: [access.user.id] };
   }
   if (access.access.accessState === "PLATFORM_SUPER_ACTIVE") return { sql: "false", values: [] as string[] };
+  if (access.access.accessState === "MERSETA_ACTIVE") {
+    return {
+      sql: `EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(gr.source_record_refs) source_ref
+        JOIN fgc.production_submissions scoped_ps ON scoped_ps.id = (source_ref->>'submissionId')::uuid
+        WHERE ${mersetaScopeForAlias("scoped_ps")}
+      )`,
+      values: [access.user.id]
+    };
+  }
   return { sql: "gr.generated_by = $1", values: [access.user.id] };
 }
 
@@ -601,6 +611,7 @@ export async function generateFgcWorkbenchReport(access: Access, reportType: str
   const workbench = await getFgcRoleWorkbench(access);
   const identifier = `FGC-${reportType.toUpperCase().replace(/[^A-Z0-9]+/g, "-")}-${Date.now()}`;
   const snapshot = {
+    notice: preliminaryReportNotice,
     generatedAt: new Date().toISOString(),
     generatedBy: access.user.email,
     scope: workbench.scope,
@@ -612,16 +623,28 @@ export async function generateFgcWorkbenchReport(access: Access, reportType: str
       completionPercent: submission.completionPercent,
       sourceStatus: submission.sourceStatus
     })),
-    limitations: "Preliminary report generated from current production workflow records. Self-reported values remain distinct from verified evidence."
+    limitations: "Preliminary report generated from current production workflow records. Self-reported values remain distinct from verified evidence.",
+    sourceRecordRefs: workbench.submissions.map((submission) => ({ submissionId: submission.id, submissionVersion: submission.currentVersion }))
   };
-  const inserted = await fgcQuery<{ id: string }>(`
-    INSERT INTO fgc.generated_reports (report_identifier, report_type, scope, filters, source_snapshot, snapshot_checksum, status, generated_by, completed_at)
-    VALUES ($1, $2, $3, '{}'::jsonb, $4::jsonb, $5, 'READY', $6, now())
-    RETURNING id::text
-  `, [identifier, reportType, workbench.scope.label, JSON.stringify(snapshot), checksum(snapshot), access.user.id]);
-  await fgcQuery(`
-    INSERT INTO fgc.production_audit_events (actor_user_id, actor_role, action, object_type, object_id, reason, metadata)
-    VALUES ($1, $2, 'GENERATE_FGC_REPORT', 'generated_report', $3, 'Generated report from shared FGC workbench metrics.', $4::jsonb)
-  `, [access.user.id, access.access.activeRole?.code ?? access.access.accessState, inserted.rows[0].id, JSON.stringify({ reportType, identifier })]);
-  return { id: inserted.rows[0].id, identifier, reportType };
+  return withFgcTransaction(async (query) => {
+    const previous = await query<{ id: string; version: number }>(
+      "SELECT id::text, version FROM fgc.generated_reports WHERE generated_by = $1 AND report_type = $2 AND scope = $3 ORDER BY version DESC, created_at DESC LIMIT 1 FOR UPDATE",
+      [access.user.id, reportType, workbench.scope.label]
+    );
+    const previousReport = previous.rows[0];
+    const sourceRecordRefs = snapshot.sourceRecordRefs;
+    const inserted = await query<{ id: string }>(`
+      INSERT INTO fgc.generated_reports (report_identifier, report_type, scope, reporting_period_id, filters, source_snapshot, snapshot_checksum, status, version, report_version_of, generated_by, output_format, source_record_refs, completed_at)
+      VALUES ($1, $2, $3, (SELECT ps.reporting_period_id FROM fgc.production_submissions ps WHERE ps.id = $4), $5::jsonb, $6::jsonb, $7, 'READY', $8, $9, $10, 'JSON_SNAPSHOT', $11::jsonb, now())
+      RETURNING id::text
+    `, [identifier, reportType, workbench.scope.label, sourceRecordRefs[0]?.submissionId ?? null, JSON.stringify({ sourceRecordIds: sourceRecordRefs.map((ref) => ref.submissionId) }), JSON.stringify(snapshot), checksum(snapshot), (previousReport?.version ?? 0) + 1, previousReport?.id ?? null, access.user.id, JSON.stringify(sourceRecordRefs)]);
+    if (previousReport) {
+      await query("UPDATE fgc.generated_reports SET status = 'SUPERSEDED' WHERE id = $1 AND status = 'READY'", [previousReport.id]);
+    }
+    await query(`
+      INSERT INTO fgc.production_audit_events (actor_user_id, actor_role, action, object_type, object_id, reason, metadata)
+      VALUES ($1, $2, 'GENERATE_FGC_REPORT', 'generated_report', $3, 'Generated report from shared FGC workbench metrics.', $4::jsonb)
+    `, [access.user.id, access.access.activeRole?.code ?? access.access.accessState, inserted.rows[0].id, JSON.stringify({ reportType, identifier, reportVersion: (previousReport?.version ?? 0) + 1, supersedes: previousReport?.id ?? null })]);
+    return { id: inserted.rows[0].id, identifier, reportType };
+  });
 }

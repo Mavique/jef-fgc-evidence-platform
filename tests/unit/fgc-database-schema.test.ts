@@ -11,6 +11,7 @@ const curriculumSeed = readFileSync(join(root, "db", "fgc", "006_seed_curriculum
 const productionSchema = readFileSync(join(root, "db", "fgc", "007_production_hardening_schema.sql"), "utf8");
 const evidenceUploadLifecycleMigration = readFileSync(join(root, "db", "fgc", "008_evidence_upload_lifecycle.sql"), "utf8");
 const reviewAssignmentMigration = readFileSync(join(root, "db", "fgc", "009_review_assignment_workflows.sql"), "utf8");
+const mersetaReportingMigration = readFileSync(join(root, "db", "fgc", "010_merseta_reporting_scope.sql"), "utf8");
 const migrationConfig = readFileSync(join(root, "scripts", "fgc", "config.mjs"), "utf8");
 
 describe("FGC PostgreSQL schema", () => {
@@ -140,6 +141,17 @@ describe("FGC review assignment workflow migration", () => {
     expect(migrationList).toContain('"009_review_assignment_workflows.sql"');
     expect(migrationList.indexOf("008_evidence_upload_lifecycle.sql")).toBeLessThan(migrationList.indexOf("009_review_assignment_workflows.sql"));
     expect(migrationList).not.toContain("002_seed_demo.sql");
+  });
+
+  it("defines explicit merSETA scope and immutable report lineage", () => {
+    expect(mersetaReportingMigration).toContain("CREATE TABLE IF NOT EXISTS fgc.merseta_access_scopes");
+    expect(mersetaReportingMigration).toContain("tvet_college_id uuid NOT NULL REFERENCES fgc.tvet_colleges(id)");
+    expect(mersetaReportingMigration).toContain("programme_id uuid REFERENCES fgc.curriculum_programmes(id)");
+    expect(mersetaReportingMigration).toContain("reporting_period_id uuid REFERENCES fgc.reporting_periods(id)");
+    expect(mersetaReportingMigration).toContain("evidence_detail_permission text NOT NULL");
+    expect(mersetaReportingMigration).toContain("ADD COLUMN IF NOT EXISTS submission_version_id uuid");
+    expect(mersetaReportingMigration).toContain("report_version_of uuid");
+    expect(mersetaReportingMigration).toContain("ON DELETE RESTRICT");
   });
 });
 

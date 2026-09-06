@@ -226,7 +226,9 @@ describe("FGC production runtime data boundaries", () => {
 
     expect(workbench.readOnly).toBe(true);
     const submissionQuery = db.fgcQuery.mock.calls.find(([sql]) => String(sql).includes("SELECT ps.id::text"));
-    expect(String(submissionQuery?.[0])).toContain("WHERE false");
+    expect(String(submissionQuery?.[0])).toContain("FROM fgc.merseta_access_scopes");
+    expect(String(submissionQuery?.[0])).toContain("mas.status = 'ACTIVE'");
+    expect(String(submissionQuery?.[0])).toContain("mas.valid_from <= now()");
     await expect(assertSubmissionVisibleToAccess(merseta, "submission-3")).rejects.toMatchObject({ code: "FGC_SUBMISSION_NOT_VISIBLE" });
   });
 

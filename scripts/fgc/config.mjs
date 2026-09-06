@@ -46,7 +46,8 @@ export const migrationFiles = [
   "005_curriculum_master_schema.sql",
   "007_production_hardening_schema.sql",
   "008_evidence_upload_lifecycle.sql",
-  "009_review_assignment_workflows.sql"
+  "009_review_assignment_workflows.sql",
+  "010_merseta_reporting_scope.sql"
 ];
 
 export const referenceSeedFiles = [
