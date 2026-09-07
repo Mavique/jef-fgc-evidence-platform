@@ -1,5 +1,7 @@
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 
 describe("FGC deployment gate", () => {
@@ -71,5 +73,45 @@ describe("FGC deployment gate", () => {
 
     expect(result.status).toBe(2);
     expect(`${result.stdout}${result.stderr}`).toContain("must be a real target binding identifier");
+  });
+
+  it("accepts an explicitly disabled optional Images binding", () => {
+    const configured = "a".repeat(32);
+    const temporaryRepo = mkdtempSync(join(tmpdir(), "fgc-deployment-gate-"));
+    try {
+      const init = spawnSync("git", ["init", "-b", "staging-gate-test"], { cwd: temporaryRepo, encoding: "utf8" });
+      expect(init.status).toBe(0);
+      const result = spawnSync(process.execPath, [join(process.cwd(), "scripts", "fgc", "deployment-gate.mjs")], {
+        cwd: temporaryRepo,
+        encoding: "utf8",
+        env: {
+        NODE_ENV: "test",
+        PATH: process.env.PATH,
+        FGC_EXPECTED_BRANCH: "staging-gate-test",
+        FGC_STAGING_VERIFIED_AT: "test-only",
+        FGC_ENVIRONMENT: "staging",
+        FGC_APP_URL: "https://staging.example.invalid",
+        FGC_EMAIL_PROVIDER: "resend",
+        FGC_EMAIL_FROM: "staging@example.invalid",
+        FGC_EVIDENCE_STORAGE_PROVIDER: "supabase",
+        FGC_EVIDENCE_STORAGE_BUCKET: "staging-evidence",
+        FGC_SUPABASE_URL: "https://staging.example.invalid",
+        FGC_SESSION_SECRET: configured,
+        FGC_EMAIL_API_KEY: configured,
+        FGC_SUPABASE_SERVICE_ROLE_KEY: configured,
+        FGC_SESSION_TTL_SECONDS: "1800",
+        FGC_VERIFICATION_TOKEN_TTL_SECONDS: "7200",
+        FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS: "3600",
+        FGC_CF_KV_NAMESPACE_ID: configured,
+        FGC_CF_HYPERDRIVE_ID: "b".repeat(32),
+        FGC_CF_IMAGES_CONFIGURED: "false"
+        }
+      });
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe("");
+    } finally {
+      rmSync(temporaryRepo, { recursive: true, force: true });
+    }
   });
 });

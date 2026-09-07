@@ -17,10 +17,11 @@ const requiredRuntimeVariables = [
   "FGC_EMAIL_API_KEY",
   "FGC_SUPABASE_SERVICE_ROLE_KEY",
   "FGC_SESSION_TTL_SECONDS",
-  "FGC_VERIFICATION_TOKEN_TTL_SECONDS"
+  "FGC_VERIFICATION_TOKEN_TTL_SECONDS",
+  "FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS"
 ];
 
-const resourceVariables = ["FGC_CF_KV_NAMESPACE_ID", "FGC_CF_HYPERDRIVE_ID", "FGC_CF_IMAGES_CONFIGURED"];
+const resourceVariables = ["FGC_CF_KV_NAMESPACE_ID", "FGC_CF_HYPERDRIVE_ID"];
 
 function commandOutput(command, args) {
   const result = spawnSync(command, args, { encoding: "utf8" });
@@ -41,7 +42,7 @@ const missingRuntimeVariables = requiredRuntimeVariables.filter((name) => !proce
 if (missingRuntimeVariables.length) failures.push(`required runtime configuration is missing: ${missingRuntimeVariables.join(", ")}`);
 const missingResourceVariables = resourceVariables.filter((name) => !process.env[name]);
 if (missingResourceVariables.length) failures.push(`environment-specific Cloudflare bindings are missing: ${missingResourceVariables.join(", ")}`);
-if (process.env.FGC_CF_IMAGES_CONFIGURED && process.env.FGC_CF_IMAGES_CONFIGURED !== "true") failures.push("the IMAGES binding must be explicitly confirmed for the target environment");
+if (process.env.FGC_CF_IMAGES_CONFIGURED && !["true", "false"].includes(process.env.FGC_CF_IMAGES_CONFIGURED)) failures.push("FGC_CF_IMAGES_CONFIGURED must be explicitly true or false");
 for (const name of ["FGC_CF_KV_NAMESPACE_ID", "FGC_CF_HYPERDRIVE_ID"]) {
   const value = process.env[name];
   if (value && (!/^[0-9a-f]{32}$/i.test(value) || /REPLACE|PLACEHOLDER|example/i.test(value))) failures.push(`${name} must be a real target binding identifier, not a placeholder`);
