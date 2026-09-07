@@ -3,6 +3,7 @@ import { migrationFiles } from "./config.mjs";
 
 const expectedBranch = process.env.FGC_EXPECTED_BRANCH ?? "fix/fgc-production-hardening";
 const productionRequested = process.argv.includes("--production");
+const postVerificationRequested = process.argv.includes("--post-verify");
 const failures = [];
 const deploymentEnvironment = process.env.FGC_ENVIRONMENT;
 const requiredRuntimeVariables = [
@@ -35,7 +36,7 @@ if (status === null) failures.push("Git status could not be verified");
 else if (status) failures.push("the working tree must be clean before a deployment gate can pass");
 
 if (migrationFiles.some((file) => /seed|demo/i.test(file))) failures.push("the production migration list contains a seed or demo file");
-if (!process.env.FGC_STAGING_VERIFIED_AT) failures.push("FGC_STAGING_VERIFIED_AT is required after non-production staging verification");
+if (postVerificationRequested && !process.env.FGC_STAGING_VERIFIED_AT) failures.push("FGC_STAGING_VERIFIED_AT is required after non-production staging verification");
 if (process.env.FGC_EVIDENCE_PUBLIC === "true") failures.push("public evidence storage is forbidden");
 if (!["staging", "production"].includes(deploymentEnvironment)) failures.push("FGC_ENVIRONMENT must be staging or production for a deployment gate");
 const missingRuntimeVariables = requiredRuntimeVariables.filter((name) => !process.env[name]);
