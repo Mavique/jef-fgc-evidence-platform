@@ -78,9 +78,59 @@ jobs:
           path: ${{ runner.temp }}/fgc-ci-artifact
           github-token: ${{ github.token }}
 
+      - name: Resolve downloaded artifact root
+        id: resolve
+        env:
+          FGC_DOWNLOAD_ROOT: ${{ runner.temp }}/fgc-ci-artifact
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const os = require('os');
+          const path = require('path');
+          const base = fs.realpathSync(process.env.FGC_DOWNLOAD_ROOT);
+          const within = (root, candidate) => candidate === root || candidate.startsWith(root + path.sep);
+          const normalize = (root, candidate) => {
+            const relative = path.relative(root, candidate);
+            if (!relative || path.isAbsolute(relative) || relative.split(path.sep).some((part) => part === '..' || part === '.')) throw new Error('Unsafe artifact path');
+            return relative;
+          };
+          const discover = (root) => {
+            const candidates = [];
+            const visit = (current, depth) => {
+              for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+                const full = path.join(current, entry.name);
+                if (entry.isSymbolicLink()) throw new Error('Symlink in artifact wrapper');
+                normalize(root, full);
+                if (entry.isDirectory()) { if (depth < 1) visit(full, depth + 1); }
+                else if (entry.isFile() && entry.name === 'manifest.json') candidates.push(full);
+              }
+            };
+            visit(root, 0);
+            if (candidates.length !== 1) throw new Error(candidates.length === 0 ? 'Artifact manifest not found at root or single wrapper depth' : 'Multiple artifact manifests found');
+            const artifactRoot = fs.realpathSync(path.dirname(candidates[0]));
+            if (!within(root, artifactRoot)) throw new Error('Artifact root escapes controlled directory');
+            return artifactRoot;
+          };
+          const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'fgc-artifact-root-'));
+          fs.mkdirSync(path.join(fixture, 'wrapper', 'server'), { recursive: true });
+          fs.writeFileSync(path.join(fixture, 'wrapper', 'manifest.json'), '{}');
+          if (!discover(fixture).endsWith(path.join('wrapper'))) throw new Error('Valid wrapper fixture failed');
+          fs.writeFileSync(path.join(fixture, 'manifest.json'), '{}');
+          try { discover(fixture); throw new Error('Ambiguous fixture accepted'); } catch (error) { if (!/Multiple artifact manifests/.test(error.message)) throw error; }
+          fs.rmSync(path.join(fixture, 'manifest.json'), { force: true });
+          try { normalize(fixture, path.join(fixture, '..', 'escape')); throw new Error('Traversal fixture accepted'); } catch (error) { if (!/Unsafe artifact path/.test(error.message)) throw error; }
+          const outside = path.join(os.tmpdir(), 'fgc-artifact-root-outside-' + process.pid);
+          fs.writeFileSync(outside, 'outside');
+          fs.symlinkSync(outside, path.join(fixture, 'link'));
+          try { discover(fixture); throw new Error('Symlink fixture accepted'); } catch (error) { if (!/Symlink in artifact wrapper/.test(error.message)) throw error; }
+          fs.rmSync(fixture, { recursive: true, force: true });
+          fs.rmSync(outside, { force: true });
+          const artifactRoot = discover(base);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'artifact_root=' + artifactRoot + '\n');
+          NODE
       - name: Verify artifact integrity and scope
         env:
-          FGC_STAGING_ARTIFACT_DIR: ${{ runner.temp }}/fgc-ci-artifact
+          FGC_STAGING_ARTIFACT_DIR: ${{ steps.resolve.outputs.artifact_root }}
           FGC_SOURCE_COMMIT: ${{ inputs.commit_sha }}
         run: |
           node - <<'NODE'
@@ -141,7 +191,7 @@ jobs:
         env:
           FGC_ENVIRONMENT: staging
           FGC_STAGING_DEPLOY_CONFIRM: I_UNDERSTAND_STAGING_DEPLOY
-          FGC_STAGING_ARTIFACT_DIR: ${{ runner.temp }}/fgc-ci-artifact
+          FGC_STAGING_ARTIFACT_DIR: ${{ steps.resolve.outputs.artifact_root }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/fgc/deploy-staging.mjs
