@@ -63,6 +63,7 @@ jobs:
         run: |
           test -n "$FGC_CF_HYPERDRIVE_ID"
           test -n "$FGC_CF_KV_NAMESPACE_ID"
+          printf 'FGC_CF_HYPERDRIVE_ID=%s\nFGC_CF_KV_NAMESPACE_ID=%s\n' "$FGC_CF_HYPERDRIVE_ID" "$FGC_CF_KV_NAMESPACE_ID" >> "$GITHUB_ENV"
           mkdir -p .wrangler/staging
           node -e 'const fs=require("fs"); const data={name:"jef-fgc-staging",vars:{FGC_ENVIRONMENT:"staging",FGC_APP_URL:"https://jef-fgc-staging.victor-b5a.workers.dev",NEXT_PUBLIC_APP_URL:"https://jef-fgc-staging.victor-b5a.workers.dev",FGC_EVIDENCE_STORAGE_PROVIDER:"supabase",FGC_EVIDENCE_STORAGE_BUCKET:"jef-fgc-evidence-staging",FGC_CF_IMAGES_CONFIGURED:"false"},kv_namespaces:[{binding:"VINEXT_KV_CACHE",id:process.env.FGC_CF_KV_NAMESPACE_ID}],hyperdrive:[{binding:"HYPERDRIVE",id:process.env.FGC_CF_HYPERDRIVE_ID}]}; fs.writeFileSync(".wrangler/staging/wrangler.jsonc", JSON.stringify(data,null,2)+"\n")'
 
