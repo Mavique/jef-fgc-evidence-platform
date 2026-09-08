@@ -44,6 +44,9 @@ jobs:
       - name: Cloudflare compatibility scan
         run: npx vinext check
 
+      - name: Vinext build
+        run: npm run build:vinext
+
       - name: Migration files validation
         run: npm run test:db
 
@@ -52,3 +55,53 @@ jobs:
 
       - name: Private evidence storage integration
         run: npm run test:fgc:evidence
+
+      - name: Prepare staging metadata
+        env:
+          FGC_CF_HYPERDRIVE_ID: ${{ vars.FGC_CF_HYPERDRIVE_ID }}
+          FGC_CF_KV_NAMESPACE_ID: ${{ vars.FGC_CF_KV_NAMESPACE_ID }}
+        run: |
+          test -n "$FGC_CF_HYPERDRIVE_ID"
+          test -n "$FGC_CF_KV_NAMESPACE_ID"
+          mkdir -p .wrangler/staging
+          node -e 'const fs=require("fs"); const data={name:"jef-fgc-staging",vars:{FGC_ENVIRONMENT:"staging",FGC_APP_URL:"https://jef-fgc-staging.victor-b5a.workers.dev",NEXT_PUBLIC_APP_URL:"https://jef-fgc-staging.victor-b5a.workers.dev",FGC_EVIDENCE_STORAGE_PROVIDER:"supabase",FGC_EVIDENCE_STORAGE_BUCKET:"jef-fgc-evidence-staging",FGC_CF_IMAGES_CONFIGURED:"false"},kv_namespaces:[{binding:"VINEXT_KV_CACHE",id:process.env.FGC_CF_KV_NAMESPACE_ID}],hyperdrive:[{binding:"HYPERDRIVE",id:process.env.FGC_CF_HYPERDRIVE_ID}]}; fs.writeFileSync(".wrangler/staging/wrangler.jsonc", JSON.stringify(data,null,2)+"\n")'
+
+      - name: Compose staging configuration
+        run: npm run cf:staging:prepare
+
+      - name: Check staging configuration
+        run: npm run cf:staging:check
+
+      - name: Package staging artifact
+        env:
+          FGC_SOURCE_COMMIT: ${{ github.sha }}
+          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.sha }}
+        run: npm run cf:staging:package
+
+      - name: Verify staging artifact
+        env:
+          FGC_SOURCE_COMMIT: ${{ github.sha }}
+          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.sha }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const root = process.env.FGC_STAGING_ARTIFACT_ROOT;
+          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
+          const config = JSON.parse(fs.readFileSync(path.join(root, 'server/wrangler.staging.json')));
+          if (manifest.sourceCommit !== process.env.FGC_SOURCE_COMMIT) throw new Error('Artifact commit mismatch');
+          if (config.name !== 'jef-fgc-staging') throw new Error('Unexpected staging Worker');
+          if (!config.hyperdrive?.some((b) => b.binding === 'HYPERDRIVE')) throw new Error('Missing Hyperdrive binding');
+          if (!config.kv_namespaces?.some((b) => b.binding === 'VINEXT_KV_CACHE')) throw new Error('Missing KV binding');
+          const text = fs.readFileSync(path.join(root, 'server/wrangler.staging.json'), 'utf8');
+          if (/postgres(?:ql)?:\/\/|password|service[_-]?role|api[_-]?key|session[_-]?secret|bootstrap[_-]?token|production/i.test(text)) throw new Error('Forbidden artifact content');
+          for (const forbidden of ['.env', '.dev.vars', '.git', 'node_modules']) if (fs.readdirSync(root,{recursive:true}).some((item)=>item.includes(forbidden))) throw new Error('Forbidden artifact path');
+          NODE
+
+      - name: Upload validated staging artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jef-fgc-staging-${{ github.sha }}
+          path: ${{ runner.temp }}/fgc-staging-artifact-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 7

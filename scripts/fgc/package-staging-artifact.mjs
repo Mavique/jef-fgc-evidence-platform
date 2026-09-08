@@ -46,7 +46,7 @@ export function packageStagingArtifact({ outputRoot, generatedServer = generated
   const hyperdriveId = metadata.hyperdrive?.[0]?.id;
   const kvId = metadata.kv_namespaces?.[0]?.id;
   if (!hyperdriveId || !kvId) throw new Error("Staging binding metadata must include both approved resource identifiers.");
-  const output = outputRoot ?? mkdtempSync(join(tmpdir(), "fgc-staging-artifact-"));
+  const output = outputRoot ?? process.env.FGC_STAGING_ARTIFACT_ROOT ?? mkdtempSync(join(tmpdir(), "fgc-staging-artifact-"));
   const server = join(output, "server");
   const client = join(output, "client");
   if (existsSync(output) && readdirSync(output).length > 0) throw new Error("Artifact output directory must be new and empty.");
@@ -61,6 +61,7 @@ export function packageStagingArtifact({ outputRoot, generatedServer = generated
   const clientInventory = inventory(client, "client");
   const manifest = {
     format: 1,
+    sourceCommit: process.env.FGC_SOURCE_COMMIT ?? "unknown",
     workerName: config.name,
     config: "server/wrangler.staging.json",
     server: serverInventory,

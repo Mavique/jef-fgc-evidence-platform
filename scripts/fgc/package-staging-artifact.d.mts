@@ -9,6 +9,7 @@ export declare function packageStagingArtifact(options?: StagingArtifactOptions)
   output: string;
   configPath: string;
   manifest: {
+    sourceCommit: string;
     workerName: string;
     artifactSha256: string;
     server: { label: string; count: number; sha256: string };
