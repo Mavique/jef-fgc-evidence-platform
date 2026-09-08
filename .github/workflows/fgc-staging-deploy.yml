@@ -1,0 +1,157 @@
+name: FGC staging deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Exact PR head commit validated by FGC validation
+        required: true
+        type: string
+      run_id:
+        description: Successful FGC validation run ID
+        required: true
+        type: string
+      artifact_id:
+        description: Artifact ID from that validation run
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fgc-staging-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy verified staging artifact
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 20
+    steps:
+      - name: Validate requested PR and run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          RUN_ID: ${{ inputs.run_id }}
+          ARTIFACT_ID: ${{ inputs.artifact_id }}
+        run: |
+          if ! printf '%s' "$COMMIT_SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo 'commit_sha must be 40 lowercase hexadecimal characters'
+            exit 2
+          fi
+          if ! printf '%s' "$RUN_ID" | grep -Eq '^[0-9]+$' || ! printf '%s' "$ARTIFACT_ID" | grep -Eq '^[0-9]+$'; then
+            echo 'run_id and artifact_id must be numeric'
+            exit 2
+          fi
+          pr=$(gh api repos/$GITHUB_REPOSITORY/pulls/2)
+          test "$(printf '%s' "$pr" | jq -r .base.ref)" = main
+          test "$(printf '%s' "$pr" | jq -r .head.ref)" = fix/fgc-production-hardening
+          test "$(printf '%s' "$pr" | jq -r .head.sha)" = "$COMMIT_SHA"
+          test "$(printf '%s' "$pr" | jq -r .state)" = open
+          run=$(gh api repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID)
+          test "$(printf '%s' "$run" | jq -r .head_sha)" = "$COMMIT_SHA"
+          test "$(printf '%s' "$run" | jq -r .conclusion)" = success
+          test "$(printf '%s' "$run" | jq -r .event)" = pull_request
+          artifact=$(gh api repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID)
+          test "$(printf '%s' "$artifact" | jq -r .workflow_run.id)" = "$RUN_ID"
+          test "$(printf '%s' "$artifact" | jq -r .name)" = "jef-fgc-staging-$COMMIT_SHA"
+          test "$(printf '%s' "$artifact" | jq -r .expired)" = false
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=$(printf '%s' "$artifact" | jq -r .name)" >> "$GITHUB_OUTPUT"
+        id: gate
+
+      - name: Checkout validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Download validated artifact
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ inputs.artifact_id }}
+          path: ${{ runner.temp }}/fgc-ci-artifact
+          github-token: ${{ github.token }}
+
+      - name: Verify artifact integrity and scope
+        env:
+          FGC_STAGING_ARTIFACT_DIR: ${{ runner.temp }}/fgc-ci-artifact
+          FGC_SOURCE_COMMIT: ${{ inputs.commit_sha }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const crypto = require('crypto');
+          const root = process.env.FGC_STAGING_ARTIFACT_DIR;
+          const normalize = (value) => {
+            const normalized = value.replaceAll('\\', '/');
+            if (!normalized || normalized.startsWith('/') || /^[A-Za-z]:\//.test(normalized) || normalized.split('/').some((part) => !part || part === '.' || part === '..')) throw new Error('Unsafe artifact path');
+            return normalized;
+          };
+          const compare = (a, b) => normalize(a) < normalize(b) ? -1 : normalize(a) > normalize(b) ? 1 : 0;
+          const inventory = (dir) => {
+            const records = [];
+            const seen = new Set();
+            const visit = (current) => {
+              for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+                const full = path.join(current, entry.name);
+                if (entry.isSymbolicLink()) throw new Error('Symlink in artifact');
+                if (entry.isDirectory()) visit(full);
+                else if (entry.isFile() && entry.name !== '.dev.vars') {
+                  const relative = normalize(path.relative(dir, full));
+                  if (seen.has(relative)) throw new Error('Duplicate artifact path');
+                  seen.add(relative);
+                  records.push({ path: relative, sha256: crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex') });
+                }
+              }
+            };
+            visit(dir);
+            records.sort((a, b) => compare(a.path, b.path));
+            return { count: records.length, sha256: crypto.createHash('sha256').update(JSON.stringify(records)).digest('hex') };
+          };
+          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
+          const config = JSON.parse(fs.readFileSync(path.join(root, 'server/wrangler.staging.json')));
+          if (manifest.sourceCommit !== process.env.FGC_SOURCE_COMMIT) throw new Error('Artifact commit mismatch');
+          if (manifest.workerName !== 'jef-fgc-staging' || config.name !== 'jef-fgc-staging') throw new Error('Unexpected Worker name');
+          if (!config.hyperdrive?.some((binding) => binding.binding === 'HYPERDRIVE') || !config.kv_namespaces?.some((binding) => binding.binding === 'VINEXT_KV_CACHE')) throw new Error('Required staging binding missing');
+          const server = inventory(path.join(root, 'server'));
+          const client = inventory(path.join(root, 'client'));
+          if (server.count !== manifest.server.count || server.sha256 !== manifest.server.sha256 || client.count !== manifest.client.count || client.sha256 !== manifest.client.sha256) throw new Error('Artifact inventory mismatch');
+          const files = fs.readdirSync(root, { recursive: true }).map(String);
+          if (files.some((file) => file.includes('.env') || file.includes('.dev.vars') || file.includes('.git') || file.includes('node_modules'))) throw new Error('Forbidden artifact file');
+          if (JSON.stringify(config).match(/postgres(?:ql)?:\/\/|password|service[_-]?role|api[_-]?key|session[_-]?secret|bootstrap[_-]?token|production/i)) throw new Error('Forbidden artifact configuration');
+          if (!fs.existsSync(path.resolve(root, 'server', config.main)) || !fs.existsSync(path.resolve(root, 'server', config.assets.directory))) throw new Error('Artifact entry or assets missing');
+          NODE
+
+      - name: Deploy only jef-fgc-staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config "${{ runner.temp }}/fgc-ci-artifact/server/wrangler.staging.json"
+
+      - name: Verify public staging routes
+        env:
+          STAGING_ORIGIN: https://jef-fgc-staging.victor-b5a.workers.dev
+        run: |
+          node - <<'NODE'
+          const routes = ['/', '/fgc-ekm', '/health', '/health/ready', '/api/fgc/health', '/api/fgc/auth/me'];
+          const denied = /appUrl|missingConfig|FGC_[A-Z0-9_]+|NEXT_PUBLIC_[A-Z0-9_]+|connection|string|database|storage|stack|exception|provider|secret|token/i;
+          (async () => {
+            for (const route of routes) {
+              const response = await fetch(process.env.STAGING_ORIGIN + route);
+              const body = await response.text();
+              if (route === '/' || route === '/fgc-ekm' || route === '/health') { if (response.status !== 200) throw new Error(`${route} returned ${response.status}`); }
+              if (route === '/health/ready' || route === '/api/fgc/health') { if (![200, 503].includes(response.status)) throw new Error(`${route} returned ${response.status}`); if (denied.test(body)) throw new Error(`${route} disclosed forbidden content`); }
+              if (route === '/api/fgc/auth/me' && ![401, 403].includes(response.status)) throw new Error(`/api/fgc/auth/me returned ${response.status}`);
+              console.log(`${route} ${response.status}`);
+            }
+          })().catch((error) => { console.error(error.message); process.exit(1); });
+          NODE
+
+      - name: Record deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deployments list --name jef-fgc-staging
