@@ -105,4 +105,5 @@ jobs:
           name: jef-fgc-staging-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7

@@ -1,0 +1,79 @@
+name: FGC staging deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Exact successful FGC validation commit SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deploy:
+    name: Deploy verified staging artifact
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 20
+    steps:
+      - name: Validate requested commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          test "${#COMMIT_SHA}" -eq 40
+          case "$COMMIT_SHA" in
+            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f] ) ;;
+            *) echo "Commit SHA must be 40 lowercase hexadecimal characters"; exit 2 ;;
+          esac
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "FGC validation" --limit 50 --json databaseId,headSha,status,conclusion --jq ".[] | select(.headSha == \"$COMMIT_SHA\" and .status == \"completed\" and .conclusion == \"success\") | .databaseId" | head -n 1)
+          test -n "$run_id"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+        id: validation
+
+      - name: Checkout validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Download validated artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jef-fgc-staging-${{ inputs.commit_sha }}
+          path: ${{ runner.temp }}/fgc-ci-artifact
+          run-id: ${{ steps.validation.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify artifact
+        env:
+          FGC_STAGING_ARTIFACT_DIR: ${{ runner.temp }}/fgc-ci-artifact
+          FGC_SOURCE_COMMIT: ${{ inputs.commit_sha }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const root = process.env.FGC_STAGING_ARTIFACT_DIR;
+          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
+          const config = JSON.parse(fs.readFileSync(path.join(root, 'server/wrangler.staging.json')));
+          if (manifest.sourceCommit !== process.env.FGC_SOURCE_COMMIT) throw new Error('Artifact commit mismatch');
+          if (manifest.workerName !== 'jef-fgc-staging' || config.name !== 'jef-fgc-staging') throw new Error('Unexpected Worker name');
+          if (!config.hyperdrive?.some((binding) => binding.binding === 'HYPERDRIVE')) throw new Error('Missing Hyperdrive binding');
+          if (!config.kv_namespaces?.some((binding) => binding.binding === 'VINEXT_KV_CACHE')) throw new Error('Missing KV binding');
+          const files = fs.readdirSync(root, { recursive: true }).map(String);
+          if (files.some((file) => file.includes('.env') || file.includes('.dev.vars') || file.includes('.git') || file.includes('node_modules'))) throw new Error('Forbidden artifact file');
+          NODE
+
+      - name: Deploy exact artifact
+        env:
+          FGC_ENVIRONMENT: staging
+          FGC_STAGING_DEPLOY_CONFIRM: I_UNDERSTAND_STAGING_DEPLOY
+          FGC_STAGING_ARTIFACT_DIR: ${{ runner.temp }}/fgc-ci-artifact
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/fgc/deploy-staging.mjs
+
+      - name: Record deployment
+        run: npx wrangler deployments list --name jef-fgc-staging
