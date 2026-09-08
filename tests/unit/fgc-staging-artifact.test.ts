@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -43,6 +43,7 @@ describe("staging artifact packaging", () => {
     expect(config.hyperdrive).toEqual([{ binding: "HYPERDRIVE", id: "b".repeat(32) }]);
     expect(config.kv_namespaces).toEqual([{ binding: "VINEXT_KV_CACHE", id: "a".repeat(32) }]);
     expect(readFileSync(join(output, "server/index.js"), "utf8")).toContain("Response");
+    expect(existsSync(join(output, "server/wrangler.staging.json"))).toBe(true);
     expect(result.manifest.server.count).toBe(3);
     expect(result.manifest.client.count).toBe(1);
   });

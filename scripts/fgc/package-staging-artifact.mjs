@@ -52,7 +52,7 @@ export function packageStagingArtifact({ outputRoot, generatedServer = generated
   if (existsSync(output) && readdirSync(output).length > 0) throw new Error("Artifact output directory must be new and empty.");
   cpSync(generatedServer, server, { recursive: true, force: false, filter: (source) => !source.endsWith("\\.dev.vars") && !source.endsWith("/.dev.vars") });
   cpSync(generatedClient, client, { recursive: true, force: false });
-  const composedPath = resolve(projectRoot, "dist/server/wrangler.staging.json");
+  const composedPath = join(server, "wrangler.staging.json");
   composeStagingConfig({ generatedPath: join(generatedServer, "wrangler.json"), stagingPath: stagingMetadata, approvedBindings: { hyperdriveId, kvId }, outputPath: composedPath });
   const config = JSON.parse(readFileSync(composedPath, "utf8"));
   assertNoSecrets(config);
