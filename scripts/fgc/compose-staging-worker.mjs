@@ -19,7 +19,7 @@ const allowedVariables = new Set([
 ]);
 const allowedOverlayKeys = new Set(["$schema", "name", "compatibility_date", "compatibility_flags", "main", "vars", "assets", "cache", "images", "kv_namespaces", "hyperdrive"]);
 
-function parseJsonc(source, label) {
+export function parseJsonc(source, label) {
   source = source.replace(/^\uFEFF/, "");
   let output = "";
   let quote = false;
