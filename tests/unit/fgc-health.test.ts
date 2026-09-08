@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GET as liveHealth } from "@/app/health/route";
 import { GET as readiness } from "@/app/health/ready/route";
+import { GET as apiHealth } from "@/app/api/fgc/health/route";
 import { fgcQuery } from "@/lib/fgc/db";
 
 vi.mock("@/lib/fgc/db", () => ({
@@ -58,6 +59,37 @@ describe("public FGC health responses", () => {
     expect(Object.values(json.checks).every((state) => ["ready", "not_ready", "not_configured", "unavailable", "unknown"].includes(state))).toBe(true);
     expect(sensitiveNames.every((name) => !body.includes(name))).toBe(true);
     expect(/postgres(?:ql)?:\/\/|storageKey|stack|node_modules|provider error/i.test(body)).toBe(false);
+  });
+
+  it("uses the same sanitized readiness contract for the public API health route", async () => {
+    process.env.FGC_ENVIRONMENT = "staging";
+
+    const response = await apiHealth();
+    const body = await responseText(response);
+    const json = JSON.parse(body) as { ok: boolean; status: string; checks: Record<string, string> };
+
+    expect(response.status).toBe(503);
+    expect(json.status).toBe("not_ready");
+    expect(Object.keys(json.checks).sort()).toEqual(["application", "configuration", "database", "email", "migrations", "storage"]);
+    expect(body).not.toContain("missingConfig");
+    expect(body).not.toContain("appUrl");
+    expect(sensitiveNames.every((name) => !body.includes(name))).toBe(true);
+    expect(/https?:\/\/|postgres(?:ql)?:\/\/|storageKey|stack|provider error/i.test(body)).toBe(false);
+  });
+
+  it("keeps the API health route sanitized when the dependency check fails", async () => {
+    process.env.FGC_ENVIRONMENT = "staging";
+    process.env.DATABASE_URL = "postgresql://synthetic.invalid/fgc";
+    vi.mocked(fgcQuery).mockRejectedValueOnce(new Error("raw provider credentials and stack trace"));
+
+    const response = await apiHealth();
+    const body = await responseText(response);
+
+    expect(response.status).toBe(503);
+    expect(body).not.toContain("raw provider credentials");
+    expect(body).not.toContain("missingConfig");
+    expect(body).not.toContain("appUrl");
+    expect(/https?:\/\/|postgres(?:ql)?:\/\/|stack trace|credentials/i.test(body)).toBe(false);
   });
 
   it("sanitizes unexpected readiness failures", async () => {
