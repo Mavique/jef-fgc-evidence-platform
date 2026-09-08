@@ -1,38 +1,16 @@
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { composeStagingConfig, parseJsonc } from "./compose-staging-worker.mjs";
+import { inventory } from "./artifact-inventory.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const generatedServerPath = resolve(projectRoot, "dist/server");
 const generatedClientPath = resolve(projectRoot, "dist/client");
 const stagingMetadataPath = resolve(projectRoot, ".wrangler/staging/wrangler.jsonc");
 
-function filesUnder(root) {
-  if (!existsSync(root)) throw new Error(`Required generated artifact directory is missing: ${relative(projectRoot, root)}.`);
-  const files = [];
-  function visit(current) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) visit(full);
-      else if (entry.isFile() && entry.name !== ".dev.vars") files.push(full);
-      else if (entry.isSymbolicLink()) throw new Error("Generated staging artifacts must not contain symbolic links.");
-    }
-  }
-  visit(root);
-  return files.sort();
-}
-
-function inventory(root, label) {
-  const records = filesUnder(root).map((file) => {
-    const digest = createHash("sha256").update(readFileSync(file)).digest("hex");
-    return { path: relative(root, file).replaceAll("\\", "/"), sha256: digest };
-  });
-  const digest = createHash("sha256").update(JSON.stringify(records)).digest("hex");
-  return { label, count: records.length, sha256: digest, records };
-}
 
 function assertNoSecrets(config) {
   const text = JSON.stringify(config);

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { packageStagingArtifact } from "../../scripts/fgc/package-staging-artifact.mjs";
+import { compareCanonicalPaths, normalizeArtifactPath } from "../../scripts/fgc/artifact-inventory.mjs";
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "fgc-staging-test-"));
@@ -30,6 +31,12 @@ function fixture() {
 }
 
 describe("staging artifact packaging", () => {
+  it("uses locale-independent canonical paths and rejects unsafe paths", () => {
+    expect(compareCanonicalPaths("z/file", "A/file")).toBeGreaterThan(0);
+    expect(compareCanonicalPaths("a\\file", "a/file")).toBe(0);
+    expect(() => normalizeArtifactPath("../escape")).toThrow();
+    expect(() => normalizeArtifactPath("C:/escape")).toThrow();
+  });
   it("preserves the generated entry/assets and composes approved bindings", () => {
     const f = fixture();
     const output = join(f.root, "artifact");

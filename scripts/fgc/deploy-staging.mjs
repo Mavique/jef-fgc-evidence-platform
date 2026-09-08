@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { join, relative, resolve } from "node:path";
+import { resolve } from "node:path";
+import { inventory } from "./artifact-inventory.mjs";
 
 const confirmation = "I_UNDERSTAND_STAGING_DEPLOY";
 const artifactRoot = process.env.FGC_STAGING_ARTIFACT_DIR;
@@ -26,20 +27,7 @@ if (config.name !== "jef-fgc-staging") {
   process.exit(2);
 }
 const configDigest = createHash("sha256").update(readFileSync(configPath)).digest("hex");
-function inventoryDigest(root) {
-  const records = [];
-  function visit(current) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) visit(full);
-      else if (entry.isFile() && entry.name !== ".dev.vars") records.push({ path: relative(root, full).replaceAll("\\", "/"), sha256: createHash("sha256").update(readFileSync(full)).digest("hex") });
-      else if (entry.isSymbolicLink()) throw new Error("Staging artifact contains a symbolic link.");
-    }
-  }
-  visit(root);
-  return createHash("sha256").update(JSON.stringify(records.sort((a, b) => a.path.localeCompare(b.path)))).digest("hex");
-}
-if (inventoryDigest(resolve(artifactRoot, "server")) !== manifest.server.sha256 || inventoryDigest(resolve(artifactRoot, "client")) !== manifest.client.sha256) {
+if (inventory(resolve(artifactRoot, "server"), "server").sha256 !== manifest.server.sha256 || inventory(resolve(artifactRoot, "client"), "client").sha256 !== manifest.client.sha256) {
   console.error(JSON.stringify({ ok: false, error: "Staging artifact files do not match its manifest." }));
   process.exit(2);
 }
