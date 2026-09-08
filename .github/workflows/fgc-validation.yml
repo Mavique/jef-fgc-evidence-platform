@@ -15,6 +15,8 @@ jobs:
     name: Validate application
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      FGC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout
@@ -75,14 +77,12 @@ jobs:
 
       - name: Package staging artifact
         env:
-          FGC_SOURCE_COMMIT: ${{ github.sha }}
-          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.sha }}
+          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run cf:staging:package
 
       - name: Verify staging artifact
         env:
-          FGC_SOURCE_COMMIT: ${{ github.sha }}
-          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.sha }}
+          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           node - <<'NODE'
           const fs = require('fs');
@@ -102,7 +102,7 @@ jobs:
       - name: Upload validated staging artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jef-fgc-staging-${{ github.sha }}
-          path: ${{ runner.temp }}/fgc-staging-artifact-${{ github.sha }}
+          name: jef-fgc-staging-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error
           retention-days: 7
