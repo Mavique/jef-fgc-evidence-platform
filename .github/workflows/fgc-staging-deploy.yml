@@ -69,6 +69,70 @@ jobs:
         with:
           ref: ${{ inputs.commit_sha }}
 
+      - name: Test Cloudflare credential preflight classification
+        run: |
+          node - <<'NODE'
+          const assert = require('assert');
+          const classify = (verify, account, worker) => {
+            if (verify === 401) return 'Cloudflare token invalid or expired.';
+            if (verify === 403 || verify === 'inactive') return 'Cloudflare token inactive.';
+            if (verify !== 200) return 'Unexpected Cloudflare API failure during token verification.';
+            if (account === 403) return 'Cloudflare token is scoped to a different account.';
+            if (account === 404) return 'Cloudflare account ID is inaccessible or incorrect.';
+            if (account !== 200) return 'Unexpected Cloudflare API failure during account access.';
+            if (worker === 403) return 'Cloudflare token lacks Workers Scripts access.';
+            if (worker === 404) return 'Existing staging Worker was not found.';
+            if (worker !== 200) return 'Unexpected Cloudflare API failure during Worker access.';
+            return 'Cloudflare credential preflight passed.';
+          };
+          const cases = [[200, 200, 200, 'passed'], [401, 200, 200, 'invalid'], ['inactive', 200, 200, 'inactive'], [200, 403, 200, 'different account'], [200, 200, 403, 'Workers Scripts'], [200, 200, 404, 'not found'], [500, 200, 200, 'Unexpected']];
+          for (const [verify, account, worker, expected] of cases) {
+            const message = classify(verify, account, worker);
+            assert(message.includes(expected));
+            assert(!/[A-Z0-9]{32}|Bearer|token-value|secret-value|connection-string/i.test(message));
+          }
+          console.log('Cloudflare credential preflight fixtures passed.');
+          NODE
+
+      - name: Read-only Cloudflare credential preflight
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          printf '::add-mask::%s\n' "$CLOUDFLARE_ACCOUNT_ID"
+          node - <<'NODE'
+          const token = process.env.CLOUDFLARE_API_TOKEN;
+          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+          const base = 'https://api.cloudflare.com/client/v4';
+          const fail = (message) => { console.error(message); process.exit(1); };
+          if (!token) fail('Cloudflare API token is not configured.');
+          if (!/^[a-f0-9]{32}$/i.test(accountId || '')) fail('Cloudflare account ID is inaccessible or incorrectly configured.');
+          const request = async (url) => {
+            try {
+              const response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+              let body = null; try { body = await response.json(); } catch {}
+              return { status: response.status, body };
+            } catch { return { status: 0, body: null }; }
+          };
+          (async () => {
+            const verification = await request(`${base}/user/tokens/verify`);
+            if (verification.status === 401) fail('Cloudflare token invalid or expired.');
+            if (verification.status === 403) fail('Cloudflare token inactive or not permitted.');
+            if (verification.status !== 200) fail('Unexpected Cloudflare API failure during token verification.');
+            if (verification.body?.result?.status !== 'active') fail('Cloudflare token inactive.');
+            const account = await request(`${base}/accounts/${accountId}`);
+            if (account.status === 401) fail('Cloudflare token invalid or expired.');
+            if (account.status === 403) fail('Cloudflare token is scoped to a different account.');
+            if (account.status === 404) fail('Cloudflare account ID is inaccessible or incorrect.');
+            if (account.status !== 200 || account.body?.success !== true) fail('Unexpected Cloudflare API failure during account access.');
+            const worker = await request(`${base}/accounts/${accountId}/workers/services/jef-fgc-staging`);
+            if (worker.status === 401) fail('Cloudflare token invalid or expired.');
+            if (worker.status === 403) fail('Cloudflare token lacks Workers Scripts access.');
+            if (worker.status === 404) fail('Existing staging Worker was not found.');
+            if (worker.status !== 200 || worker.body?.success !== true) fail('Unexpected Cloudflare API failure during Worker access.');
+            console.log('Cloudflare credential preflight passed: active token, account access and existing staging Worker verified.');
+          })().catch(() => fail('Unexpected Cloudflare API failure during credential preflight.'));
+          NODE
       - name: Download validated artifact
         uses: actions/download-artifact@v4
         with:
