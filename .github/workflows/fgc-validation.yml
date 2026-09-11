@@ -28,6 +28,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+      - name: Controller/payload isolation fixtures
+        run: node .github/scripts/fgc-controller-payload-test.mjs --test
+
       - name: Cloudflare credential preflight fixtures
         run: npm run test:fgc:preflight
 
