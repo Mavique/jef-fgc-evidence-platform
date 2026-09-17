@@ -76,19 +76,107 @@ export async function versionGate() {
   requireGate(version === process.env.EXPECTED_PREVIOUS_VERSION, 'Live Worker version mismatch');
   return version;
 }
+const healthRetryDelay = milliseconds =>
+  new Promise(resolveDelay => setTimeout(resolveDelay, milliseconds));
+
+export async function fetchHealthJson(route, attempts = 3) {
+  let lastFailure = 'unknown failure';
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(ORIGIN + route, {
+        signal: AbortSignal.timeout(20000),
+        redirect: 'error',
+        headers: { Accept: 'application/json' },
+      });
+
+      const text = await response.text();
+
+      if (!text.trim()) {
+        lastFailure = 'empty response body';
+      } else {
+        try {
+          return {
+            response,
+            body: JSON.parse(text),
+            attempt,
+          };
+        } catch {
+          lastFailure = 'invalid JSON response';
+        }
+      }
+    } catch (error) {
+      lastFailure =
+        error?.name === 'TimeoutError'
+          ? 'request timed out'
+          : 'request failed';
+    }
+
+    if (attempt < attempts) {
+      await healthRetryDelay(500 * attempt);
+    }
+  }
+
+  throw new Error(
+    `Health check failed for ${route} after ${attempts} attempts: ${lastFailure}`,
+  );
+}
 export async function health(requireReady = true) {
   const results = [];
+
   for (const route of ['/health', '/health/ready']) {
-    const response = await fetch(ORIGIN + route, { signal: AbortSignal.timeout(20000), redirect: 'error' });
-    const body = await response.json();
-    const allowed = new Set(['ready', 'not_ready', 'not_configured', 'unavailable', 'unknown']);
-    const checks = Object.fromEntries(['application', 'configuration', 'database', 'migrations', 'storage', 'email'].map(key => [key, allowed.has(body.checks?.[key]) ? body.checks[key] : 'unknown']));
-    const good = response.status === 200 && body.ok === true && body.environment === 'staging' && (route === '/health' ? body.status === 'ok' : body.status === 'ready' && Object.values(checks).every(value => value === 'ready'));
-    const result = { route, http_status: response.status, ready: good, ...(route.endsWith('/ready') ? { checks } : {}) };
+    const { response, body, attempt } = await fetchHealthJson(route);
+
+    const allowed = new Set([
+      'ready',
+      'not_ready',
+      'not_configured',
+      'unavailable',
+      'unknown',
+    ]);
+
+    const checks = Object.fromEntries(
+      [
+        'application',
+        'configuration',
+        'database',
+        'migrations',
+        'storage',
+        'email',
+      ].map(key => [
+        key,
+        allowed.has(body.checks?.[key]) ? body.checks[key] : 'unknown',
+      ]),
+    );
+
+    const good =
+      response.status === 200 &&
+      body.ok === true &&
+      body.environment === 'staging' &&
+      (route === '/health'
+        ? body.status === 'ok'
+        : body.status === 'ready' &&
+          Object.values(checks).every(value => value === 'ready'));
+
+    const result = {
+      route,
+      http_status: response.status,
+      ready: good,
+      attempts: attempt,
+      ...(route.endsWith('/ready') ? { checks } : {}),
+    };
+
     results.push(result);
     report(result);
   }
-  if (requireReady) requireGate(results.every(r => r.ready), 'Staging readiness dependencies unresolved');
+
+  if (requireReady) {
+    requireGate(
+      results.every(result => result.ready),
+      'Staging readiness dependencies unresolved',
+    );
+  }
+
   return results;
 }
 export async function settings() { return cf(`workers/scripts/${WORKER}/settings`); }

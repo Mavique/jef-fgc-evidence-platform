@@ -1,10 +1,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, rmSync } from 'node:fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  symlinkSync,
+  rmSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { ARTIFACT, ORIGIN, PAYLOAD, WORKER, inspectArtifact, stampArtifact, verifyArtifact } from './staging-artifact.mjs';
-import { validateMetadata, singleVersion, bindingGate } from './staging-control.mjs';
+import {
+  ARTIFACT,
+  ORIGIN,
+  PAYLOAD,
+  WORKER,
+  inspectArtifact,
+  stampArtifact,
+  verifyArtifact,
+} from './staging-artifact.mjs';
+import {
+  validateMetadata,
+  singleVersion,
+  bindingGate,
+  fetchHealthJson,
+} from './staging-control.mjs';
 
 const controller = 'a'.repeat(40);
 const runId = '123';
@@ -83,4 +103,77 @@ test('existing resource and variable changes blocked', t => {
   bindingGate(config, live);
   live.bindings[0].id = 'c'.repeat(32);
   assert.throws(() => bindingGate(config, live), /binding differs/);
+});
+
+test('health JSON succeeds on the first valid response', async t => {
+  let calls = 0;
+
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls += 1;
+
+    return new Response('{"ok":true}', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  });
+
+  const result = await fetchHealthJson('/health');
+
+  assert.equal(calls, 1);
+  assert.equal(result.attempt, 1);
+  assert.deepEqual(result.body, { ok: true });
+});
+
+test('health JSON retries an empty response and then succeeds', async t => {
+  let calls = 0;
+
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls += 1;
+
+    return new Response(calls === 1 ? '' : '{"ok":true}', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  });
+
+  const result = await fetchHealthJson('/health/ready');
+
+  assert.equal(calls, 2);
+  assert.equal(result.attempt, 2);
+  assert.deepEqual(result.body, { ok: true });
+});
+
+test('health JSON retries malformed JSON and then succeeds', async t => {
+  let calls = 0;
+
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls += 1;
+
+    return new Response(calls === 1 ? '{"incomplete"' : '{"ok":true}', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  });
+
+  const result = await fetchHealthJson('/health/ready');
+
+  assert.equal(calls, 2);
+  assert.equal(result.attempt, 2);
+  assert.deepEqual(result.body, { ok: true });
+});
+
+test('health JSON fails closed after all attempts are exhausted', async t => {
+  let calls = 0;
+
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls += 1;
+    return new Response('', { status: 200 });
+  });
+
+  await assert.rejects(
+    fetchHealthJson('/health/ready'),
+    /Health check failed for \/health\/ready after 3 attempts: empty response body/,
+  );
+
+  assert.equal(calls, 3);
 });
