@@ -1,18 +1,25 @@
 name: FGC staging deployment
-
 on:
   workflow_dispatch:
     inputs:
-      commit_sha:
-        description: Exact validated application payload commit
+      payload_sha:
+        description: Exact authorised application payload commit
         required: true
         type: string
-      run_id:
-        description: Successful FGC validation run for the payload
+      validation_run_id:
+        description: Successful two-SHA validation run
         required: true
         type: string
       artifact_id:
-        description: Validated staging artifact ID from that run
+        description: Fresh validated staging artifact ID
+        required: true
+        type: string
+      target_worker:
+        description: Must be jef-fgc-staging
+        required: true
+        type: string
+      expected_previous_version:
+        description: Independently recorded current staging Worker version
         required: true
         type: string
 permissions:
@@ -25,90 +32,56 @@ concurrency:
 jobs:
   deploy:
     name: Deploy verified staging payload
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: staging
     timeout-minutes: 25
+    env:
+      PAYLOAD_SHA: ${{ inputs.payload_sha }}
+      VALIDATION_RUN_ID: ${{ inputs.validation_run_id }}
+      ARTIFACT_ID: ${{ inputs.artifact_id }}
+      TARGET_WORKER: ${{ inputs.target_worker }}
+      EXPECTED_PREVIOUS_VERSION: ${{ inputs.expected_previous_version }}
     steps:
       - name: Checkout trusted controller
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
           path: _control
-      - name: Setup controller runtime
-        uses: actions/setup-node@v4
+          persist-credentials: false
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: _control/package-lock.json
-      - name: Install trusted controller dependencies
-        working-directory: _control
-        run: npm ci --ignore-scripts
-      - name: Record controller and payload contract
+      - name: Set separate payload directory
+        run: echo "ARTIFACT_ROOT=$RUNNER_TEMP/fgc-payload" >> "$GITHUB_ENV"
+      - name: Reject reruns and validate source metadata before download
         env:
-          CONTROLLER_SHA: ${{ github.sha }}
-          PAYLOAD_SHA: ${{ inputs.commit_sha }}
-          RUN_ID: ${{ inputs.run_id }}
-          ARTIFACT_ID: ${{ inputs.artifact_id }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          test "${#CONTROLLER_SHA}" -eq 40
-          test "${#PAYLOAD_SHA}" -eq 40
-          test "${RUN_ID}" -match '^[0-9]+$'
-          test "${ARTIFACT_ID}" -match '^[0-9]+$'
-          test "$(git -C _control rev-parse HEAD)" = "$CONTROLLER_SHA"
-          { echo '### FGC controller/payload contract'; echo "- Trusted controller revision: $CONTROLLER_SHA"; echo "- Validated payload commit: $PAYLOAD_SHA"; echo "- Source validation run: $RUN_ID"; echo "- Artifact ID: $ARTIFACT_ID"; echo '- Target Worker: jef-fgc-staging'; } >> "$GITHUB_STEP_SUMMARY"
-      - name: Run shared controller isolation fixtures
-        run: node _control/.github/scripts/fgc-controller-payload-test.mjs --test
-      - name: Run shared credential preflight from controller
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          node _control/scripts/fgc/staging-control.mjs metadata
+      - name: Verify credentials, previous version and readiness before download
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          printf '::add-mask::%s\n' "$CLOUDFLARE_ACCOUNT_ID"
-          node _control/scripts/fgc/cloudflare-credential-preflight.mjs --live
-      - name: Download validated payload
+        run: node _control/scripts/fgc/staging-control.mjs preflight
+      - name: Download validated payload separately
         uses: actions/download-artifact@v4
         with:
           artifact-ids: ${{ inputs.artifact_id }}
-          run-id: ${{ inputs.run_id }}
+          run-id: ${{ inputs.validation_run_id }}
           repository: ${{ github.repository }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/fgc-payload
-      - name: Resolve bounded payload root
-        id: payload
+          merge-multiple: true
+      - name: Verify payload manifest, checksums, paths and scope
+        run: node _control/scripts/fgc/staging-control.mjs verify
+      - name: Install locked controller tools without hooks
+        working-directory: _control
+        run: npm ci --ignore-scripts
+      - name: Recheck all gates and deploy once
         env:
-          DOWNLOAD_ROOT: ${{ runner.temp }}/fgc-payload
-        run: |
-          DOWNLOAD_ROOT="$DOWNLOAD_ROOT" node <<'NODE'
-          const fs=require('fs'),path=require('path'); const base=fs.realpathSync(process.env.DOWNLOAD_ROOT); const safe=p=>{const r=path.relative(base,p);if(!r||path.isAbsolute(r)||r.split(path.sep).some(x=>x==='..'||x==='.' ))throw Error('unsafe payload path')}; const candidates=[]; const visit=(dir,depth)=>{for(const e of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,e.name);if(e.isSymbolicLink())throw Error('symlink in payload');safe(full);if(e.isFile()&&e.name==='manifest.json')candidates.push(full);if(e.isDirectory()&&depth===0)visit(full,1)}}; visit(base,0);if(candidates.length!==1)throw Error(candidates.length?'ambiguous payload manifest':'payload manifest missing');const root=fs.realpathSync(path.dirname(candidates[0]));if(!(root===base||root.startsWith(base+path.sep)))throw Error('payload root escapes controlled directory');fs.appendFileSync(process.env.GITHUB_OUTPUT,`root=${root}\n`);
-          NODE
-      - name: Verify payload integrity and scope
-        env:
-          ARTIFACT_ROOT: ${{ steps.payload.outputs.root }}
-          PAYLOAD_SHA: ${{ inputs.commit_sha }}
-        run: |
-          ARTIFACT_ROOT="$ARTIFACT_ROOT" PAYLOAD_SHA="$PAYLOAD_SHA" node <<'NODE'
-          const fs=require('fs'),path=require('path');const root=fs.realpathSync(process.env.ARTIFACT_ROOT);const m=JSON.parse(fs.readFileSync(path.join(root,'manifest.json')));const c=JSON.parse(fs.readFileSync(path.join(root,'server/wrangler.staging.json')));if(m.sourceCommit!==process.env.PAYLOAD_SHA)throw Error('payload commit mismatch');if(m.workerName!=='jef-fgc-staging'||c.name!=='jef-fgc-staging')throw Error('unexpected Worker name');if(!c.hyperdrive?.some(b=>b.binding==='HYPERDRIVE')||!c.kv_namespaces?.some(b=>b.binding==='VINEXT_KV_CACHE'))throw Error('required staging binding missing');const files=fs.readdirSync(root,{recursive:true}).map(String);if(files.some(f=>f.includes('.env')||f.includes('.dev.vars')||f.includes('.git')||f.includes('node_modules')))throw Error('forbidden payload path');if(/postgres(?:ql)?:\/\/|password|service[_-]?role|api[_-]?key|session[_-]?secret|bootstrap[_-]?token|production/i.test(JSON.stringify(c)))throw Error('forbidden payload configuration');if(!fs.existsSync(path.resolve(root,'server',c.main))||!fs.existsSync(path.resolve(root,'server',c.assets.directory)))throw Error('payload entry or assets missing');
-          NODE
-      - name: Prepare guarded deployment runtime
-        run: |
-          shim="$RUNNER_TEMP/fgc-npx-shim";mkdir -p "$shim";printf '%s\n' '#!/usr/bin/env bash' 'exec npx "$@"' > "$shim/npx.cmd";chmod 700 "$shim/npx.cmd";echo "$shim" >> "$GITHUB_PATH"
-      - name: Deploy only validated staging payload
-        env:
-          FGC_ENVIRONMENT: staging
-          FGC_STAGING_DEPLOY_CONFIRM: I_UNDERSTAND_STAGING_DEPLOY
-          FGC_STAGING_ARTIFACT_DIR: ${{ steps.payload.outputs.root }}
+          GH_TOKEN: ${{ github.token }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: node _control/scripts/fgc/deploy-staging.mjs
-      - name: Verify public staging routes
-        env:
-          STAGING_ORIGIN: https://jef-fgc-staging.victor-b5a.workers.dev
-        run: |
-          node <<'NODE'
-          const routes=['/','/fgc-ekm','/health','/health/ready','/api/fgc/health','/api/fgc/auth/me'];const denied=/appUrl|missingConfig|FGC_[A-Z0-9_]+|NEXT_PUBLIC_[A-Z0-9_]+|connection|string|database|storage|stack|exception|provider|secret|token/i;(async()=>{for(const route of routes){const r=await fetch(process.env.STAGING_ORIGIN+route);const body=await r.text();if((route==='/'||route==='/fgc-ekm'||route==='/health')&&r.status!==200)throw Error(`${route} returned ${r.status}`);if((route==='/health/ready'||route==='/api/fgc/health')&&denied.test(body))throw Error(`${route} disclosed forbidden content`);if(route==='/api/fgc/auth/me'&&!([401,403].includes(r.status)))throw Error(`${route} returned ${r.status}`);console.log(`${route} ${r.status}`)}})().catch(e=>{console.error(e.message);process.exit(1)})
-          NODE
-      - name: Record deployment
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deployments list --name jef-fgc-staging
