@@ -1,6 +1,12 @@
 name: FGC validation
 
 on:
+  workflow_dispatch:
+    inputs:
+      payload_sha:
+        description: Exact authorised application payload commit
+        required: true
+        type: string
   pull_request:
   push:
     branches:
@@ -12,11 +18,10 @@ permissions:
 
 jobs:
   validate:
+    if: github.event_name != 'workflow_dispatch'
     name: Validate application
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      FGC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout
@@ -30,6 +35,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+      - name: Controller/payload isolation fixtures
+        run: node .github/scripts/fgc-controller-payload-test.mjs --test
+
+      - name: Cloudflare credential preflight fixtures
+        run: npm run test:fgc:preflight
+
+
+      - name: Guarded recovery security fixtures
+        run: node --test scripts/fgc/staging-control.test.mjs
 
       - name: Lint
         run: npm run lint
@@ -46,9 +60,6 @@ jobs:
       - name: Cloudflare compatibility scan
         run: npx vinext check
 
-      - name: Vinext build
-        run: npm run build:vinext
-
       - name: Migration files validation
         run: npm run test:db
 
@@ -58,52 +69,93 @@ jobs:
       - name: Private evidence storage integration
         run: npm run test:fgc:evidence
 
+  payload:
+    name: Validate exact staging payload
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      PAYLOAD_SHA: ${{ inputs.payload_sha }}
+      PAYLOAD_ROOT: ${{ github.workspace }}/_payload
+      FGC_SOURCE_COMMIT: ${{ inputs.payload_sha }}
+      FGC_CF_HYPERDRIVE_ID: ${{ vars.FGC_CF_HYPERDRIVE_ID }}
+      FGC_CF_KV_NAMESPACE_ID: ${{ vars.FGC_CF_KV_NAMESPACE_ID }}
+    steps:
+      - name: Checkout trusted controller
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: _control
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set separate artifact directory
+        run: |
+          echo "ARTIFACT_ROOT=$RUNNER_TEMP/fgc-staging-artifact" >> "$GITHUB_ENV"
+          echo "FGC_STAGING_ARTIFACT_ROOT=$RUNNER_TEMP/fgc-staging-artifact" >> "$GITHUB_ENV"
+      - name: Verify controller, authorised payload and open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node _control/scripts/fgc/staging-control.mjs build-start
+      - name: Checkout exact payload detached
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.payload_sha }}
+          path: _payload
+          persist-credentials: false
+      - name: Verify actual payload checkout
+        run: node _control/scripts/fgc/staging-control.mjs checkout
+      - name: Install build dependencies
+        working-directory: _payload
+        run: npm ci
+      - name: Lint
+        working-directory: _payload
+        run: npm run lint
+      - name: Type check
+        working-directory: _payload
+        run: npm run typecheck
+      - name: Unit tests
+        working-directory: _payload
+        run: npm test -- --run
+      - name: Production build
+        working-directory: _payload
+        run: npm run build
+      - name: Cloudflare compatibility scan
+        working-directory: _payload
+        run: npx --no-install vinext check
+      - name: Vinext build
+        working-directory: _payload
+        run: npm run build:vinext
+      - name: Migration files validation
+        working-directory: _payload
+        run: npm run test:db
+      - name: Disposable PostgreSQL application integration
+        working-directory: _payload
+        run: npm run test:db:integration
+      - name: Private evidence storage integration
+        working-directory: _payload
+        run: npm run test:fgc:evidence
       - name: Prepare staging metadata
-        env:
-          FGC_CF_HYPERDRIVE_ID: ${{ vars.FGC_CF_HYPERDRIVE_ID }}
-          FGC_CF_KV_NAMESPACE_ID: ${{ vars.FGC_CF_KV_NAMESPACE_ID }}
+        run: node _control/scripts/fgc/staging-control.mjs prepare
+      - name: Compose and check staging configuration
+        working-directory: _payload
         run: |
-          test -n "$FGC_CF_HYPERDRIVE_ID"
-          test -n "$FGC_CF_KV_NAMESPACE_ID"
-          printf 'FGC_CF_HYPERDRIVE_ID=%s\nFGC_CF_KV_NAMESPACE_ID=%s\n' "$FGC_CF_HYPERDRIVE_ID" "$FGC_CF_KV_NAMESPACE_ID" >> "$GITHUB_ENV"
-          mkdir -p .wrangler/staging
-          node -e 'const fs=require("fs"); const data={name:"jef-fgc-staging",vars:{FGC_ENVIRONMENT:"staging",FGC_APP_URL:"https://jef-fgc-staging.victor-b5a.workers.dev",NEXT_PUBLIC_APP_URL:"https://jef-fgc-staging.victor-b5a.workers.dev",FGC_EVIDENCE_STORAGE_PROVIDER:"supabase",FGC_EVIDENCE_STORAGE_BUCKET:"jef-fgc-evidence-staging",FGC_CF_IMAGES_CONFIGURED:"false"},kv_namespaces:[{binding:"VINEXT_KV_CACHE",id:process.env.FGC_CF_KV_NAMESPACE_ID}],hyperdrive:[{binding:"HYPERDRIVE",id:process.env.FGC_CF_HYPERDRIVE_ID}]}; fs.writeFileSync(".wrangler/staging/wrangler.jsonc", JSON.stringify(data,null,2)+"\n")'
-
-      - name: Compose staging configuration
-        run: npm run cf:staging:prepare
-
-      - name: Check staging configuration
-        run: npm run cf:staging:check
-
-      - name: Package staging artifact
-        env:
-          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
+          npm run cf:staging:prepare
+          npm run cf:staging:check
+      - name: Package generated payload output
+        working-directory: _payload
         run: npm run cf:staging:package
-
-      - name: Verify staging artifact
-        env:
-          FGC_STAGING_ARTIFACT_ROOT: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const root = process.env.FGC_STAGING_ARTIFACT_ROOT;
-          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
-          const config = JSON.parse(fs.readFileSync(path.join(root, 'server/wrangler.staging.json')));
-          if (manifest.sourceCommit !== process.env.FGC_SOURCE_COMMIT) throw new Error('Artifact commit mismatch');
-          if (config.name !== 'jef-fgc-staging') throw new Error('Unexpected staging Worker');
-          if (!config.hyperdrive?.some((b) => b.binding === 'HYPERDRIVE')) throw new Error('Missing Hyperdrive binding');
-          if (!config.kv_namespaces?.some((b) => b.binding === 'VINEXT_KV_CACHE')) throw new Error('Missing KV binding');
-          const text = fs.readFileSync(path.join(root, 'server/wrangler.staging.json'), 'utf8');
-          if (/postgres(?:ql)?:\/\/|password|service[_-]?role|api[_-]?key|session[_-]?secret|bootstrap[_-]?token|production/i.test(text)) throw new Error('Forbidden artifact content');
-          for (const forbidden of ['.env', '.dev.vars', '.git', 'node_modules']) if (fs.readdirSync(root,{recursive:true}).some((item)=>item.includes(forbidden))) throw new Error('Forbidden artifact path');
-          NODE
-
-      - name: Upload validated staging artifact
+      - name: Verify unchanged exact checkout and stamp two-SHA manifest
+        run: node _control/scripts/fgc/staging-control.mjs stamp
+      - name: Upload fresh validated staging artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jef-fgc-staging-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ runner.temp }}/fgc-staging-artifact-${{ github.event.pull_request.head.sha || github.sha }}
+          name: jef-fgc-staging-3676a7f92cd7acecd9da596151df860590901b7d
+          path: ${{ runner.temp }}/fgc-staging-artifact
           if-no-files-found: error
           include-hidden-files: true
-          retention-days: 7
+          retention-days: 14

@@ -62,13 +62,27 @@ describe("staging artifact packaging", () => {
     expect(() => packageStagingArtifact({ generatedServer: f.generatedServer, generatedClient: f.generatedClient, stagingMetadata: f.staging, outputRoot: join(f.root, "artifact") })).toThrow();
   });
 
-  it("refuses deployment without the explicit staging confirmation", () => {
-    const result = spawnSync(process.execPath, ["scripts/fgc/deploy-staging.mjs"], {
+it("fails closed without trusted deployment metadata", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["scripts/fgc/deploy-staging.mjs"],
+    {
       cwd: process.cwd(),
       encoding: "utf8",
-      env: { ...process.env, FGC_ENVIRONMENT: "staging", FGC_STAGING_ARTIFACT_DIR: "C:/missing-staging-artifact" }
-    });
-    expect(result.status).toBe(2);
-    expect(result.stdout + result.stderr).not.toContain("secret");
-  });
+      env: {
+        ...process.env,
+        GITHUB_RUN_ATTEMPT: "",
+        GITHUB_REPOSITORY: "",
+        GITHUB_REF: "",
+        GITHUB_SHA: "",
+        ARTIFACT_ROOT: "",
+        VALIDATION_RUN_ID: "",
+      },
+    },
+  );
+
+  expect(result.status).toBe(1);
+  expect(result.stdout + result.stderr).not.toContain("secret");
 });
+});
+
