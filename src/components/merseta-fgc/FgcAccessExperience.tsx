@@ -30,7 +30,7 @@ import {
   type FgcRouteDefinition
 } from "@/content/merseta-fgc";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
-import { evaluateFgcLecturerDraft, fieldKey } from "@/lib/fgc/lecturer-form";
+import { evaluateFgcLecturerDraft, fgcLecturerModules, fieldKey } from "@/lib/fgc/lecturer-form";
 import type { FgcLecturerDraftValues } from "@/lib/fgc/lecturer-form";
 import type { LecturerFormState } from "@/lib/fgc/lecturer-submissions";
 import type { FgcRoleWorkbench, FgcSubmissionDetail, FgcWorkbenchSubmission } from "@/lib/fgc/workbench";
@@ -936,7 +936,7 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
     const nextErrors = validateAll();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      setMessage("Final submission needs every required field across the ten modules.");
+      setMessage("Final submission needs every required lecturer-owned field across Tools 1–10.");
       errorSummaryRef.current?.focus();
       return;
     }
@@ -975,7 +975,7 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
       <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Lecturer production form</p>
+            <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Lecturer Toolkit · Tools 1–13</p>
             <h3 className="mt-3 min-w-0 [overflow-wrap:anywhere] text-3xl font-semibold tracking-[-0.045em]">{formState.assignment.templateName}</h3>
             <p className="mt-3 max-w-3xl [overflow-wrap:anywhere] leading-7 text-paper/62">
               {formState.assignment.reportingPeriod ?? "Current reporting period"} · {formState.assignment.collegeName ?? "College scope pending"}{formState.assignment.campusName ? ` · ${formState.assignment.campusName}` : ""}
@@ -996,7 +996,7 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]">
         <aside className="min-w-0 rounded-[1.1rem] bg-white/[0.055] p-4 ring-1 ring-white/[0.1]">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">Ten capture modules</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">Connected Tool 1–13 workflow</p>
           <div className="mt-4 grid gap-2">
             {formState.modules.map((captureModule, index) => {
               const moduleCompletion = completion.modules.find((item) => item.code === captureModule.code);
@@ -1009,8 +1009,8 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
                   aria-current={active ? "step" : undefined}
                   onClick={() => setActiveModuleIndex(index)}
                 >
-                  <span className="block min-w-0 [overflow-wrap:anywhere] text-sm font-semibold">{index + 1}. {captureModule.title}</span>
-                  <span className="mt-1 block text-xs opacity-75">{moduleCompletion?.completed ?? 0}/{moduleCompletion?.required ?? 0} required</span>
+                  <span className="block min-w-0 [overflow-wrap:anywhere] text-sm font-semibold">Tool {captureModule.toolNumber}. {captureModule.title}</span>
+                  <span className="mt-1 block text-xs opacity-75">{captureModule.lecturerAccess === "EDIT" ? `${moduleCompletion?.completed ?? 0}/${moduleCompletion?.required ?? 0} required` : `${captureModule.owner} owned · view only`}</span>
                 </button>
               );
             })}
@@ -1049,9 +1049,18 @@ function ProductionLecturerCaptureForm({ assignmentId }: { access: ResolvedProdu
 
           {activeModule ? (
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Module {activeModuleIndex + 1} of {formState.modules.length}</p>
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Tool {activeModule.toolNumber} of {formState.modules.length} · {activeModule.owner} owned</p>
               <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em]" id="active-module-title">{activeModule.title}</h4>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-paper/60">{activeModule.purpose}</p>
+              <p className="mt-3 max-w-3xl rounded-[0.85rem] bg-white/[0.045] px-4 py-3 text-sm leading-6 text-paper/64 ring-1 ring-white/[0.08]">
+                <b className="text-paper">What happens next:</b> {activeModule.downstream}
+              </p>
+              {activeModule.lecturerAccess === "VIEW" ? (
+                <div className="mt-5 rounded-[0.95rem] border border-dashed border-white/[0.16] bg-ink/42 p-5">
+                  <p className="text-sm font-bold text-paper">No lecturer input is required for this tool.</p>
+                  <p className="mt-2 text-sm leading-6 text-paper/58">Its result is written by the authorised {activeModule.owner.toLowerCase()} workflow and remains linked to the same immutable submission record.</p>
+                </div>
+              ) : null}
               {!isLocked ? (
                 <p className="mt-3 rounded-[0.85rem] bg-lime/10 px-4 py-3 text-sm font-semibold leading-6 text-lime ring-1 ring-lime/20">
                   Editing is active for this {formatStatusLabel(submissionStatus)} form. Type into the fields below, then save the module or submit once all required fields are complete.
@@ -1406,13 +1415,13 @@ function SubmittedLecturerReport({ formState, values, completion }: { formState:
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan print:text-black">Toolkit response register</p>
             <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em]" id="report-responses-title">Captured responses by module</h4>
             <div className="mt-5 grid gap-5">
-              {formState.modules.map((captureModule, index) => {
+              {formState.modules.map((captureModule) => {
                 const moduleCompletion = completion.modules.find((item) => item.code === captureModule.code);
                 return (
                   <article className="break-inside-avoid rounded-[0.95rem] border border-ink/10 bg-white p-5 shadow-sm shadow-ink/5 print:shadow-none" key={captureModule.code}>
                     <div className="flex flex-col gap-2 border-b border-ink/10 pb-4 md:flex-row md:items-start md:justify-between">
                       <div>
-                        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-ink/45">Module {index + 1}</p>
+                        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-ink/45">Tool {captureModule.toolNumber} · {captureModule.owner} owned</p>
                         <h5 className="mt-1 text-xl font-semibold tracking-[-0.035em] text-ink">{captureModule.title}</h5>
                         <p className="mt-1 max-w-3xl text-sm leading-6 text-ink/58">{captureModule.purpose}</p>
                       </div>
@@ -1421,7 +1430,7 @@ function SubmittedLecturerReport({ formState, values, completion }: { formState:
                       </span>
                     </div>
                     <dl className="mt-4 grid gap-3">
-                      {captureModule.fields.map((field) => {
+                      {captureModule.fields.length ? captureModule.fields.map((field) => {
                         const key = fieldKey(captureModule.code, field.code);
                         const value = values[key]?.trim();
                         return (
@@ -1433,7 +1442,7 @@ function SubmittedLecturerReport({ formState, values, completion }: { formState:
                             <dd className="min-w-0 whitespace-pre-wrap break-words text-sm leading-6 text-ink/72">{value || "No value captured"}</dd>
                           </div>
                         );
-                      })}
+                      }) : <p className="rounded-[0.8rem] bg-ink/[0.025] p-4 text-sm leading-6 text-ink/62 ring-1 ring-ink/5">This tool has no lecturer-editable fields. Its authorised downstream result remains linked to this submission.</p>}
                     </dl>
                   </article>
                 );
@@ -1819,7 +1828,108 @@ function ProductionSubmissionDetailViewer({ detail, onClose }: { detail: FgcSubm
   );
 }
 
+function LecturerDashboard({ access }: { access: ResolvedProductionAccess }) {
+  const [workbench, setWorkbench] = useState<FgcRoleWorkbench | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const activeRole = access.access.activeRole;
+  const currentAssignment = access.formAssignments.find((assignment) => assignment.status !== "SUBMITTED") ?? access.formAssignments[0];
+
+  useEffect(() => {
+    let live = true;
+    fetch("/api/fgc/workbench", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.message ?? "The lecturer dashboard could not be loaded.");
+        return payload.workbench as FgcRoleWorkbench;
+      })
+      .then((payload) => { if (live) setWorkbench(payload); })
+      .catch((error: Error) => { if (live) setLoadError(error.message); });
+    return () => { live = false; };
+  }, []);
+
+  const submissions = workbench?.submissions ?? [];
+  const draftCount = submissions.filter((item) => ["DRAFT", "READY_FOR_LECTURER_REVIEW", "CLARIFICATION_REQUESTED", "RESUBMITTED"].includes(item.status)).length;
+  const submittedCount = submissions.filter((item) => !["DRAFT", "READY_FOR_LECTURER_REVIEW"].includes(item.status)).length;
+  const clarificationCount = submissions.filter((item) => item.status === "CLARIFICATION_REQUESTED").length;
+
+  return (
+    <div className="grid gap-6">
+      <article className="overflow-hidden rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Lecturer Dashboard</p>
+            <h3 className="mt-4 max-w-3xl text-3xl font-semibold tracking-[-0.045em]">Welcome back, {access.user.firstName}. Continue your evidence workflow.</h3>
+            <p className="mt-3 max-w-3xl leading-7 text-paper/62">Your profile, Toolkit 1–13 progress, private evidence and governed review status are joined through one production submission record.</p>
+          </div>
+          {currentAssignment ? (
+            <Link className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan px-5 text-sm font-bold text-ink transition hover:bg-lime" href={`/fgc-ekm/data-capturer/forms/${currentAssignment.id}`}>
+              {currentAssignment.status === "SUBMITTED" ? "View submission" : "Continue current assessment"}<ArrowRight aria-hidden="true" size={16} />
+            </Link>
+          ) : null}
+        </div>
+      </article>
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Lecturer summary">
+        {[
+          ["Assigned forms", access.formAssignments.length, "Canonical assignments"],
+          ["Drafts", draftCount, "Editable submissions"],
+          ["Submitted", submittedCount, "In governed review"],
+          ["Clarifications", clarificationCount, "Returned for action"]
+        ].map(([label, value, helper]) => (
+          <article className="rounded-[1.1rem] bg-white/[0.055] p-5 ring-1 ring-white/[0.1]" key={label}>
+            <p className="font-mono text-4xl font-semibold text-lime">{value}</p>
+            <p className="mt-2 text-sm font-bold text-paper">{label}</p>
+            <p className="mt-1 text-xs leading-5 text-paper/48">{helper}</p>
+          </article>
+        ))}
+      </section>
+
+      {loadError ? <p className="rounded-[0.95rem] bg-rose-300/10 p-4 text-sm font-semibold text-rose-100 ring-1 ring-rose-300/20" role="alert">{loadError}</p> : null}
+
+      <section className="grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
+        <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">Profile and teaching context</p>
+          <dl className="mt-5 grid gap-3 text-sm">
+            {[
+              ["Lecturer", access.user.name],
+              ["Role", activeRole?.name ?? "Lecturer"],
+              ["College", activeRole?.collegeName ?? "Not assigned"],
+              ["Campus", activeRole?.campusName ?? "Not assigned"]
+            ].map(([label, value]) => <div className="rounded-[0.85rem] bg-ink/52 p-4 ring-1 ring-white/[0.08]" key={label}><dt className="text-xs font-bold uppercase tracking-[0.12em] text-paper/42">{label}</dt><dd className="mt-1 [overflow-wrap:anywhere] font-semibold text-paper">{value}</dd></div>)}
+          </dl>
+        </article>
+
+        <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div><p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Toolkit progress</p><h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">Connected Tool 1–13 workflow</h4></div>
+            <Link className="text-sm font-bold text-cyan underline underline-offset-4" href="/fgc-ekm/data-capturer">Open all assignments</Link>
+          </div>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            {fgcLecturerModules.map((tool) => (
+              <div className="rounded-[0.85rem] bg-ink/52 p-3 ring-1 ring-white/[0.08]" key={tool.code}>
+                <div className="flex items-start gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-cyan/12 font-mono text-xs font-bold text-cyan ring-1 ring-cyan/20">{tool.toolNumber}</span><div className="min-w-0"><p className="text-sm font-bold leading-5 text-paper">{tool.title}</p><p className="mt-1 text-xs text-paper/46">{tool.owner} · {tool.lecturerAccess === "EDIT" ? "Lecturer input" : "View downstream result"}</p></div></div>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">Recent submissions</p>
+          <div className="mt-4 grid gap-3">{submissions.length ? submissions.slice(0, 5).map((item) => <div className="rounded-[0.85rem] bg-ink/52 p-4 ring-1 ring-white/[0.08]" key={item.id}><div className="flex flex-wrap items-center justify-between gap-2"><p className="font-semibold">{item.templateName ?? item.programmeName ?? "FGC evidence submission"}</p><span className={`rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${statusTone(item.status)}`}>{formatStatusLabel(item.status)}</span></div><p className="mt-2 text-xs text-paper/50">Version {item.currentVersion} · updated {new Date(item.updatedAt).toLocaleString()}</p></div>) : <p className="rounded-[0.85rem] border border-dashed border-white/[0.14] p-4 text-sm text-paper/52">No canonical submissions yet. Open an assigned form to begin.</p>}</div>
+        </article>
+        <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">Recent activity and messages</p>
+          <div className="mt-4 grid gap-3">{workbench?.notifications.length ? workbench.notifications.slice(0, 5).map((item) => <div className="rounded-[0.85rem] bg-ink/52 p-4 ring-1 ring-white/[0.08]" key={item.id}><p className="text-sm font-bold text-paper">{item.subject}</p><p className="mt-1 text-sm leading-6 text-paper/54">{item.body}</p></div>) : <p className="rounded-[0.85rem] border border-dashed border-white/[0.14] p-4 text-sm text-paper/52">No recent workflow messages.</p>}</div>
+        </article>
+      </section>
+    </div>
+  );
+}
+
 function ProductionDashboard({ access }: { access: ResolvedProductionAccess }) {
+  if (access.access.accessState === "LECTURER_ACTIVE") return <LecturerDashboard access={access} />;
   const approvedRoles = access.roles.filter((role) => role.status === "APPROVED").length;
   const pendingRoles = access.roles.filter((role) => role.status === "REQUESTED" || role.status === "RETURNED").length;
   const assignedForms = access.formAssignments.length;
