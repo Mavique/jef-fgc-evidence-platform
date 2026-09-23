@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, lstatSync, realpathSync, writeFileSync } from 'node:fs';
 import { resolve, relative, isAbsolute, sep } from 'node:path';
 
-export const PAYLOAD = 'f5c413c9854ed88604eb1457a48abb85e6355a40';
+export const PAYLOAD = '60bfbb0104e3dac625c2650068ea2abf51870733';
 export const WORKER = 'jef-fgc-staging';
 export const ARTIFACT = `${WORKER}-${PAYLOAD}`;
 export const ORIGIN = 'https://jef-fgc-staging.victor-b5a.workers.dev';
