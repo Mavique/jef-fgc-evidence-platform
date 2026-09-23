@@ -154,7 +154,7 @@ jobs:
       - name: Upload fresh validated staging artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jef-fgc-staging-3676a7f92cd7acecd9da596151df860590901b7d
+          name: jef-fgc-staging-f5c413c9854ed88604eb1457a48abb85e6355a40
           path: ${{ runner.temp }}/fgc-staging-artifact
           if-no-files-found: error
           include-hidden-files: true
