@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   evaluateFgcLecturerDraft,
   fgcLecturerModules,
@@ -6,6 +8,11 @@ import {
   sanitizeFgcLecturerDraft,
   type FgcLecturerDraftValues
 } from "@/lib/fgc/lecturer-form";
+
+const root = process.cwd();
+const accessUiSource = readFileSync(join(root, "src", "components", "merseta-fgc", "FgcAccessExperience.tsx"), "utf8");
+const assignmentRepairMigration = readFileSync(join(root, "db", "fgc", "011_lecturer_toolkit_assignment_repair.sql"), "utf8");
+const migrationConfig = readFileSync(join(root, "scripts", "fgc", "config.mjs"), "utf8");
 
 describe("FGC Lecturer Toolkit 1–13 contract", () => {
   it("defines every tool once and exposes explicit ownership", () => {
@@ -61,5 +68,22 @@ describe("FGC Lecturer Toolkit 1–13 contract", () => {
       "assessor_capability_assessment.final_capability": "Independent",
       "unknown.injected": "not allowed"
     })).toEqual({ "consent_profile.lecturer_full_name": "Lecturer One" });
+  });
+
+  it("uses the canonical dashboard route while preserving the former route alias", () => {
+    expect(accessUiSource).toContain('["My Lecturer Dashboard", "/fgc-ekm/dashboard"');
+    expect(accessUiSource).toContain('routePath.endsWith("/dashboard") || routePath.endsWith("/my-dashboard")');
+    expect(accessUiSource).toContain('["FGC Data Capture", "/fgc-ekm/data-capturer"');
+  });
+
+  it("repairs missing active assignments only for eligible approved lecturers", () => {
+    expect(migrationConfig).toContain('"011_lecturer_toolkit_assignment_repair.sql"');
+    expect(assignmentRepairMigration).toContain("r.code = 'LECTURER'");
+    expect(assignmentRepairMigration).toContain("pra.status = 'APPROVED'");
+    expect(assignmentRepairMigration).toContain("u.account_state = 'ACTIVE'");
+    expect(assignmentRepairMigration).toContain("u.email_verified_at IS NOT NULL");
+    expect(assignmentRepairMigration).toContain("idx_fgc_active_lecturer_assignment");
+    expect(assignmentRepairMigration).toContain("ON CONFLICT (template_id, assigned_to)");
+    expect(assignmentRepairMigration).toContain("PROVISION_LECTURER_TOOLKIT_ASSIGNMENT");
   });
 });

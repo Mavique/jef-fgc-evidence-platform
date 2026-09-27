@@ -607,8 +607,8 @@ function productionWorkspaces(access: ResolvedProductionAccess) {
   };
 
   if (hasApprovedLecturerRole) {
-    addWorkspace(["Data-Capture Workspace", "/fgc-ekm/data-capturer", "Open the assigned lecturer FGC form, continue draft evidence capture and view locked review snapshots."]);
-    addWorkspace(["My Lecturer Dashboard", "/fgc-ekm/my-dashboard", "Review personal submissions, feedback, moderation status and outstanding evidence actions."]);
+    addWorkspace(["My Lecturer Dashboard", "/fgc-ekm/dashboard", "Review personal submissions, feedback, moderation status and outstanding evidence actions."]);
+    addWorkspace(["FGC Data Capture", "/fgc-ekm/data-capturer", "Open the assigned lecturer Toolkit 1–13 form, continue draft evidence capture and view locked review snapshots."]);
   }
 
   if (state === "PLATFORM_SUPER_ACTIVE") {
@@ -696,7 +696,11 @@ function ProductionPortalHome({ access }: { access: ResolvedProductionAccess }) 
                   </Link>
                 ) : null}
               </div>
-            )) : <p className="rounded-[0.9rem] border border-dashed border-white/[0.14] p-4 text-sm text-paper/54">No assigned production form yet.</p>}
+            )) : <div className="rounded-[0.9rem] border border-dashed border-white/[0.14] p-4 text-sm text-paper/60">
+              <p className="font-semibold text-paper/80">Toolkit assignment is being prepared</p>
+              <p className="mt-2 leading-6">Your Lecturer role is approved, but no active Toolkit 1–13 assignment is available yet. Refresh after assignment provisioning, or ask a JEF administrator to run the lecturer assignment repair.</p>
+              <Link className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full bg-cyan px-4 font-bold text-ink transition hover:bg-lime" href="/fgc-ekm/dashboard">Return to dashboard</Link>
+            </div>}
           </div>
         </article>
         <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
@@ -1226,7 +1230,11 @@ function ProductionDataCaptureWorkspace({ access, assignmentId }: { access: Reso
                   Open capture form
                 </Link>
               </div>
-            )) : <p className="rounded-[0.9rem] border border-dashed border-white/[0.14] p-4 text-sm text-paper/54">No assigned production form yet.</p>}
+            )) : <div className="rounded-[0.9rem] border border-dashed border-white/[0.14] p-4 text-sm text-paper/60">
+              <p className="font-semibold text-paper/80">No active Toolkit assignment</p>
+              <p className="mt-2 leading-6">Your approved Lecturer role is valid. An administrator must provision the initial Toolkit 1–13 assignment before capture can begin.</p>
+              <Link className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full bg-cyan px-4 font-bold text-ink transition hover:bg-lime" href="/fgc-ekm/dashboard">Return to dashboard</Link>
+            </div>}
           </div>
         </article>
         <article className="rounded-[1.1rem] bg-white/[0.055] p-6 ring-1 ring-white/[0.1]">
@@ -2261,7 +2269,7 @@ function ProductionRouteView({ routePath, access }: { routePath: string; access:
   const lecturerFormMatch = routePath.match(/\/data-capturer\/forms\/([^/]+)$/);
   if (lecturerFormMatch) return <ProductionDataCaptureWorkspace access={access} assignmentId={lecturerFormMatch[1]} />;
   if (routePath.endsWith("/data-capturer")) return <ProductionDataCaptureWorkspace access={access} />;
-  if (routePath.endsWith("/my-dashboard")) return <ProductionDashboard access={access} />;
+  if (routePath.endsWith("/dashboard") || routePath.endsWith("/my-dashboard")) return <ProductionDashboard access={access} />;
   if (routePath.endsWith("/my-account") || routePath.endsWith("/my-affiliations")) return <ProductionAccountView access={access} />;
   if (
     routePath.endsWith("/tasks") ||
