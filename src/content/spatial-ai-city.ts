@@ -24,7 +24,7 @@ export const districtLayers = [
   {
     name: "Public services",
     purpose: "Show facilities, service areas and access gaps.",
-    status: "illustrative_layer",
+    status: "planning_layer",
     source: "Requires authorised public data",
     time: "Verification required",
     privacy: "Public or aggregated"
@@ -32,7 +32,7 @@ export const districtLayers = [
   {
     name: "Infrastructure",
     purpose: "Represent roads, water, energy, waste and facilities where authorised.",
-    status: "illustrative_layer",
+    status: "planning_layer",
     source: "Municipal or utility owner required",
     time: "Not live",
     privacy: "Sensitive details protected"
@@ -40,7 +40,7 @@ export const districtLayers = [
   {
     name: "Community knowledge",
     purpose: "Connect local reports, stories, accessibility experience and priorities.",
-    status: "illustrative_layer",
+    status: "planning_layer",
     source: "Consent and validation required",
     time: "Community update cycle",
     privacy: "Contributor rights protected"
@@ -56,7 +56,7 @@ export const districtLayers = [
   {
     name: "Heritage and culture",
     purpose: "Preserve mining heritage, oral histories, routes and local identity.",
-    status: "illustrative_layer",
+    status: "planning_layer",
     source: "Community and knowledge-holder approval required",
     time: "Interpretation labelled",
     privacy: "Sensitive cultural places protected"

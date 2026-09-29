@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { impactRecords, pathways, programmes } from "@/content/site";
 import { Reveal, WordReveal } from "@/components/MotionPrimitives";
 import { SpatialField } from "@/components/SpatialField";
@@ -102,16 +102,15 @@ function TechButton({
 }
 
 export function Hero() {
-  const reduce = useReducedMotion();
   const telemetry = [
     ["Spatial graph", "Live"],
     ["XR simulation", "Ready"],
-    ["Skills evidence", "Pending"],
+    ["Skills evidence", "Evidence-led"],
     ["AI feedback", "Active"]
   ];
 
   return (
-    <section className="relative isolate min-h-[100dvh] overflow-hidden bg-ink text-paper">
+    <section className="relative isolate min-h-[84dvh] overflow-hidden bg-ink text-paper">
       <div className="absolute inset-0">
         <SpatialField />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,8,13,0.98)_0%,rgba(5,8,13,0.78)_45%,rgba(5,8,13,0.28)_100%),linear-gradient(180deg,rgba(5,8,13,0.1),rgba(5,8,13,0.98))]" />
@@ -119,10 +118,10 @@ export function Hero() {
         <div className="grain opacity-35" />
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[100dvh] max-w-7xl content-center gap-12 px-4 pb-16 pt-32 md:px-8 lg:grid-cols-[1.02fr_0.64fr] lg:items-end">
+      <div className="relative z-10 mx-auto grid min-h-[84dvh] max-w-7xl content-center gap-12 px-4 pb-16 pt-32 md:px-8 lg:grid-cols-[1.02fr_0.64fr] lg:items-end">
         <motion.div
-          initial={reduce ? false : { opacity: 0.72, y: 28, filter: "blur(5px)" }}
-          animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={false}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-[980px]"
         >
@@ -155,8 +154,8 @@ export function Hero() {
         <motion.aside
           aria-label="Platform signal panel"
           className="signal-frame scanline-panel hidden overflow-hidden rounded-[1.35rem] border border-white/[0.12] bg-white/[0.06] p-5 backdrop-blur-xl lg:block"
-          initial={reduce ? false : { opacity: 0, x: 34 }}
-          animate={reduce ? undefined : { opacity: 1, x: 0 }}
+          initial={false}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1.1, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-4 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-paper/58">
@@ -182,7 +181,7 @@ export function Hero() {
 
 export function VisualClarity() {
   return (
-    <section className="relative overflow-hidden bg-surface px-4 py-24 text-paper md:px-8 md:py-32">
+    <section className="relative overflow-hidden bg-surface px-4 py-20 text-paper md:px-8 md:py-32">
       <div className="absolute inset-0 noise-field opacity-[0.18]" />
       <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.74fr_1.26fr] lg:items-start">
         <Reveal>
@@ -231,7 +230,7 @@ export function Mandate() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-ink px-4 py-28 text-paper md:px-8 md:py-40">
+    <section className="relative overflow-hidden bg-ink px-4 py-20 text-paper md:px-8 md:py-20">
       <div className="absolute inset-0 noise-field opacity-25" />
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
         <Reveal>
@@ -240,7 +239,7 @@ export function Mandate() {
             Education is the core. AI and XR are the engine.
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-paper/[0.68]">
-            The website describes a family of JEF platforms. Each one answers a practical question: how do people learn better, practise safely, prove capability and move toward work?
+            JEF brings together a family of platforms around practical questions: how people learn better, practise safely, prove capability and move toward work.
           </p>
         </Reveal>
         <div className="grid gap-4">
@@ -265,7 +264,7 @@ export function Mandate() {
 
 export function ProgrammeEcosystem() {
   return (
-    <section className="relative overflow-hidden bg-surface px-4 py-28 text-paper md:px-8 md:py-40">
+    <section className="relative overflow-hidden bg-surface px-4 py-20 text-paper md:px-8 md:py-20">
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(84,220,255,0.08),transparent_28rem),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[length:100%_100%,88px_88px] opacity-70" />
       <div className="mx-auto max-w-7xl">
         <Reveal className="grid gap-8 md:grid-cols-[0.92fr_1.08fr] md:items-end">
@@ -276,7 +275,7 @@ export function ProgrammeEcosystem() {
             Each card below is a JEF product or programme area. Open a module to see who it serves, what problem it solves and how AI, XR, spatial computing or skills development fits into the work.
           </p>
         </Reveal>
-        <div className="relative mt-16 grid auto-rows-[minmax(270px,auto)] grid-cols-1 gap-3 md:grid-flow-dense md:grid-cols-12">
+        <div className="relative mt-10 grid auto-rows-[minmax(270px,auto)] grid-cols-1 gap-3 md:grid-flow-dense md:grid-cols-12">
           {programmes.map((programme, index) => {
             const visual = programmeVisuals[programme.slug] ?? programme.image;
 
@@ -334,7 +333,7 @@ export function SpatialStory() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-ink px-4 py-28 text-paper md:px-8 md:py-40">
+    <section className="relative overflow-hidden bg-ink px-4 py-20 text-paper md:px-8 md:py-20">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[length:120px_120px] opacity-40" />
       <div className="mx-auto max-w-7xl">
         <WordReveal text="The experience should feel like a technical operating system for human skill." />
@@ -362,24 +361,24 @@ export function SpatialStory() {
 
 export function EvidenceAndMap() {
   return (
-    <section className="relative overflow-hidden bg-surface px-4 py-28 text-paper md:px-8 md:py-40">
+    <section className="relative overflow-hidden bg-surface px-4 py-20 text-paper md:px-8 md:py-20">
       <div className="absolute inset-0 noise-field opacity-20" />
       <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-[0.95fr_1.05fr]">
         <Reveal>
           <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-cyan">Evidence layer</p>
           <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.88] tracking-[-0.06em]">
-            Impact data stays honest until verified.
+            Evidence stays honest and source-led.
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-paper/[0.68]">
-            The interface is ready for operational metrics, cohort evidence and delivery dashboards, but unverified figures remain visibly pending.
+            Operational metrics, cohort evidence and delivery dashboards can be published as approved programme records become available.
           </p>
         </Reveal>
         <Reveal delay={0.1}>
           <div className="rounded-[1.35rem] border border-white/[0.11] bg-white/[0.045] p-1">
             <div className="scanline-panel rounded-[1.05rem] bg-ink p-5 md:p-8">
               <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-paper/56">
-                <span>Verification Console</span>
-                <span className="text-amber">Source locked</span>
+                <span>Evidence console</span>
+                <span className="text-amber">Source-led</span>
               </div>
               <div className="grid gap-3">
                 {impactRecords.map((record) => (
@@ -402,14 +401,14 @@ export function EvidenceAndMap() {
 
 export function Partnerships() {
   return (
-    <section className="bg-ink px-4 py-28 text-paper md:px-8 md:py-40">
+    <section className="bg-ink px-4 py-20 text-paper md:px-8 md:py-20">
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <h2 className="max-w-5xl font-display text-[clamp(2.7rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.06em]">
             Built for partners who need deployable skills systems.
           </h2>
         </Reveal>
-        <div className="mt-14 flex gap-4 overflow-x-auto pb-6 [scrollbar-width:none]">
+        <div className="mt-10 flex gap-4 overflow-x-auto pb-6 [scrollbar-width:none]">
           {pathways.map((pathway, index) => (
             <Link
               className="group min-w-[270px] rounded-[1.35rem] border border-white/[0.1] bg-white/[0.045] p-1 transition duration-700 ease-fluid hover:-translate-y-1 hover:border-cyan/35 hover:bg-white/[0.075] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
@@ -421,7 +420,7 @@ export function Partnerships() {
                 <div>
                   <h3 className="text-3xl font-semibold tracking-[-0.05em]">{pathway}</h3>
                   <p className="mt-4 text-sm leading-6 text-paper/[0.64]">
-                    Partnership workflows, documentation and integration requirements to be completed with verified JEF material.
+                    Partnership workflows connect operating needs, implementation roles, documentation and evidence expectations.
                   </p>
                 </div>
               </article>
@@ -435,7 +434,7 @@ export function Partnerships() {
 
 export function InstitutionalClose() {
   return (
-    <section className="relative overflow-hidden bg-paper px-4 py-28 text-ink md:px-8 md:py-40">
+    <section className="relative overflow-hidden bg-paper px-4 py-20 text-ink md:px-8 md:py-20">
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(84,220,255,0.28),transparent_42%),linear-gradient(90deg,rgba(5,8,13,0.08)_1px,transparent_1px)] bg-[length:100%_100%,72px_72px]" />
       <div className="relative z-10 mx-auto max-w-7xl rounded-[1.5rem] border border-ink/10 bg-paper/74 p-6 shadow-[0_24px_90px_rgba(5,8,13,0.14)] backdrop-blur md:p-10">
         <Reveal>

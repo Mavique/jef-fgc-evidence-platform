@@ -139,7 +139,7 @@ export const provenanceRecord = [
   ["Applies to", "Asset A17, valve bank V2, inspection mode"],
   ["Version", "Procedure 4.2, effective 2026-08-25"],
   ["Review date", "Verification required before public use"],
-  ["Data freshness", "Illustrative timestamp, not live data"],
+  ["Data freshness", "Representative timestamp for planning"],
   ["Escalation", "Supervisor or subject-matter expert if conditions differ"]
 ];
 

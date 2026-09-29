@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "images:catalogue": "node scripts/process-catalogue-images.mjs",
     "db:status": "node scripts/fgc/status.mjs",
     "db:backup": "node scripts/fgc/backup.mjs",
     "db:migrate": "node scripts/fgc/migrate.mjs",

@@ -252,7 +252,7 @@ export const currentStates = [
 
 export const evidenceLabels = [
   "proposed_service",
-  "illustrative_use_case",
+  "use_case_pathway",
   "planning_target",
   "pilot",
   "operational",

@@ -2,7 +2,7 @@ export const workgridPositioning = {
   name: "WORKGRID LABS",
   descriptor: "The TVET-to-Work Transformation Grid",
   campaign: "Qualified. Applied. Connected to Opportunity.",
-  status: "illustrative_pathway",
+  status: "pathway_model",
   description:
     "JEF's connected practical pathway adds professional, AI, innovation, project-delivery and workplace capability around TVET qualifications, then converts that capability into verified work evidence and routes toward employment, enterprise, consulting, projects and continued growth."
 };
@@ -154,7 +154,7 @@ export const labConstellation = [
   },
   {
     name: "Digital Services",
-    status: "illustrative_pathway",
+    status: "pathway_model",
     need: "Produce practical software, content, cloud workflows and enterprise support.",
     activities: ["Software", "Cloud", "Cyber hygiene", "Creative production"],
     output: "Digital workflow, media asset, service prototype or support playbook."

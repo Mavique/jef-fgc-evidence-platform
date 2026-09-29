@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BrainCircuit, Eye, GraduationCap, Landmark, Network, ShieldCheck, Waypoints } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { SpatialField } from "@/components/SpatialField";
 import { xrMedia } from "@/content/xr-media";
@@ -41,7 +41,7 @@ const principles = [
   ["Human capability first", "Every system should help people understand, practise, decide, collaborate or progress."],
   ["Technology with governance", "AI, XR and spatial systems need human oversight, safety, privacy, evidence and clear limits."],
   ["Institutions over hype", "JEF designs for schools, colleges, government, enterprises and communities that need implementation paths, not buzzwords."],
-  ["Proof before claims", "Impact numbers, partnerships, deployments and outcomes must be verified before they are presented as achieved facts."]
+  ["Proof before claims", "Public claims are grounded in documented evidence, approved partner information and clear programme status."]
 ] as const;
 
 const ecosystem = [
@@ -85,11 +85,10 @@ function AboutButton({
 }
 
 export function AboutExperience() {
-  const reduce = useReducedMotion();
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-ink text-paper">
-      <section className="relative isolate min-h-[92dvh] overflow-hidden px-4 pb-10 pt-32 md:px-8 md:pt-36">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-10 pt-32 md:px-8 md:pt-36">
         <div className="absolute inset-0">
           <Image
             alt="AI enabled learning environment with students and digital intelligence interface"
@@ -105,11 +104,11 @@ export function AboutExperience() {
           <div className="grain opacity-35" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(92dvh-10rem)] max-w-7xl content-center gap-10 lg:grid-cols-[1.03fr_0.68fr] lg:items-end">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[1.03fr_0.68fr] lg:items-end">
           <motion.div
             className="max-w-5xl"
-            initial={reduce ? false : { opacity: 0.7, y: 30 }}
-            animate={reduce ? undefined : { opacity: 1, y: 0 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-7 inline-flex flex-wrap gap-1.5 rounded-[1.1rem] bg-ink/62 p-1.5 text-xs font-semibold text-paper ring-1 ring-white/[0.14] backdrop-blur-xl">
@@ -133,8 +132,8 @@ export function AboutExperience() {
           <motion.aside
             aria-label="JEF identity summary"
             className="signal-frame scanline-panel rounded-[1.35rem] border border-white/[0.12] bg-white/[0.055] p-5 backdrop-blur-xl"
-            initial={reduce ? false : { opacity: 0, x: 34 }}
-            animate={reduce ? undefined : { opacity: 1, x: 0 }}
+            initial={false}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-4 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-paper/58">
@@ -153,7 +152,7 @@ export function AboutExperience() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-surface px-4 py-20 md:px-8 md:py-24">
+      <section className="relative overflow-hidden bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="absolute inset-0 noise-field opacity-[0.16]" />
         <div className="relative mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.78fr_1fr] lg:items-center">
@@ -197,7 +196,7 @@ export function AboutExperience() {
         </div>
       </section>
 
-      <section className="relative bg-ink px-4 py-20 md:px-8 md:py-24">
+      <section className="relative bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="absolute inset-0 tech-grid opacity-40" />
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-center">
           <Reveal>
@@ -243,7 +242,7 @@ export function AboutExperience() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-paper px-4 py-20 text-ink md:px-8 md:py-24">
+      <section className="relative overflow-hidden bg-paper px-4 py-20 text-ink md:px-8 md:py-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_82%_20%,rgba(84,220,255,0.28),transparent_34rem),radial-gradient(ellipse_at_18%_72%,rgba(170,255,128,0.2),transparent_30rem)]" />
         <div className="relative mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.72fr_0.68fr_0.6fr] lg:items-end">
@@ -254,7 +253,7 @@ export function AboutExperience() {
               </h2>
             </div>
             <p className="max-w-2xl text-lg leading-8 text-ink/72">
-              The About page should make the rest of the site easier to understand. JEF’s programmes are not isolated pages; they are connected pathways for capability, institutional change and responsible technology adoption.
+              JEF’s programmes are connected pathways for capability, institutional change and responsible technology adoption, not isolated service pages.
             </p>
             <div className="rounded-[1.25rem] border border-ink/10 bg-white/70 p-5 shadow-fine">
               <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-canopy">Connection logic</p>
@@ -276,16 +275,16 @@ export function AboutExperience() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-ink px-4 py-20 md:px-8 md:py-24">
+      <section className="relative overflow-hidden bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="absolute inset-0 noise-field opacity-[0.15]" />
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <Reveal>
-            <div className="relative min-h-[360px] overflow-hidden rounded-[1.35rem] border border-white/[0.12] bg-white/[0.045]">
+            <div className="relative min-h-[240px] overflow-hidden rounded-[1.35rem] border border-white/[0.12] bg-white/[0.045]">
               <Image alt="Professionals collaborating in a digital skills workshop" className="object-cover" fill sizes="(min-width: 1024px) 44vw, 100vw" src={images.skills} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.08),rgba(5,8,13,0.74))]" />
               <div className="absolute bottom-5 left-5 right-5 rounded-[1rem] border border-white/[0.14] bg-ink/74 p-4 backdrop-blur-xl">
                 <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-lime">Verification posture</p>
-                <p className="mt-2 text-sm leading-6 text-paper/74">Specific impact numbers, funders, live deployments and partner claims require JEF-approved evidence before publication.</p>
+                <p className="mt-2 text-sm leading-6 text-paper/74">Specific numbers, funder names, live deployments and partner claims appear only when JEF can publish the supporting record.</p>
               </div>
             </div>
           </Reveal>
@@ -306,7 +305,7 @@ export function AboutExperience() {
               Ambitious technology, careful evidence and human-centred implementation.
             </h2>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-paper/70">
-              This About page positions JEF clearly without overstating what still needs formal proof. Where a programme is strategic, proposed or in development, the website should say so plainly.
+              JEF presents strategic and developing programmes with clear status, careful evidence language and human-centred implementation standards.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <AboutButton href="/about/leadership" variant="secondary">

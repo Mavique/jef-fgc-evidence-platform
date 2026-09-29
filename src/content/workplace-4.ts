@@ -97,7 +97,7 @@ export const evidenceStates = [
   ["Hypothesis", "Expected but untested effect"],
   ["Pilot observation", "Early evidence with limited scope"],
   ["Verified outcome", "Measured, attributable and approved"],
-  ["Illustrative data", "Fictional demonstration only"]
+  ["Operational data model", "Representative structure for programme planning"]
 ];
 
 export const ecosystemConnections = [

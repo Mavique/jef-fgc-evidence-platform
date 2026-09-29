@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { SpatialField } from "@/components/SpatialField";
 import { Reveal } from "@/components/MotionPrimitives";
 import {
@@ -44,7 +44,6 @@ export function DxHubExperience() {
   const [journey, setJourney] = useState(journeys[0]);
   const [useCase, setUseCase] = useState(useCases[0]);
   const [partner, setPartner] = useState(partnershipOptions[0]);
-  const reduce = useReducedMotion();
 
   const selectedStudioIndex = useMemo(() => studios.findIndex((item) => item.name === studio.name), [studio]);
   const studioOrbit = useMemo(
@@ -64,22 +63,22 @@ export function DxHubExperience() {
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-ink text-paper">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-20 pt-32 md:px-8">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-20 pt-32 md:px-8">
         <div className="absolute inset-0">
           <SpatialField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(105,227,255,0.18),transparent_34%),radial-gradient(circle_at_20%_70%,rgba(255,190,92,0.16),transparent_30%),linear-gradient(180deg,rgba(6,8,13,0.12),rgba(6,8,13,0.98))]" />
           <div className="tech-grid" />
         </div>
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-9rem)] max-w-7xl content-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.76, y: 24, filter: "blur(4px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-6xl"
           >
             <div className="mb-7 flex flex-wrap items-center gap-3">
               <StatusTag status={dxhubPositioning.status} />
-              <span className="text-sm text-paper/[0.66]">Do not portray proposed hubs as operational facts.</span>
+              <span className="text-sm text-paper/[0.66]">Proposed hubs are communicated as pathways until local activation is approved.</span>
             </div>
             <h1 className="max-w-[1180px] font-display text-[clamp(3.4rem,8.7vw,9.2rem)] font-semibold leading-[0.82] tracking-[-0.075em]">
               {dxhubPositioning.title}
@@ -98,7 +97,7 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section id="system" className="bg-surface px-4 py-28 md:px-8 md:py-40">
+      <section id="system" className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-end">
             <h2 className="font-display text-[clamp(2.7rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Why a hub?</h2>
@@ -106,7 +105,7 @@ export function DxHubExperience() {
               DxHub is not a computer centre or a course menu. It is an operating model that connects needs, capability, practical application, opportunity and local transformation.
             </p>
           </Reveal>
-          <div className="mt-16 grid gap-8 lg:grid-cols-[0.86fr_1.14fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.86fr_1.14fr]">
             <div className="grid gap-3">
               {fragmentedNodes.map(([title, problem], index) => (
                 <Reveal delay={index * 0.04} key={title}>
@@ -123,7 +122,7 @@ export function DxHubExperience() {
               ))}
             </div>
             <Reveal delay={0.12}>
-              <div className="relative min-h-[520px] rounded-[2.4rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
+              <div className="relative min-h-[440px] rounded-[2.4rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
                 <div className="relative h-full overflow-hidden rounded-[1.9rem] bg-ink p-8 shadow-[inset_0_1px_1px_rgba(255,255,255,0.13)]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(105,227,255,0.22),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:auto,42px_42px]" />
                 <div className="absolute inset-0 bg-[url('/images/xr/ar-manufacturing-digital-twin.jpg')] bg-cover bg-center opacity-16 grayscale" />
@@ -153,7 +152,7 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.95fr_1.05fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Proposed Sedibeng network</h2>
@@ -178,7 +177,7 @@ export function DxHubExperience() {
           </Reveal>
           <Reveal delay={0.1}>
             <div className="rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
-              <div className="relative min-h-[520px] overflow-hidden rounded-[1.7rem] bg-surface p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
+              <div className="relative min-h-[440px] overflow-hidden rounded-[1.7rem] bg-surface p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
                 <div className="absolute inset-8 rounded-[40%] border border-cyan/[0.18]" />
                 <div className="absolute inset-20 rounded-[45%] border border-lime/[0.13]" />
                 {networkNodes.map((item, index) => (
@@ -212,12 +211,12 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">The transformation loop</h2>
           </Reveal>
-          <div className="mt-14 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <div className="grid gap-3">
               {transformationLoop.map((item, index) => (
                 <button
@@ -250,7 +249,7 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section id="pathways" className="bg-ink px-4 py-28 md:px-8 md:py-40">
+      <section id="pathways" className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Choose a perspective</h2>
@@ -282,14 +281,14 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
             <h2 className="font-display text-[clamp(2.7rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Capability constellation</h2>
-            <p className="text-lg leading-8 text-paper/[0.64]">Studios are presented as programme environments that may be physical, mobile, virtual or blended. They are not guaranteed rooms until verified.</p>
+            <p className="text-lg leading-8 text-paper/[0.64]">Studios are programme environments that may be physical, mobile, virtual or blended depending on the local operating model.</p>
           </Reveal>
-          <div className="mt-16 grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative min-h-[620px] rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1] max-lg:hidden">
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative min-h-[500px] rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1] max-lg:hidden">
               <div className="relative h-full overflow-hidden rounded-[1.75rem] bg-ink">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(105,227,255,0.18),transparent_30%)]" />
                 <button className="absolute left-1/2 top-1/2 grid size-40 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-cyan text-center font-bold text-ink" type="button">
@@ -328,7 +327,7 @@ export function DxHubExperience() {
                   <h3 className="mt-8 text-5xl font-semibold tracking-[-0.065em]">{studio.name}</h3>
                   <p className="mt-6 text-lg leading-8 text-paper/[0.66]">{studio.purpose}</p>
                   <p className="mt-8 rounded-[1.2rem] bg-white/[0.055] p-5 text-sm leading-6 text-paper/[0.58]">
-                    Connected programmes, maturity labels, deliverables and verified availability can be added here as JEF approves details.
+                    Connected programmes, maturity labels, deliverables and availability are published through approved JEF programme details.
                   </p>
                 </div>
               </article>
@@ -337,7 +336,7 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Human journeys through the hub</h2>
@@ -360,13 +359,13 @@ export function DxHubExperience() {
                   </div>
                 ))}
               </div>
-              <p className="mt-4 text-sm text-paper/[0.54]">Illustrative pathway. Delivery evidence must be added only when verified.</p>
+              <p className="mt-4 text-sm text-paper/[0.54]">Delivery pathway. Evidence is added when programme records and partner approvals are in place.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.82fr_1.18fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Use-case lab</h2>
@@ -381,7 +380,7 @@ export function DxHubExperience() {
           <Reveal delay={0.1}>
             <article className="rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
               <div className="rounded-[1.75rem] bg-ink p-8 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
-                <StatusTag status="illustrative" />
+                <StatusTag status="delivery_pathway" />
                 <h3 className="mt-8 text-5xl font-semibold tracking-[-0.065em]">{useCase.context}: {useCase.challenge}</h3>
                 <p className="mt-6 text-xl leading-9 text-paper/[0.66]">{useCase.response}</p>
               </div>
@@ -390,7 +389,7 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-2">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">JEF ecosystem connections</h2>
@@ -418,7 +417,7 @@ export function DxHubExperience() {
         </div>
       </section>
 
-      <section id="partners" className="relative overflow-hidden bg-paper px-4 py-28 text-ink md:px-8 md:py-40">
+      <section id="partners" className="relative overflow-hidden bg-paper px-4 py-20 text-ink md:px-8 md:py-20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_20%,rgba(105,227,255,0.32),transparent_30%),radial-gradient(circle_at_16%_78%,rgba(255,190,92,0.26),transparent_34%)]" />
         <div className="relative z-10 mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.02fr_0.98fr]">
           <Reveal>

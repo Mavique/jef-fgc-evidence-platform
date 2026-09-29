@@ -54,7 +54,7 @@ test("old homepage is preserved as the platform overview menu page", async ({ pa
   await expect(page.getByRole("link", { name: /view dxhub/i })).toBeVisible();
   await expect(page.getByText(/AI \+ XR company/i)).toBeVisible();
   await expect(page.getByText(/Product modules for immersive skills delivery/i)).toBeVisible();
-  await expect(page.getByText(/Impact data stays honest until verified/i)).toBeVisible();
+  await expect(page.getByText(/Evidence stays honest and source-led/i)).toBeVisible();
 });
 
 test("mobile navigation opens and links to contact", async ({ page }) => {
@@ -72,7 +72,7 @@ test("About page explains JEF identity and evidence posture", async ({ page }) =
   await expect(page.getByText(/Artificial Intelligence, Extended Reality and Spatial AI systems/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /Not a generic charity page/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /Transformation Services/i })).toBeVisible();
-  await expect(page.getByText(/Specific impact numbers, funders, live deployments and partner claims require JEF-approved evidence/i)).toBeVisible();
+  await expect(page.getByText(/Specific numbers, funder names, live deployments and partner claims appear only when JEF can publish/i)).toBeVisible();
 });
 
 test("Services page presents the transformation gateway and sector pathways", async ({ page }) => {
@@ -87,7 +87,7 @@ test("Services page presents the transformation gateway and sector pathways", as
   await expect(page).toHaveURL(/#health$/);
 });
 
-test("Services page deep-links to a selected sector and accepts a prototype enquiry", async ({ page }) => {
+test("Services page deep-links to a selected sector and accepts a transformation enquiry", async ({ page }) => {
   await page.goto("/services#enterprise");
   await expect(page.getByRole("heading", { level: 2, name: /BizDX/i })).toBeVisible();
   await expect(page.getByRole("heading", { level: 3, name: /Run smarter\. Serve better/i })).toBeVisible();
@@ -98,13 +98,13 @@ test("Services page deep-links to a selected sector and accepts a prototype enqu
   await page.getByLabel(/Challenge summary/i).fill("We need a structured transformation diagnostic.");
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: /Submit transformation enquiry/i }).click();
-  await expect(page.getByRole("status")).toContainText(/local prototype success state/i);
+  await expect(page.getByRole("status")).toContainText(/JEF will review the enquiry/i);
 });
 
 test("DxHub programme page explains the proposed system", async ({ page }) => {
   await page.goto("/programmes/dxhub");
   await expect(page.getByRole("heading", { name: "Digital Transformation Hubs" })).toBeVisible();
-  await expect(page.getByText(/Do not portray proposed hubs as operational facts/i)).toBeVisible();
+  await expect(page.getByText(/Proposed hubs are communicated as pathways/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /Proposed Sedibeng network/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /Emfuleni DxHub/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: /The transformation loop/i })).toBeVisible();

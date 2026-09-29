@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 
 export function Reveal({
@@ -12,13 +12,12 @@ export function Reveal({
   className?: string;
   delay?: number;
 }) {
-  const reduce = useReducedMotion();
 
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 28 }}
-      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+      initial={false}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-12% 0px" }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay }}
     >
@@ -28,7 +27,6 @@ export function Reveal({
 }
 
 export function WordReveal({ text }: { text: string }) {
-  const reduce = useReducedMotion();
   const words = text.split(" ");
 
   return (
@@ -36,8 +34,8 @@ export function WordReveal({ text }: { text: string }) {
       {words.map((word, index) => (
         <motion.span
           className="mr-[0.22em] inline-block"
-          initial={reduce ? false : { opacity: 0.16, y: 16 }}
-          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          initial={false}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-18% 0px" }}
           transition={{ duration: 0.5, delay: index * 0.035 }}
           key={`${word}-${index}`}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { ICampusField } from "@/components/icampus/ICampusField";
 import {
@@ -56,29 +56,28 @@ export function ICampusExperience() {
   const [stakeholder, setStakeholder] = useState(stakeholders[0]);
   const [bridge, setBridge] = useState(applicationBridge[0]);
   const [partner, setPartner] = useState(partnerActions[0]);
-  const reduce = useReducedMotion();
 
   const stageIndex = useMemo(() => loopStages.findIndex((item) => item.name === stage.name), [stage]);
   const visibleAcademies = useMemo(() => academies.slice(0, Math.max(5, stageIndex + 4)), [stageIndex]);
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-[#071426] text-paper">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-32 md:px-8">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-32 md:px-8">
         <div className="absolute inset-0">
           <ICampusField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(78,232,198,0.18),transparent_32%),radial-gradient(circle_at_22%_72%,rgba(255,127,114,0.18),transparent_30%),linear-gradient(180deg,rgba(7,20,38,0.1),rgba(7,20,38,0.97))]" />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(246,248,255,0.045)_1px,transparent_1px),linear-gradient(rgba(246,248,255,0.045)_1px,transparent_1px)] bg-[length:80px_80px] opacity-50" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.7, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <StatusTag status={icampusPositioning.status} />
-              <span className="text-sm text-paper/[0.66]">Verification required before accreditation, vendor or outcome claims.</span>
+              <span className="text-sm text-paper/[0.66]">Accreditation, vendor and outcome claims are published through approved JEF channels.</span>
             </div>
             <h1 className="max-w-[780px] font-display text-[clamp(2.75rem,5.2vw,5.8rem)] font-semibold leading-[0.89] tracking-[-0.065em]">
               <span className="block text-[#4ee8c6]">{icampusPositioning.name}</span>
@@ -100,10 +99,10 @@ export function ICampusExperience() {
 
           <Reveal delay={0.12}>
             <div className="rounded-[2.2rem] bg-white/[0.06] p-1.5 ring-1 ring-white/[0.12]">
-              <div className="relative min-h-[540px] overflow-hidden rounded-[1.7rem] bg-[#0d2038] p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
+              <div className="relative min-h-[460px] overflow-hidden rounded-[1.7rem] bg-[#0d2038] p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
                 <div className="absolute inset-0 bg-[url('/images/xr/robotics-sensor-car.jpg')] bg-cover bg-center opacity-20 grayscale" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,32,56,0.2),rgba(13,32,56,0.94))]" />
-                <div className="relative z-10 grid min-h-[486px] content-between gap-8">
+                <div className="relative z-10 grid min-h-[400px] content-between gap-8">
                   <div>
                     <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#ffd76a]">Campus without walls</p>
                     <h2 className="mt-5 text-5xl font-semibold tracking-[-0.065em] md:text-7xl">Learning should move somewhere.</h2>
@@ -112,8 +111,8 @@ export function ICampusExperience() {
                     {["Goal", "Pathway", "Support", "Evidence", "Application", "Next step"].map((item, index) => (
                       <motion.div
                         className={`rounded-[1.1rem] p-4 text-lg font-semibold ring-1 ${index === 0 || index === 5 ? "bg-[#ffd76a] text-[#071426] ring-[#ffd76a]" : "bg-white/[0.085] text-paper ring-white/[0.12]"}`}
-                        initial={reduce ? false : { opacity: 0, x: -20 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.4 }}
                         transition={{ duration: 0.5, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -129,16 +128,16 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section className="bg-[#071426] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#071426] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Not a course catalogue.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="mt-10 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
             {platformComparison.map((item, index) => (
               <Reveal delay={index * 0.08} key={item.name}>
                 <article className={`h-full rounded-[2rem] p-1.5 ${index === 0 ? "bg-white/[0.055] ring-1 ring-white/[0.1]" : "bg-[#4ee8c6] text-[#071426]"}`}>
-                  <div className={`flex min-h-[420px] flex-col justify-between rounded-[1.55rem] p-7 ${index === 0 ? "bg-[#0d2038] text-paper" : "bg-[#4ee8c6] text-[#071426]"}`}>
+                  <div className={`flex min-h-[320px] flex-col justify-between rounded-[1.55rem] p-7 ${index === 0 ? "bg-[#0d2038] text-paper" : "bg-[#4ee8c6] text-[#071426]"}`}>
                     <div>
                       <p className="font-mono text-xs uppercase tracking-[0.18em] opacity-70">{item.stance}</p>
                       <h3 className="mt-6 text-5xl font-semibold tracking-[-0.065em]">{item.name}</h3>
@@ -161,12 +160,12 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section id="pathway" className="bg-[#0d2038] px-4 py-28 md:px-8 md:py-40">
+      <section id="pathway" className="bg-[#0d2038] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Start with a goal.</h2>
             <p className="mt-6 max-w-xl text-lg leading-8 text-paper/[0.64]">
-              Pathways are illustrative until the catalogue, prerequisites, support and destination programmes are verified.
+              Pathways connect goals, support and destination programmes so learners can compare routes with context.
             </p>
             <div className="mt-8 grid gap-3">
               {goals.map((item) => (
@@ -194,7 +193,7 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section className="bg-[#071426] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#071426] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.82fr_1.18fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Learning-to-Opportunity Loop.</h2>
@@ -209,7 +208,7 @@ export function ICampusExperience() {
           <Reveal delay={0.1}>
             <article className="rounded-[2.2rem] bg-white/[0.055] p-1.5 ring-1 ring-white/[0.1]">
               <div className="rounded-[1.7rem] bg-[#0d2038] p-8">
-                <StatusTag status={stageIndex < 3 ? "confirmed_programme" : "illustrative_pathway"} />
+                <StatusTag status={stageIndex < 3 ? "confirmed_programme" : "pathway_model"} />
                 <h3 className="mt-8 text-5xl font-semibold tracking-[-0.065em]">{stage.name}</h3>
                 <div className="mt-8 grid gap-4">
                   <p className="rounded-[1rem] bg-white/[0.06] p-5 text-paper/[0.72]">Learner action: {stage.action}</p>
@@ -222,12 +221,12 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section id="academies" className="bg-[#0d2038] px-4 py-28 md:px-8 md:py-40">
+      <section id="academies" className="bg-[#0d2038] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Academies illuminate by pathway.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {visibleAcademies.map(([name, status, body], index) => (
               <Reveal delay={index * 0.035} key={name}>
                 <article className={`min-h-64 rounded-[1.6rem] p-6 ring-1 ${status === "vendor_partnership_pending" ? "bg-[#ff7f72] text-[#071426] ring-[#ff7f72]" : "bg-white/[0.055] text-paper ring-white/[0.1]"}`}>
@@ -241,7 +240,7 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section className="bg-[#071426] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#071426] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Credential Decoder.</h2>
@@ -265,12 +264,12 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section className="bg-[#0d2038] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#0d2038] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Scalable does not mean unsupported.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {supportRoles.map((item) => (
               <span className="rounded-[1.15rem] bg-white/[0.065] p-5 text-lg font-semibold ring-1 ring-white/[0.1]" key={item}>
                 {item}
@@ -280,7 +279,7 @@ export function ICampusExperience() {
         </div>
       </section>
 
-      <section className="bg-[#071426] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#071426] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.86fr_1.14fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Learning bridges into application.</h2>
@@ -298,14 +297,14 @@ export function ICampusExperience() {
               <h3 className="mt-6 text-6xl font-semibold tracking-[-0.07em]">{bridge[0]}</h3>
               <p className="mt-7 text-2xl leading-9">{bridge[1]}</p>
               <p className="mt-8 rounded-[1.2rem] bg-[#071426] p-5 text-lg leading-8 text-paper">
-                Entry requirements, current availability and evidence produced must be verified before presenting any route as active.
+                Entry requirements, availability and evidence outputs are confirmed through JEF programme engagement before a route is presented as active.
               </p>
             </article>
           </Reveal>
         </div>
       </section>
 
-      <section id="partners" className="bg-[#0d2038] px-4 py-28 md:px-8 md:py-40">
+      <section id="partners" className="bg-[#0d2038] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Stakeholders enter through different doors.</h2>
@@ -330,7 +329,7 @@ export function ICampusExperience() {
                 ))}
               </div>
               <p className="mt-8 rounded-[1.2rem] bg-[#071426] p-5 text-lg leading-8 text-paper">
-                Selected action: {partner}. JEF should verify governance, cost, access, partner permissions, accreditation and outcome definitions before publishing claims.
+                Selected action: {partner}. JEF reviews governance, cost, access, partner permissions, accreditation and outcome definitions before publishing claims.
               </p>
             </article>
           </Reveal>

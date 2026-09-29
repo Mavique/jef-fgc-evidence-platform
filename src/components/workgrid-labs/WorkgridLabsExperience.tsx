@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { WorkgridField } from "@/components/workgrid-labs/WorkgridField";
 import {
@@ -59,24 +59,23 @@ export function WorkgridLabsExperience() {
   const [mission, setMission] = useState(missions[0]);
   const [route, setRoute] = useState(opportunityRoutes[0]);
   const [partnerAction, setPartnerAction] = useState(partnerActions[0]);
-  const reduce = useReducedMotion();
 
   const studioIndex = useMemo(() => studios.findIndex((item) => item.name === studio.name), [studio]);
   const passportProgress = useMemo(() => passportBlocks.slice(0, Math.max(4, studioIndex + 2)), [studioIndex]);
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-[#080b10] text-paper">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-32 md:px-8">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-32 md:px-8">
         <div className="absolute inset-0">
           <WorkgridField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_20%,rgba(255,184,76,0.16),transparent_32%),radial-gradient(circle_at_18%_74%,rgba(55,240,220,0.16),transparent_30%),linear-gradient(180deg,rgba(8,11,16,0.18),rgba(8,11,16,0.98))]" />
           <div className="tech-grid" />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#080b10] to-transparent" />
         </div>
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.7, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -103,7 +102,7 @@ export function WorkgridLabsExperience() {
 
           <Reveal delay={0.12}>
             <div className="relative overflow-hidden rounded-[2.2rem] bg-white/[0.055] p-1.5 ring-1 ring-white/[0.12]">
-              <div className="relative min-h-[520px] overflow-hidden rounded-[1.7rem] bg-[#0d1218] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.13)]">
+              <div className="relative min-h-[440px] overflow-hidden rounded-[1.7rem] bg-[#0d1218] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.13)]">
                 <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] bg-[length:56px_56px]" />
                 <div className="relative z-10 grid h-full content-between gap-7">
                   <div>
@@ -116,8 +115,8 @@ export function WorkgridLabsExperience() {
                         className={`flex items-center justify-between rounded-[1.1rem] p-4 ring-1 ${
                           index === 0 ? "bg-paper text-ink ring-paper" : index === missingLayer.length - 1 ? "bg-amber text-ink ring-amber" : "bg-white/[0.07] text-paper ring-white/[0.12]"
                         }`}
-                        initial={reduce ? false : { opacity: 0, x: -24 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.4 }}
                         transition={{ duration: 0.55, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -134,7 +133,7 @@ export function WorkgridLabsExperience() {
         </div>
       </section>
 
-      <section id="builder" className="bg-[#080b10] px-4 py-28 md:px-8 md:py-40">
+      <section id="builder" className="bg-[#080b10] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Choose a role. Choose a field. The grid adjusts.</h2>
@@ -143,7 +142,7 @@ export function WorkgridLabsExperience() {
             </p>
           </Reveal>
 
-          <div className="mt-14 grid gap-8 lg:grid-cols-[0.78fr_1.22fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.78fr_1.22fr]">
             <Reveal>
               <div className="grid gap-3">
                 {roles.map((item) => (
@@ -162,7 +161,7 @@ export function WorkgridLabsExperience() {
             </Reveal>
 
             <Reveal delay={0.1}>
-              <article className="min-h-[560px] rounded-[2.2rem] bg-amber p-1.5 text-ink">
+              <article className="min-h-[460px] rounded-[2.2rem] bg-amber p-1.5 text-ink">
                 <div className="grid h-full gap-8 rounded-[1.7rem] bg-amber p-7 md:grid-cols-[0.92fr_1.08fr] md:p-9">
                   <div className="flex flex-col justify-between gap-10">
                     <div>
@@ -175,7 +174,7 @@ export function WorkgridLabsExperience() {
                       <p className="mt-3 text-lg leading-8 text-paper/[0.72]">{field.capability}</p>
                     </div>
                   </div>
-                  <div className="relative min-h-[360px] overflow-hidden rounded-[1.3rem] bg-[#10151b] p-5 text-paper">
+                  <div className="relative min-h-[240px] overflow-hidden rounded-[1.3rem] bg-[#10151b] p-5 text-paper">
                     <div className="absolute inset-0 bg-[url('/images/xr/ar-automotive-training.jpg')] bg-cover bg-center opacity-24 grayscale" />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,21,27,0.22),rgba(16,21,27,0.94))]" />
                     <div className="relative z-10 grid h-full content-end gap-3">
@@ -194,13 +193,13 @@ export function WorkgridLabsExperience() {
         </div>
       </section>
 
-      <section id="studios" className="bg-[#0d1218] px-4 py-28 md:px-8 md:py-40">
+      <section id="studios" className="bg-[#0d1218] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">A pathway, not a course queue.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative min-h-[620px] rounded-[2.2rem] bg-white/[0.05] p-4 ring-1 ring-white/[0.1]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative min-h-[500px] rounded-[2.2rem] bg-white/[0.05] p-4 ring-1 ring-white/[0.1]">
               <div className="absolute inset-4 rounded-[1.6rem] bg-[linear-gradient(90deg,rgba(55,240,220,0.09)_1px,transparent_1px),linear-gradient(rgba(55,240,220,0.09)_1px,transparent_1px)] bg-[length:64px_64px]" />
               <div className="relative grid h-full grid-cols-1 gap-3 sm:grid-cols-2">
                 {studios.map((item, index) => (
@@ -221,7 +220,7 @@ export function WorkgridLabsExperience() {
             <Reveal delay={0.1}>
               <article className="rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
                 <div className="rounded-[1.7rem] bg-[#080b10] p-8">
-                  <StatusTag status={studioIndex < 3 ? "core_programme" : "illustrative_pathway"} />
+                  <StatusTag status={studioIndex < 3 ? "core_programme" : "pathway_model"} />
                   <h3 className="mt-8 text-5xl font-semibold tracking-[-0.065em]">{studio.name}</h3>
                   <p className="mt-6 text-lg leading-8 text-paper/[0.68]">{studio.purpose}</p>
                   <div className="mt-8 grid gap-4">
@@ -236,15 +235,15 @@ export function WorkgridLabsExperience() {
         </div>
       </section>
 
-      <section className="bg-[#080b10] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#080b10] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Lab constellation by what participants can deliver.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-4 md:grid-cols-2">
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
             {labConstellation.map((item) => (
               <button
-                className={`min-h-[260px] rounded-[1.8rem] p-6 text-left transition duration-700 ease-fluid ${
+                className={`min-h-[170px] rounded-[1.8rem] p-6 text-left transition duration-700 ease-fluid ${
                   item.name === lab.name ? "bg-amber text-ink" : "bg-white/[0.055] text-paper ring-1 ring-white/[0.1] hover:bg-white/[0.09]"
                 }`}
                 type="button"
@@ -276,12 +275,12 @@ export function WorkgridLabsExperience() {
         </div>
       </section>
 
-      <section id="missions" className="bg-[#0d1218] px-4 py-28 md:px-8 md:py-40">
+      <section id="missions" className="bg-[#0d1218] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.82fr_1.18fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Industry mission simulator.</h2>
             <p className="mt-6 max-w-xl text-lg leading-8 text-paper/[0.64]">
-              Examples are illustrative planning interactions until a challenge owner, participants, outcomes and permissions are verified.
+              Planning interactions help define challenge ownership, participants, outcomes and permission needs before delivery.
             </p>
             <div className="mt-8 grid gap-3">
               {missions.map((item) => (
@@ -294,7 +293,7 @@ export function WorkgridLabsExperience() {
           <Reveal delay={0.1}>
             <article className="rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
               <div className="rounded-[1.7rem] bg-[#080b10] p-8">
-                <StatusTag status="verification_required" />
+                <StatusTag status="scope_review" />
                 <h3 className="mt-8 text-5xl font-semibold tracking-[-0.065em]">{mission.name}</h3>
                 <div className="mt-8 grid gap-4">
                   <p className="rounded-[1rem] bg-white/[0.06] p-5 text-paper/[0.72]">Challenge: {mission.challenge}</p>
@@ -307,12 +306,12 @@ export function WorkgridLabsExperience() {
         </div>
       </section>
 
-      <section className="bg-[#080b10] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#080b10] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">The Capability Passport is evidence architecture.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="rounded-[2.2rem] bg-paper p-7 text-ink">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <h3 className="text-5xl font-semibold tracking-[-0.065em]">Anonymous Passport</h3>
@@ -322,8 +321,8 @@ export function WorkgridLabsExperience() {
                 {passportProgress.map((item, index) => (
                   <motion.div
                     className="rounded-[1rem] bg-ink p-4 text-paper"
-                    initial={reduce ? false : { opacity: 0, y: 16 }}
-                    whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                    initial={false}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.4 }}
                     transition={{ duration: 0.5, delay: index * 0.045, ease: [0.16, 1, 0.3, 1] }}
                     key={item}
@@ -357,7 +356,7 @@ export function WorkgridLabsExperience() {
         </div>
       </section>
 
-      <section className="bg-[#0d1218] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#0d1218] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Ecosystem connections appear when the pathway needs them.</h2>
