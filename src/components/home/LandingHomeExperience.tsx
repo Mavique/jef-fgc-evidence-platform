@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
+import { BrandFilmFeature } from "@/components/home/BrandFilmFeature";
 import { Reveal } from "@/components/MotionPrimitives";
 import { SpatialField } from "@/components/SpatialField";
 import { xrMedia } from "@/content/xr-media";
@@ -302,6 +303,8 @@ export function LandingHomeExperience() {
           </motion.aside>
         </div>
       </section>
+
+      <BrandFilmFeature />
 
       <section className="relative overflow-hidden bg-surface px-4 py-20 md:px-8 md:py-32">
         <div className="absolute inset-0 noise-field opacity-[0.16]" />
