@@ -25,8 +25,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function PublicPage({ params }: { params: Promise<{ slug: string[] }> }) {
+export default async function PublicPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ slug: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { slug } = await params;
+  const query = await searchParams;
   const key = slug.join("/");
   const page = publicRoutes[key];
 
@@ -34,5 +41,7 @@ export default async function PublicPage({ params }: { params: Promise<{ slug: s
     notFound();
   }
 
-  return <PublicRouteExperience page={page} />;
+  const partnership = Array.isArray(query.partnership) ? query.partnership[0] : query.partnership;
+
+  return <PublicRouteExperience page={page} partnership={partnership} />;
 }

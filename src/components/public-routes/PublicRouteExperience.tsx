@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ContactPartnershipContext } from "@/components/public-routes/ContactPartnershipContext";
 import type { PublicRouteAction, PublicRouteCard, PublicRouteDefinition } from "@/content/public-routes";
 
 function ActionLink({ action }: { action: PublicRouteAction }) {
@@ -70,7 +71,13 @@ function PathwayItem({ card, index }: { card: PublicRouteCard; index: number }) 
   );
 }
 
-export function PublicRouteExperience({ page }: { page: PublicRouteDefinition }) {
+export function PublicRouteExperience({
+  page,
+  partnership
+}: {
+  page: PublicRouteDefinition;
+  partnership?: string;
+}) {
   return (
     <main className="bg-ink text-paper">
       <section className="relative isolate overflow-hidden px-4 pb-16 pt-32 md:px-8 md:pt-36">
@@ -113,6 +120,8 @@ export function PublicRouteExperience({ page }: { page: PublicRouteDefinition })
           </div>
         </div>
       </section>
+
+      {page.slug === "contact" ? <ContactPartnershipContext initialPartnership={partnership} /> : null}
 
       <section className="bg-surface px-4 py-16 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
