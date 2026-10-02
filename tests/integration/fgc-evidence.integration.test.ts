@@ -16,7 +16,7 @@ const ids = {
   country: "22222222-2222-4222-8222-222222222201", province: "22222222-2222-4222-8222-222222222202",
   organisation: "22222222-2222-4222-8222-222222222203", college: "22222222-2222-4222-8222-222222222204",
   campus: "22222222-2222-4222-8222-222222222205", period: "22222222-2222-4222-8222-222222222220",
-  programme: "22222222-2222-4222-8222-222222222230", template: "22222222-2222-4222-8222-222222222240",
+  programme: "22222222-2222-4222-8222-222222222230", template: "22222222-2222-4222-8222-222222222240", templateFailure: "22222222-2222-4222-8222-222222222241",
   lecturer: "22222222-2222-4222-8222-222222222250", lecturerOther: "22222222-2222-4222-8222-222222222251",
   assessor: "22222222-2222-4222-8222-222222222254", assessorOther: "22222222-2222-4222-8222-222222222255",
   moderator: "22222222-2222-4222-8222-222222222256", moderatorOther: "22222222-2222-4222-8222-222222222257",
@@ -126,7 +126,9 @@ describe("authenticated private FGC evidence lifecycle", () => {
       INSERT INTO fgc.campus_sites (id, college_id, official_name) VALUES ('${ids.campus}', '${ids.college}', 'Synthetic Evidence Campus');
       INSERT INTO fgc.reporting_periods (id, name, scope_statement) VALUES ('${ids.period}', 'Synthetic Evidence Period', 'Disposable evidence scope');
       INSERT INTO fgc.curriculum_programmes (id, official_title, framework) VALUES ('${ids.programme}', 'Synthetic Evidence Programme', 'NCV');
-      INSERT INTO fgc.form_templates (id, code, name) VALUES ('${ids.template}', 'FGC_EVIDENCE_TEST', 'Synthetic Evidence Form');
+      INSERT INTO fgc.form_templates (id, code, name) VALUES
+        ('${ids.template}', 'FGC_EVIDENCE_TEST', 'Synthetic Evidence Form'),
+        ('${ids.templateFailure}', 'FGC_EVIDENCE_FAILURE_TEST', 'Synthetic Evidence Failure Form');
       INSERT INTO fgc.roles (id, code, name, description) VALUES
         ('${ids.roleLecturer}', 'LECTURER', 'Lecturer', 'test'), ('${ids.roleAssessor}', 'ASSESSOR', 'Assessor', 'test'),
         ('${ids.roleModerator}', 'MODERATOR', 'Moderator', 'test'), ('${ids.roleJef}', 'JEF_ADMINISTRATOR', 'JEF', 'test'),
@@ -152,7 +154,7 @@ describe("authenticated private FGC evidence lifecycle", () => {
       INSERT INTO fgc.form_assignments (id, template_id, assigned_to, assigned_by, reporting_period_id, programme_id, college_id, campus_id, status) VALUES
         ('${ids.assignment}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED'),
         ('${ids.assignment2}', '${ids.template}', '${ids.lecturerOther}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED'),
-        ('${ids.assignment3}', '${ids.template}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
+        ('${ids.assignment3}', '${ids.templateFailure}', '${ids.lecturer}', '${ids.jef}', '${ids.period}', '${ids.programme}', '${ids.college}', '${ids.campus}', 'ASSIGNED');
       INSERT INTO fgc.merseta_access_scopes (id, user_id, tvet_college_id, campus_id, programme_id, reporting_period_id, evidence_detail_permission, granted_by, reason)
         VALUES ('${ids.scope}', '${ids.merseta}', '${ids.college}', '${ids.campus}', '${ids.programme}', '${ids.period}', 'DETAIL', '${ids.jef}', 'Synthetic evidence scope');
     `);
