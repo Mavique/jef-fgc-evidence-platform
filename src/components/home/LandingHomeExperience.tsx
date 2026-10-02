@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
 import { BrandFilmFeature } from "@/components/home/BrandFilmFeature";
+import { ProgrammeExplorer } from "@/components/home/ProgrammeExplorer";
 import { TransformationPathway } from "@/components/home/TransformationPathway";
 import { Reveal } from "@/components/MotionPrimitives";
 import { SpatialField } from "@/components/SpatialField";
@@ -89,73 +90,6 @@ const audiencePathways = [
     challenge: "Solutions need local context, adoption support and institutional delivery capacity.",
     capability: "Joint implementation pathways for AI, XR, spatial systems and skills ecosystems.",
     href: "/partnerships"
-  }
-];
-
-const flagshipSolutions = [
-  {
-    name: "Digital Transformation Hubs",
-    value: "Place-based infrastructure connecting youth capability, digital services and regional economic participation.",
-    audience: "Municipalities, TVET colleges and local enterprise ecosystems",
-    status: "In development",
-    href: "/programmes/dxhub",
-    image: xrMedia.jefDigitalClassroomSession
-  },
-  {
-    name: "WORKGRID LABS",
-    value: "A TVET-to-work pathway connecting qualifications, professional capability, missions, evidence and opportunity routing.",
-    audience: "TVET students, graduates, colleges, employers and funders",
-    status: "Pilot",
-    href: "/programmes/workgrid-labs",
-    image: xrMedia.childrenRoboticsLearning
-  },
-  {
-    name: "VOCLE XR",
-    value: "Lecturer-led immersive learning that connects curriculum, simulation, evidence and capability development.",
-    audience: "Learners, lecturers, institutions, employers and funders",
-    status: "In development",
-    href: "/programmes/vocle-xr",
-    image: xrMedia.xrMedicalHeartLearning
-  },
-  {
-    name: "XR Labs for TVET Colleges",
-    value: "Platform-neutral XR Lab establishment and activation for occupational teaching, simulation and evidence.",
-    audience: "TVET leaders, lecturers, students, technical teams and partners",
-    status: "Proposed",
-    href: "/programmes/xr-labs-tvet-colleges",
-    image: xrMedia.jefCollegeComputerLab
-  },
-  {
-    name: "Workplace 4.0",
-    value: "Human-centred workforce transformation for smart workers, redesigned work and responsible AI adoption.",
-    audience: "Workers, managers, HR, SMEs and institutional leaders",
-    status: "In development",
-    href: "/programmes/workplace-4",
-    image: xrMedia.xrManufacturingDashboard
-  },
-  {
-    name: "Prolific Edge",
-    value: "Enterprise capability development across leadership, digital readiness, AI adoption and operational maturity.",
-    audience: "SMMEs, enterprises and workforce teams",
-    status: "Active",
-    href: "/programmes/prolific-edge",
-    image: xrMedia.jefIndustryBriefing
-  },
-  {
-    name: "Spatial AI Enterprise",
-    value: "Digital twins, contextual guidance and immersive learning embedded into physical workplaces.",
-    audience: "Enterprise leaders, operations teams, technicians and L&D teams",
-    status: "In development",
-    href: "/programmes/spatial-enterprise",
-    image: xrMedia.vrIndustrialFactoryTour
-  },
-  {
-    name: "JEF AI Services",
-    value: "Responsible applied-AI transformation for readiness, knowledge foundations, assistants, agents and governance.",
-    audience: "Executives, public institutions, SMMEs and operations teams",
-    status: "Proposed",
-    href: "/programmes/ai-services",
-    image: xrMedia.spatialAiCollaborationRoom
   }
 ];
 
@@ -426,55 +360,7 @@ export function LandingHomeExperience() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-ink px-4 py-20 md:px-8 md:py-32">
-        <div className="absolute inset-0 tech-grid opacity-30" />
-        <div className="relative mx-auto max-w-7xl">
-          <SectionIntro
-            eyebrow="Flagship solution portfolio"
-            title="A curated portfolio for education, work, places and institutional capability."
-            body="Priority programmes connect visitors to the wider portfolio for detailed service and implementation pathways."
-          />
-
-          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {flagshipSolutions.map((solution, index) => (
-              <Reveal delay={(index % 4) * 0.035} key={solution.name}>
-                <Link
-                  className="group flex h-full min-h-[320px] flex-col overflow-hidden rounded-[1.2rem] border border-white/[0.1] bg-white/[0.045] transition duration-300 ease-fluid hover:-translate-y-1 hover:border-cyan/40 hover:bg-white/[0.075] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
-                  href={solution.href}
-                >
-                  <div className="relative aspect-[1.35] overflow-hidden">
-                    <Image
-                      alt={`${solution.name} visual context`}
-                      className="object-cover opacity-90 transition duration-500 ease-fluid group-hover:scale-[1.04]"
-                      fill
-                      sizes="(min-width: 1280px) 24vw, (min-width: 768px) 48vw, 100vw"
-                      src={solution.image}
-                    />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.02),rgba(5,8,13,0.66))]" />
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="rounded-full bg-white/[0.08] px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-lime ring-1 ring-white/10">
-                        {solution.status}
-                      </span>
-                      <ArrowUpRight aria-hidden="true" className="text-cyan transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" size={18} />
-                    </div>
-                    <h3 className="mt-5 text-2xl font-semibold leading-none tracking-[-0.04em]">{solution.name}</h3>
-                    <p className="mt-4 text-sm leading-6 text-paper/68">{solution.value}</p>
-                    <p className="mt-auto pt-6 text-xs font-semibold uppercase tracking-[0.12em] text-paper/48">{solution.audience}</p>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-
-          <div className="mt-10">
-            <HomepageButton href="/programmes" variant="secondary">
-              View complete programme portfolio
-            </HomepageButton>
-          </div>
-        </div>
-      </section>
+      <ProgrammeExplorer />
 
       <section className="relative overflow-hidden bg-paper px-4 py-20 text-ink md:px-8 md:py-32">
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
