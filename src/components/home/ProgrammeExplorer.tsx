@@ -13,7 +13,6 @@ type ProgrammeExplorerItem = {
   image: string;
   imageAlt: string;
   emphasis: "feature" | "wide" | "standard";
-  label?: string;
 };
 
 const programmeRouteBySlug: Record<string, string> = {
@@ -106,8 +105,7 @@ export const programmeExplorerItems: ProgrammeExplorerItem[] = programmeSelectio
     href: programmeRouteBySlug[selection.slug],
     image: programme.image,
     imageAlt: selection.imageAlt,
-    emphasis: selection.emphasis,
-    label: programme.status
+    emphasis: selection.emphasis
   };
 });
 
@@ -173,15 +171,10 @@ export function ProgrammeExplorer() {
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.08),rgba(5,8,13,0.45)_35%,rgba(5,8,13,0.94)_100%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_18%,rgba(84,220,255,0.18),transparent_18rem)] opacity-0 transition duration-300 group-hover:opacity-100 motion-reduce:transition-none" />
                 <div className="relative z-10 flex min-h-full w-full flex-col justify-between p-5 md:p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <span className="rounded-full bg-ink/70 px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-lime ring-1 ring-white/12 backdrop-blur-xl">
                       {programme.category}
                     </span>
-                    {programme.label ? (
-                      <span className="rounded-full bg-white/[0.12] px-3 py-1.5 text-xs font-bold text-paper ring-1 ring-white/12 backdrop-blur-xl">
-                        {programme.label}
-                      </span>
-                    ) : null}
                   </div>
 
                   <div className="max-w-xl">
