@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
+import { InstitutionLogoRibbon } from "@/components/home/InstitutionLogoRibbon";
 import { defaultPartnershipPathwayId, partnershipPathways, type PartnershipPathwayId } from "@/content/partnership-pathways";
 
 const pathwayIcons = {
@@ -186,6 +187,10 @@ export function PartnerWithJef() {
               );
             })}
           </div>
+        </Reveal>
+
+        <Reveal className="lg:col-span-2" delay={0.14}>
+          <InstitutionLogoRibbon />
         </Reveal>
       </div>
     </section>
