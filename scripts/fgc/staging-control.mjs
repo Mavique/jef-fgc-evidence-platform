@@ -6,6 +6,7 @@ import { runPreflight } from './cloudflare-credential-preflight.mjs';
 import { ARTIFACT, ORIGIN, PAYLOAD, WORKER, requireGate, stampArtifact, verifyArtifact } from './staging-artifact.mjs';
 
 const REPO = 'Mavique/jef-fgc-evidence-platform';
+const AUTHORIZED_PAYLOAD_PR = 17;
 export const controllerRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const report = value => {
   const text = JSON.stringify(value);
@@ -37,8 +38,8 @@ export async function mainGate() {
   requireGate(execFileSync('git', ['-C', controllerRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() === controller, 'Controller checkout mismatch');
   const main = await github('commits/main');
   requireGate(main.sha === controller, 'Main advanced; revalidation required');
-  const pr = await github('pulls/2');
-  requireGate(pr.state === 'open' && !pr.merged && pr.head.sha === PAYLOAD, 'PR 2 changed or merged');
+  const pr = await github(`pulls/${AUTHORIZED_PAYLOAD_PR}`);
+  requireGate(pr.state === 'closed' && pr.merged === true && pr.merge_commit_sha === PAYLOAD, `PR ${AUTHORIZED_PAYLOAD_PR} does not match the authorised payload`);
   return controller;
 }
 export async function metadataGate() {
