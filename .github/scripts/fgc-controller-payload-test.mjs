@@ -15,7 +15,7 @@ export function controllerPayloadContract({ controller, payload, expectedPayload
   if (!inside(payload, payload)) throw new Error("payload root escaped");
   if (controller === payload) throw new Error("controller and payload roots must differ");
   if (worker !== "jef-fgc-staging") throw new Error("unexpected Worker");
-  if (expectedPayloadCommit !== "60bfbb0104e3dac625c2650068ea2abf51870733") throw new Error("payload commit mismatch");
+  if (expectedPayloadCommit !== "6504d460430bdd2425f73272c35b0806e317c06e") throw new Error("payload commit mismatch");
   return { controller, payload, worker, expectedPayloadCommit };
 }
 
@@ -26,7 +26,7 @@ export async function runControllerPayloadFixtures() {
   mkdirSync(join(controller, "scripts/fgc"), { recursive: true });
   mkdirSync(join(payload, "scripts/fgc"), { recursive: true });
   writeFileSync(join(controller, "scripts/fgc/cloudflare-credential-preflight.mjs"), "trusted-controller");
-  writeFileSync(join(payload, "manifest.json"), JSON.stringify({ sourceCommit: "60bfbb0104e3dac625c2650068ea2abf51870733" }));
+  writeFileSync(join(payload, "manifest.json"), JSON.stringify({ sourceCommit: "6504d460430bdd2425f73272c35b0806e317c06e" }));
   writeFileSync(join(payload, "scripts/fgc/cloudflare-credential-preflight.mjs"), "payload-shadow");
   assert.equal(readFileSync(join(payload, "scripts/fgc/cloudflare-credential-preflight.mjs"), "utf8"), "payload-shadow");
   assert.equal(readFileSync(join(controller, "scripts/fgc/cloudflare-credential-preflight.mjs"), "utf8"), "trusted-controller");
