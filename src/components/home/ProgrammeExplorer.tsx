@@ -116,16 +116,16 @@ function cardGridClassName(emphasis: ProgrammeExplorerItem["emphasis"]) {
 }
 
 function cardLinkClassName(emphasis: ProgrammeExplorerItem["emphasis"]) {
-  const minHeight = emphasis === "feature" ? "xl:min-h-[430px]" : emphasis === "wide" ? "xl:min-h-[360px]" : "";
-  return `group relative flex min-h-[320px] h-full overflow-hidden rounded-[1.15rem] border border-white/[0.12] bg-white/[0.045] shadow-[0_24px_90px_rgba(0,0,0,0.22)] transition duration-300 ease-fluid hover:-translate-y-1 hover:border-cyan/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${minHeight}`;
+  const minHeight = emphasis === "feature" ? "xl:min-h-[400px]" : emphasis === "wide" ? "xl:min-h-[340px]" : "";
+  return `group relative flex min-h-[240px] h-full overflow-hidden rounded-[1.15rem] border border-white/[0.12] bg-white/[0.045] shadow-[0_24px_90px_rgba(0,0,0,0.22)] transition duration-300 ease-fluid hover:-translate-y-1 hover:border-cyan/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:min-h-[290px] ${minHeight}`;
 }
 
 export function ProgrammeExplorer() {
   return (
-    <section aria-labelledby="programme-explorer-title" className="relative overflow-hidden bg-ink px-4 py-20 md:px-8 md:py-28">
+    <section aria-labelledby="programme-explorer-title" className="home-section relative overflow-hidden bg-ink">
       <div className="absolute inset-0 tech-grid opacity-28" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_18%_12%,rgba(84,220,255,0.13),transparent_32rem),radial-gradient(ellipse_at_82%_72%,rgba(170,255,128,0.1),transparent_34rem)]" />
-      <div className="relative mx-auto max-w-7xl">
+      <div className="home-container relative">
         <Reveal className="grid gap-6 lg:grid-cols-[0.9fr_0.7fr] lg:items-end">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">JEF Programme Ecosystem</p>
@@ -137,7 +137,7 @@ export function ProgrammeExplorer() {
             </h2>
           </div>
           <div>
-            <p className="max-w-2xl text-lg leading-8 text-paper/72">
+            <p className="home-body max-w-2xl text-paper/72">
               Explore JEF initiatives connecting education, immersive technology, institutional capability, enterprise development and pathways into work.
             </p>
             <Link
@@ -149,7 +149,7 @@ export function ProgrammeExplorer() {
           </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-12">
+        <div className="mt-10 grid gap-4 md:grid-cols-12">
           {programmeExplorerItems.map((programme, index) => (
             <Reveal className={cardGridClassName(programme.emphasis)} delay={(index % 4) * 0.035} key={programme.name}>
               <Link
@@ -179,13 +179,13 @@ export function ProgrammeExplorer() {
 
                   <div className="max-w-xl">
                     <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-cyan">{programme.descriptor}</p>
-                    <h3 className="mt-4 text-[clamp(1.75rem,3.2vw,3.4rem)] font-semibold leading-none tracking-[-0.05em] text-paper">
+                    <h3 className="mt-3 text-[clamp(1.6rem,3vw,3.1rem)] font-semibold leading-none tracking-[-0.05em] text-paper">
                       {programme.name}
                     </h3>
-                    <p className="mt-4 line-clamp-4 max-w-2xl text-sm leading-6 text-paper/76 md:text-base md:leading-7">
+                    <p className="mt-3 line-clamp-3 max-w-2xl text-sm leading-6 text-paper/76 md:text-base md:leading-7">
                       {programme.description}
                     </p>
-                    <span className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-white/[0.1] px-4 text-sm font-bold text-paper ring-1 ring-white/[0.14] transition duration-300 group-hover:bg-cyan group-hover:text-ink motion-reduce:transition-none">
+                    <span className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white/[0.1] px-4 text-sm font-bold text-paper ring-1 ring-white/[0.14] transition duration-300 group-hover:bg-cyan group-hover:text-ink motion-reduce:transition-none">
                       Explore programme
                       <ArrowUpRight aria-hidden="true" size={16} />
                     </span>

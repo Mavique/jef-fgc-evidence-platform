@@ -23,12 +23,12 @@ export function BrandFilmFeature() {
   }, [isPlaying]);
 
   return (
-    <section aria-labelledby="jef-brand-film-title" className="relative overflow-hidden bg-ink px-4 py-16 md:px-8 md:py-24">
+    <section aria-labelledby="jef-brand-film-title" className="home-section-tight home-rule-top relative overflow-hidden bg-ink">
       <div className="absolute inset-0 tech-grid opacity-25" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan/45 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.72fr_1.08fr] lg:items-center">
+      <div className="home-container relative grid gap-8 lg:grid-cols-[0.72fr_1.08fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">The JEF story</p>
           <h2
@@ -37,7 +37,7 @@ export function BrandFilmFeature() {
           >
             See Transformation in Motion
           </h2>
-          <p className="mt-6 text-lg leading-8 text-paper/72 md:text-xl md:leading-9">
+          <p className="home-body mt-6 text-paper/72">
             Discover how Jengrac Education Foundation connects immersive learning, emerging technology and workforce pathways to help institutions and people participate in Africa&apos;s evolving digital economy.
           </p>
           <a

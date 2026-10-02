@@ -30,12 +30,12 @@ export function EvidenceOfTransformation() {
       };
 
   return (
-    <section aria-labelledby="evidence-of-transformation-title" className="relative overflow-hidden bg-surface px-4 py-20 md:px-8 md:py-28">
+    <section aria-labelledby="evidence-of-transformation-title" className="home-section relative overflow-hidden bg-surface">
       <div className="absolute inset-0 tech-grid opacity-20" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_14%_20%,rgba(84,220,255,0.16),transparent_34rem),radial-gradient(ellipse_at_86%_82%,rgba(170,255,128,0.12),transparent_34rem)]" />
       <div className="absolute inset-0 noise-field opacity-[0.12]" />
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.78fr_1.02fr] lg:items-start">
+      <div className="home-container relative grid gap-10 lg:grid-cols-[0.78fr_1.02fr] lg:items-start">
         <div className="lg:sticky lg:top-28">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">{evidenceOfTransformation.eyebrow}</p>
           <h2
@@ -44,9 +44,9 @@ export function EvidenceOfTransformation() {
           >
             {evidenceOfTransformation.title}
           </h2>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-paper/72">{evidenceOfTransformation.intro}</p>
+          <p className="home-body mt-6 max-w-2xl text-paper/72">{evidenceOfTransformation.intro}</p>
 
-          <div className="mt-8 grid gap-3 rounded-[1.2rem] border border-white/[0.1] bg-white/[0.045] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.18)]">
+          <div className="mt-7 grid gap-3 rounded-[1.2rem] border border-white/[0.1] bg-white/[0.045] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.18)]">
             <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-cyan">Status discipline</p>
             <div className="grid gap-3 sm:grid-cols-3">
               {[
@@ -62,10 +62,10 @@ export function EvidenceOfTransformation() {
             </div>
           </div>
 
-          <p className="mt-6 max-w-2xl text-sm leading-6 text-paper/62">{evidenceOfTransformation.outcome}</p>
+          <p className="mt-5 max-w-2xl text-sm leading-6 text-paper/62">{evidenceOfTransformation.outcome}</p>
 
           <Link
-            className="mt-8 inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-cyan p-1.5 pl-6 text-sm font-bold text-ink transition duration-300 ease-fluid hover:bg-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan active:scale-[0.98] motion-reduce:transition-none"
+            className="mt-7 inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-cyan p-1.5 pl-6 text-sm font-bold text-ink transition duration-300 ease-fluid hover:bg-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan active:scale-[0.98] motion-reduce:transition-none"
             href={evidenceOfTransformation.cta.href}
           >
             {evidenceOfTransformation.cta.label}
@@ -81,7 +81,7 @@ export function EvidenceOfTransformation() {
             className="absolute bottom-8 left-6 top-8 hidden w-px origin-top bg-gradient-to-b from-cyan/70 via-lime/48 to-white/0 md:block"
             {...lineMotion}
           />
-          <ol className="grid gap-4">
+          <ol className="grid gap-3">
             {evidenceOfTransformation.proofPoints.map((point, index) => {
               const Icon = proofIcons[index] ?? CheckCircle2;
 
@@ -93,7 +93,7 @@ export function EvidenceOfTransformation() {
                   >
                     <Icon size={20} />
                   </div>
-                  <article className="group relative overflow-hidden rounded-[1.2rem] border border-white/[0.1] bg-white/[0.05] p-5 shadow-[0_18px_80px_rgba(0,0,0,0.2)] transition duration-300 ease-fluid hover:-translate-y-1 hover:border-cyan/36 hover:bg-white/[0.07] motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:p-6">
+                  <article className="group relative overflow-hidden rounded-[1.2rem] border border-white/[0.1] bg-white/[0.05] p-5 shadow-[0_18px_80px_rgba(0,0,0,0.2)] transition duration-300 ease-fluid hover:-translate-y-1 hover:border-cyan/36 hover:bg-white/[0.07] motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:p-5">
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan/50 to-transparent opacity-70" />
                     <div className="flex items-start gap-4">
                       <div className="grid size-11 shrink-0 place-items-center rounded-full bg-cyan/12 text-cyan ring-1 ring-cyan/24 md:hidden">

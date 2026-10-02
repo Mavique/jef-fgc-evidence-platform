@@ -141,6 +141,53 @@ a {
   right: 12px;
 }
 
+@layer components {
+  .home-section {
+    padding: clamp(4rem, 7vw, 7rem) 1rem;
+  }
+
+  .home-section-tight {
+    padding: clamp(3.25rem, 6vw, 5.75rem) 1rem;
+  }
+
+  .home-section-anchor {
+    scroll-margin-top: 8rem;
+    padding: clamp(5.25rem, 8vw, 9rem) 1rem clamp(4rem, 7vw, 7rem);
+  }
+
+  .home-container {
+    margin-inline: auto;
+    max-width: 80rem;
+    width: 100%;
+  }
+
+  .home-rule-top {
+    position: relative;
+  }
+
+  .home-rule-top::before {
+    background: linear-gradient(90deg, transparent, rgba(84, 220, 255, 0.34), transparent);
+    content: "";
+    height: 1px;
+    inset: 0 0 auto;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .home-body {
+    font-size: clamp(1rem, 1.4vw, 1.125rem);
+    line-height: 1.75;
+  }
+
+  @media (min-width: 768px) {
+    .home-section,
+    .home-section-tight,
+    .home-section-anchor {
+      padding-inline: 2rem;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

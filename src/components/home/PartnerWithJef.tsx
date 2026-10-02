@@ -41,24 +41,25 @@ function PathwayVisual() {
 
 export function PartnerWithJef() {
   const [activeId, setActiveId] = useState<PartnershipPathwayId>(defaultPartnershipPathwayId);
+  const [mobileOpenId, setMobileOpenId] = useState<PartnershipPathwayId | null>(null);
   const reduceMotion = useReducedMotion();
   const active = partnershipPathways.find((pathway) => pathway.id === activeId) ?? partnershipPathways[0];
   const ActiveIcon = pathwayIcons[active.id];
 
   return (
-    <section className="relative scroll-mt-32 overflow-hidden bg-ink px-4 pb-20 pt-36 md:px-8 md:pb-32 md:pt-48" id="partner-with-jef">
+    <section className="home-section-anchor relative overflow-hidden bg-ink" id="partner-with-jef">
       <div className="absolute inset-0 tech-grid opacity-20" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_16%_18%,rgba(84,220,255,0.16),transparent_32rem),radial-gradient(ellipse_at_86%_72%,rgba(170,255,128,0.12),transparent_30rem)]" />
       <PathwayVisual />
 
-      <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch">
+      <div className="home-container relative grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-stretch">
         <Reveal>
-          <aside className="grid h-full content-between gap-10 rounded-[1.35rem] border border-white/[0.1] bg-white/[0.055] p-6 md:p-8">
+          <aside className="grid h-full content-between gap-8 rounded-[1.35rem] border border-white/[0.1] bg-white/[0.055] p-6 md:p-8">
             <div>
-              <h2 className="font-display text-[clamp(3rem,7vw,7.2rem)] font-semibold leading-[0.86] tracking-[-0.06em] text-paper">
+              <h2 className="font-display text-[clamp(2.7rem,6vw,6.35rem)] font-semibold leading-[0.88] tracking-[-0.055em] text-paper">
                 Partner With JEF
               </h2>
-              <p className="mt-7 max-w-xl text-lg leading-8 text-paper/72">
+              <p className="home-body mt-6 max-w-xl text-paper/72">
                 JEF works with institutions to design and implement education, skills, technology and employment pathways that can be adopted responsibly.
               </p>
             </div>
@@ -71,7 +72,7 @@ export function PartnerWithJef() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div className="hidden h-full rounded-[1.35rem] border border-white/[0.1] bg-surface/88 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.28)] lg:grid lg:grid-cols-[18rem_1fr] lg:gap-4">
+          <div className="hidden h-full rounded-[1.35rem] border border-white/[0.1] bg-surface/88 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.28)] lg:grid lg:grid-cols-[17rem_1fr] lg:gap-4">
             <nav aria-label="Partnership pathways" className="grid gap-3">
               {partnershipPathways.map((pathway, index) => {
                 const Icon = pathwayIcons[pathway.id];
@@ -80,7 +81,7 @@ export function PartnerWithJef() {
                 return (
                   <button
                     aria-current={selected ? "true" : undefined}
-                    className={`group grid min-h-24 grid-cols-[2.5rem_1fr] items-center gap-3 rounded-[1rem] p-4 text-left transition duration-300 ease-fluid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan ${
+                    className={`group grid min-h-20 grid-cols-[2.5rem_1fr] items-center gap-3 rounded-[1rem] p-4 text-left transition duration-300 ease-fluid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan ${
                       selected
                         ? "bg-cyan text-ink"
                         : "bg-white/[0.055] text-paper ring-1 ring-white/[0.1] hover:bg-white/[0.09]"
@@ -105,7 +106,7 @@ export function PartnerWithJef() {
 
             <motion.article
               animate={reduceMotion ? false : { opacity: 1, y: 0 }}
-              className="relative overflow-hidden rounded-[1.12rem] bg-ink p-8"
+              className="relative overflow-hidden rounded-[1.12rem] bg-ink p-6 md:p-8"
               initial={reduceMotion ? false : { opacity: 0.96, y: 8 }}
               key={active.id}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
@@ -117,13 +118,13 @@ export function PartnerWithJef() {
                 </span>
                 <div>
                   <p className="text-sm font-bold text-cyan">Selected pathway</p>
-                  <h3 className="mt-2 max-w-2xl text-5xl font-semibold leading-none tracking-[-0.055em] text-paper">
+                  <h3 className="mt-2 max-w-2xl text-[clamp(2.2rem,4vw,3.7rem)] font-semibold leading-none tracking-[-0.055em] text-paper">
                     {active.audience}
                   </h3>
                 </div>
               </div>
-              <p className="mt-7 max-w-3xl text-lg leading-8 text-paper/72">{active.summary}</p>
-              <div className="mt-8 grid gap-3 md:grid-cols-2">
+              <p className="home-body mt-6 max-w-3xl text-paper/72">{active.summary}</p>
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
                 {active.possibilities.map((possibility) => (
                   <div className="rounded-[0.95rem] border border-white/[0.1] bg-white/[0.055] p-4 text-sm font-semibold leading-6 text-paper/78" key={possibility}>
                     {possibility}
@@ -131,7 +132,7 @@ export function PartnerWithJef() {
                 ))}
               </div>
               <Link
-                className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan px-5 text-sm font-bold text-ink transition duration-300 ease-fluid hover:bg-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
+                className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan px-5 text-sm font-bold text-ink transition duration-300 ease-fluid hover:bg-lime focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
                 href={active.contactHref}
               >
                 {active.actionLabel}
@@ -143,14 +144,17 @@ export function PartnerWithJef() {
           <div className="grid gap-3 lg:hidden">
             {partnershipPathways.map((pathway) => {
               const Icon = pathwayIcons[pathway.id];
-              const open = pathway.id === activeId;
+              const open = pathway.id === mobileOpenId;
 
               return (
                 <article className="rounded-[1.15rem] border border-white/[0.1] bg-white/[0.055]" key={pathway.id}>
                   <button
                     aria-expanded={open}
                     className="grid min-h-16 w-full grid-cols-[2.5rem_1fr_auto] items-center gap-3 p-4 text-left text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
-                    onClick={() => setActiveId(pathway.id)}
+                    onClick={() => {
+                      setActiveId(pathway.id);
+                      setMobileOpenId(open ? null : pathway.id);
+                    }}
                     type="button"
                   >
                     <span className="grid size-10 place-items-center rounded-full bg-cyan/12 text-cyan ring-1 ring-cyan/20">

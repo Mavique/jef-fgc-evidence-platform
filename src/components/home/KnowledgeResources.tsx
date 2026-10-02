@@ -51,17 +51,17 @@ function ResourceLabel({ resource }: { resource: HomeResource }) {
 function SupportingResource({ resource, index }: { resource: HomeResource; index: number }) {
   return (
     <Reveal delay={index * 0.055}>
-      <article className="group grid gap-4 rounded-[1.15rem] border border-white/[0.1] bg-white/[0.052] p-4 transition duration-300 ease-fluid hover:border-cyan/35 hover:bg-white/[0.074] md:grid-cols-[9.5rem_1fr]">
+      <article className="group grid gap-4 rounded-[1.15rem] border border-white/[0.1] bg-white/[0.052] p-4 transition duration-300 ease-fluid hover:border-cyan/35 hover:bg-white/[0.074] md:grid-cols-[8.5rem_1fr]">
         <Link
           aria-label={`Open ${resource.title}`}
-          className="relative min-h-40 overflow-hidden rounded-[0.9rem] bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan md:min-h-full"
+          className="relative min-h-32 overflow-hidden rounded-[0.9rem] bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan md:min-h-full"
           href={resource.href}
         >
           <Image
             alt={resource.imageAlt}
             className="object-cover transition duration-500 ease-fluid group-hover:scale-[1.04]"
             fill
-            sizes="(min-width: 768px) 10rem, 100vw"
+            sizes="(min-width: 768px) 9rem, 100vw"
             src={resource.image}
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.04),rgba(5,8,13,0.56))]" />
@@ -84,10 +84,10 @@ function SupportingResource({ resource, index }: { resource: HomeResource; index
 
 export function KnowledgeResources() {
   return (
-    <section className="relative scroll-mt-32 overflow-hidden bg-surface px-4 pb-20 pt-36 md:px-8 md:pb-32 md:pt-56" id="knowledge-resources">
+    <section className="home-section-anchor relative overflow-hidden bg-surface" id="knowledge-resources">
       <div className="absolute inset-0 noise-field opacity-[0.14]" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan/35 to-transparent" />
-      <div className="relative mx-auto max-w-7xl">
+      <div className="home-container relative">
         <Reveal className="grid gap-6 lg:grid-cols-[0.9fr_0.72fr] lg:items-end">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">{knowledgeResourcesIntro.eyebrow}</p>
@@ -96,7 +96,7 @@ export function KnowledgeResources() {
             </h2>
           </div>
           <div className="grid gap-5">
-            <p className="max-w-2xl text-lg leading-8 text-paper/70">{knowledgeResourcesIntro.body}</p>
+            <p className="home-body max-w-2xl text-paper/70">{knowledgeResourcesIntro.body}</p>
             <Link
               className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-full bg-white/[0.08] px-4 text-sm font-bold text-paper ring-1 ring-white/[0.14] transition duration-300 ease-fluid hover:bg-white/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan"
               href={knowledgeResourcesIntro.viewAll.href}
@@ -107,10 +107,10 @@ export function KnowledgeResources() {
           </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch">
+        <div className="mt-10 grid gap-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch">
           <Reveal>
             <article className="relative grid h-full overflow-hidden rounded-[1.35rem] border border-cyan/24 bg-paper text-ink shadow-[0_30px_100px_rgba(5,8,13,0.28)] lg:grid-cols-[0.86fr_1.14fr]">
-              <div className="relative min-h-[520px] overflow-hidden bg-white lg:min-h-[620px]">
+              <div className="relative min-h-[320px] overflow-hidden bg-white sm:min-h-[420px] lg:min-h-[560px]">
                 <Image
                   alt={featuredKnowledgeResource.imageAlt}
                   className="p-4 object-contain object-top"
@@ -122,10 +122,10 @@ export function KnowledgeResources() {
               <div className="grid content-between gap-8 p-6 md:p-8">
                 <div>
                   <ResourceLabel resource={featuredKnowledgeResource} />
-                  <h3 className="mt-6 max-w-xl font-display text-[clamp(2.5rem,4.6vw,5.1rem)] font-semibold leading-[0.88] tracking-[-0.06em]">
+                  <h3 className="mt-6 max-w-xl font-display text-[clamp(2.2rem,4.1vw,4.6rem)] font-semibold leading-[0.9] tracking-[-0.055em]">
                     {featuredKnowledgeResource.title}
                   </h3>
-                  <p className="mt-6 max-w-xl text-base leading-7 text-ink/70 md:text-lg md:leading-8">
+                  <p className="mt-5 max-w-xl text-base leading-7 text-ink/70 md:text-lg md:leading-8">
                     {featuredKnowledgeResource.description}
                   </p>
                 </div>
