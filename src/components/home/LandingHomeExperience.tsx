@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
 import { BrandFilmFeature } from "@/components/home/BrandFilmFeature";
+import { JefInAction } from "@/components/home/JefInAction";
 import { ProgrammeExplorer } from "@/components/home/ProgrammeExplorer";
 import { TransformationPathway } from "@/components/home/TransformationPathway";
 import { Reveal } from "@/components/MotionPrimitives";
@@ -361,6 +362,8 @@ export function LandingHomeExperience() {
       </section>
 
       <ProgrammeExplorer />
+
+      <JefInAction />
 
       <section className="relative overflow-hidden bg-paper px-4 py-20 text-ink md:px-8 md:py-32">
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
