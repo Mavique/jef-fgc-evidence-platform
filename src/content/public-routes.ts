@@ -49,7 +49,7 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     eyebrow: "Institutional stewardship",
     intro:
       "JEF leadership is grounded in the operating responsibilities needed to deliver responsible AI, Extended Reality and institutional transformation work with discipline and public trust.",
-    image: xrMedia.jefIndustryBriefing,
+    image: xrMedia.mersetaCptWorkshopFacilitator,
     imageAlt: "JEF team members and partners in a briefing environment",
     status: "Public profile being structured",
     primaryAction: { label: "Discuss partnership", href: "/contact", variant: "primary" },
@@ -93,7 +93,7 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     intro:
       "JEF governance explains how ambitious technology work should remain accountable: clear scope, privacy awareness, evidence discipline, human oversight and careful communication of public claims.",
     image: xrMedia.jefTransformingEducationBanner,
-    imageAlt: "JEF and partner banners at an education innovation event",
+    imageAlt: "JEF transforming education banner in an institutional setting",
     status: "Governance framework summary",
     primaryAction: { label: "Contact JEF", href: "/contact", variant: "primary" },
     secondaryAction: { label: "Read privacy", href: "/privacy", variant: "secondary" },
@@ -127,7 +127,7 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     intro:
       "JEF programmes connect education, work, enterprise and place-based transformation through AI, XR, spatial intelligence and capability development. Each programme is labelled by status so visitors can distinguish active work from developing initiatives.",
     image: xrMedia.mixedRealityDeviceCollage,
-    imageAlt: "A collage of mixed reality devices and immersive learning tools",
+    imageAlt: "A mixed reality device collage representing JEF programme pathways",
     status: "Programme catalogue",
     primaryAction: { label: "Explore services", href: "/services", variant: "primary" },
     secondaryAction: { label: "Partner with JEF", href: "/partnerships", variant: "secondary" },
@@ -156,8 +156,8 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     eyebrow: "Implementation portfolio",
     intro:
       "JEF projects are framed as scoped initiatives with accountable partners, defined outputs, evidence practices and documented learning.",
-    image: xrMedia.jefSmallWorkshopDemo,
-    imageAlt: "A small workshop demonstration using a projected digital environment",
+    image: xrMedia.jefSpatialAiConstructionTraining,
+    imageAlt: "A spatial AI construction training demonstration with digital overlays",
     status: "Portfolio framework",
     primaryAction: { label: "Discuss a project", href: "/contact", variant: "primary" },
     secondaryAction: { label: "See programmes", href: "/programmes", variant: "secondary" },
@@ -191,7 +191,7 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     intro:
       "JEF partnerships should be structured around shared implementation responsibility: public value, learner and worker capability, responsible technology adoption and evidence that can be reviewed.",
     image: xrMedia.jefXrExpoHeadsetDemo,
-    imageAlt: "A visitor using an XR headset at a JEF-related exhibition stand",
+    imageAlt: "A JEF XR exhibition demonstration with headset-based learning",
     status: "Partnership pathways",
     primaryAction: { label: "Start a conversation", href: "/contact", variant: "primary" },
     secondaryAction: { label: "View services", href: "/services", variant: "secondary" },
@@ -224,8 +224,8 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     eyebrow: "Thinking in public",
     intro:
       "JEF insights should help readers understand responsible AI, immersive learning, spatial systems and capability development. Articles and papers should be published only when approved for public use.",
-    image: xrMedia.industrialXrInterface,
-    imageAlt: "An industrial XR interface overlay used as a visual metaphor for insight and analysis",
+    image: xrMedia.xrManufacturingDashboard,
+    imageAlt: "An XR manufacturing dashboard used as a visual metaphor for insight and analysis",
     status: "Editorial library in preparation",
     primaryAction: { label: "Explore AI Services", href: "/programmes/ai-services", variant: "primary" },
     secondaryAction: { label: "Contact JEF", href: "/contact", variant: "secondary" },
@@ -292,7 +292,7 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     eyebrow: "Public resources",
     intro:
       "This library hosts public JEF resources for technology-enabled education, training and skills development. Private FGC records and restricted operational documents are not exposed here.",
-    image: xrMedia.medicalXrTraining,
+    image: xrMedia.jefVulabookArTextbookDemo,
     imageAlt: "A medical XR learning scene used as a visual cue for structured resources",
     status: "Public product catalogue available",
     primaryAction: { label: "Request information", href: "/contact", variant: "primary" },
@@ -332,8 +332,8 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     eyebrow: "Start with the operating need",
     intro:
       "Use this route to begin a conversation about JEF programmes, AI services, XR learning, spatial intelligence, partnerships or institutional transformation support.",
-    image: xrMedia.jefXrPresentationStage1,
-    imageAlt: "A JEF presentation setting with attendees and technology context",
+    image: xrMedia.mersetaCptWorkshopFacilitator,
+    imageAlt: "A JEF facilitator presenting XR skills content during a workshop",
     status: "Public contact route",
     primaryAction: { label: "Email admin@jengrac.tech", href: "mailto:admin@jengrac.tech", variant: "primary" },
     secondaryAction: { label: "Explore services first", href: "/services", variant: "secondary" },
@@ -367,7 +367,7 @@ export const publicRoutes: Record<string, PublicRouteDefinition> = {
     intro:
       "This public privacy route gives a plain-language summary of how JEF should approach personal information in public-facing engagements. A formal legal policy should be added when approved.",
     image: xrMedia.industrialMrTechnician,
-    imageAlt: "A technician using mixed reality equipment in an industrial environment",
+    imageAlt: "An industrial mixed reality technician using a headset",
     status: "Plain-language privacy summary",
     primaryAction: { label: "Contact JEF", href: "/contact", variant: "primary" },
     secondaryAction: { label: "Accessibility", href: "/accessibility", variant: "secondary" },

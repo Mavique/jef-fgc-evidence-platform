@@ -9,9 +9,9 @@ import { SpatialField } from "@/components/SpatialField";
 import { xrMedia } from "@/content/xr-media";
 
 const images = {
-  vr: xrMedia.industrialVrTraining,
-  classroom: xrMedia.jefTransformingEducationBanner,
-  skills: xrMedia.jefIndustryBriefing
+  vr: xrMedia.jefXrExpoHeadsetDemo,
+  classroom: xrMedia.jefDigitalClassroomSession,
+  skills: xrMedia.mersetaCptWorkshopFacilitator
 };
 
 const identityCards = [
@@ -91,7 +91,7 @@ export function AboutExperience() {
       <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-10 pt-32 md:px-8 md:pt-36">
         <div className="absolute inset-0">
           <Image
-            alt="AI enabled learning environment with students and digital intelligence interface"
+            alt="JEF presentation showing integrated platforms for education, skills and opportunity"
             className="object-cover opacity-38 saturate-[0.86]"
             fill
             priority
@@ -220,7 +220,7 @@ export function AboutExperience() {
           <div className="grid gap-4 md:grid-cols-[0.95fr_1.05fr]">
             <Reveal>
               <div className="relative min-h-[460px] overflow-hidden rounded-[1.35rem] border border-white/[0.11] bg-white/[0.045]">
-                <Image alt="Professional using virtual reality for immersive training" className="object-cover" fill sizes="(min-width: 1024px) 40vw, 100vw" src={images.vr} />
+                <Image alt="Learner using a VR headset during a JEF immersive learning demonstration" className="object-cover" fill sizes="(min-width: 1024px) 40vw, 100vw" src={images.vr} />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.1),rgba(5,8,13,0.82))]" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-lime">From practice to performance</p>
@@ -280,7 +280,7 @@ export function AboutExperience() {
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <Reveal>
             <div className="relative min-h-[240px] overflow-hidden rounded-[1.35rem] border border-white/[0.12] bg-white/[0.045]">
-              <Image alt="Professionals collaborating in a digital skills workshop" className="object-cover" fill sizes="(min-width: 1024px) 44vw, 100vw" src={images.skills} />
+              <Image alt="JEF facilitator presenting XR skills content during a merSETA workshop" className="object-cover" fill sizes="(min-width: 1024px) 44vw, 100vw" src={images.skills} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.08),rgba(5,8,13,0.74))]" />
               <div className="absolute bottom-5 left-5 right-5 rounded-[1rem] border border-white/[0.14] bg-ink/74 p-4 backdrop-blur-xl">
                 <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-lime">Verification posture</p>

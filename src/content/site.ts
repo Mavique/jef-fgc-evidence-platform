@@ -20,7 +20,7 @@ export const programmes = [
     reach: "MVP-stage immersive learning and capability pathway",
     purpose:
       "A lecturer-led cognitive immersive learning platform connecting curriculum, simulation, governed evidence and persistent capability development.",
-    image: xrMedia.xrMedicalHeartLearning
+    image: xrMedia.jefVocleXrExpoDemo
   },
   {
     slug: "ai-services",
@@ -30,7 +30,7 @@ export const programmes = [
     reach: "Service architecture for approved packages, integrations and governance",
     purpose:
       "A responsible applied-AI transformation service that helps organisations diagnose real work, prepare trusted foundations, implement appropriate assistants, agents, automation and knowledge systems, and govern value safely.",
-    image: xrMedia.industrialDataXrWorker
+    image: xrMedia.spatialAiCollaborationRoom
   },
   {
     slug: "icampus",
@@ -40,7 +40,7 @@ export const programmes = [
     reach: "Connected learning-campus architecture",
     purpose:
       "A connected digital and blended learning campus for digital, AI, professional capability, supported learning, practical application and governed progression.",
-    image: xrMedia.jefLargeTrainingRoom
+    image: xrMedia.jefDigitalClassroomSession
   },
   {
     slug: "worxstream",
@@ -50,7 +50,7 @@ export const programmes = [
     reach: "Capability-to-opportunity operating architecture",
     purpose:
       "A governed capability-to-opportunity orchestration system connecting authorised evidence to work, WIL, projects, enterprise and continued development.",
-    image: xrMedia.arManufacturingTablet
+    image: xrMedia.jefLargeTrainingRoom
   },
   {
     slug: "workplace-4",
@@ -60,7 +60,7 @@ export const programmes = [
     reach: "Human-centred work transformation methodology",
     purpose:
       "A human-centred workforce and organisational transformation framework for Smart Worker capability, redesigned work, responsible AI and measurable improvement.",
-    image: xrMedia.xrManufacturingDashboard
+    image: xrMedia.industrialDataXrWorker
   },
   {
     slug: "spatial-enterprise",
@@ -70,7 +70,7 @@ export const programmes = [
     reach: "Digital-twin and workplace guidance architecture",
     purpose:
       "A human-centred Spatial AI portfolio embedding knowledge, simulation, digital twins and contextual guidance into the physical workplace.",
-    image: xrMedia.xrManufacturingEngineOverlay
+    image: xrMedia.jefSpatialAiIndustrialTraining
   },
   {
     slug: "gig-economy-accelerator",
@@ -90,7 +90,7 @@ export const programmes = [
     reach: "Civic spatial-intelligence framework for participation and services",
     purpose:
       "A human-centred civic spatial intelligence framework connecting places, services, infrastructure, community knowledge, digital twins, XR and participation.",
-    image: xrMedia.spatialAiCollaborationRoom
+    image: xrMedia.jefSpatialAiCommercialWorkshop
   },
   {
     slug: "digital-transformation-hubs",
@@ -100,7 +100,7 @@ export const programmes = [
     reach: "Regional implementation model for local capability systems",
     purpose:
       "Place-based infrastructure connecting youth capability, digital services and regional economic participation.",
-    image: xrMedia.jefDigitalClassroomSession
+    image: xrMedia.jefCollegeComputerLab
   },
   {
     slug: "prolific-edge",
@@ -120,7 +120,7 @@ export const programmes = [
     reach: "Implementation model for TVET-to-work pathways",
     purpose:
       "The TVET-to-Work Transformation Grid connecting qualifications, professional capability, AI, missions, evidence and opportunity routing.",
-    image: xrMedia.childrenRoboticsLearning
+    image: xrMedia.jefWorkshopAuditoriumWide
   },
   {
     slug: "merseta-fgc-ekm",
@@ -130,7 +130,7 @@ export const programmes = [
     reach: "Frontend-first evidence platform using supplied September 2026 workshop artefacts as source of truth",
     purpose:
       "An evidence validation and adoption intelligence platform that separates learner utilisation from lecturer independence, triangulates source quality and turns unresolved gaps into governed corrective action.",
-    image: xrMedia.jefTransformingEducationBanner
+    image: xrMedia.jefXrPresentationStage1
   },
   {
     slug: "xr-labs-tvet-colleges",
@@ -140,7 +140,7 @@ export const programmes = [
     reach: "XR lab establishment and activation methodology",
     purpose:
       "A platform-neutral XR Lab establishment and activation model that connects occupational teaching, simulation, workshops, student creation, operations and evidence.",
-    image: xrMedia.jefCollegeComputerLab
+    image: xrMedia.jefXrTvetEducationWorkshop
   },
   {
     slug: "xr-basic-education",
@@ -160,7 +160,7 @@ export const programmes = [
     reach: "Leadership and facilitator capability development",
     purpose:
       "Leadership and capability development for institutions preparing people for changing education and work systems.",
-    image: xrMedia.jefXrPresentationStage1
+    image: xrMedia.jefXrPresentationStage2
   }
 ] satisfies z.infer<typeof programmeSchema>[];
 

@@ -9,7 +9,7 @@ const brandFilm = {
   embedUrl: "https://www.youtube-nocookie.com/embed/zG0xqtNSCP8?autoplay=1&rel=0",
   watchUrl: "https://youtu.be/zG0xqtNSCP8",
   title: "Jengrac Education Foundation brand film",
-  poster: xrMedia.jefXrExpoHeadsetDemo
+  poster: xrMedia.jefIntegratedPlatformsPresentation
 };
 
 export function BrandFilmFeature() {
@@ -66,7 +66,7 @@ export function BrandFilmFeature() {
             ) : (
               <>
                 <Image
-                  alt="JEF team demonstrating XR technology at an education and skills development exhibition"
+                  alt="JEF presentation showing integrated platforms for education, skills and opportunity"
                   className="object-cover opacity-90 saturate-[0.92]"
                   fill
                   sizes="(min-width: 1024px) 58vw, 100vw"

@@ -15,7 +15,7 @@ describe("JEF brand film homepage feature", () => {
     render(<BrandFilmFeature />);
 
     expect(screen.getByRole("heading", { name: "See Transformation in Motion" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /JEF team demonstrating XR technology/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /JEF presentation showing integrated platforms/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Play the Jengrac Education Foundation brand film" })).toBeInTheDocument();
     expect(screen.queryByTitle("Jengrac Education Foundation brand film")).not.toBeInTheDocument();
   });

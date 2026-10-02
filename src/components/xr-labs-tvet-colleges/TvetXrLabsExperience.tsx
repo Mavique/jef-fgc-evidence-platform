@@ -19,8 +19,8 @@ import {
 } from "@/content/xr-labs-tvet-colleges";
 import { xrMedia } from "@/content/xr-media";
 
-const workshopImage = xrMedia.jefCollegeComputerLab;
-const vrTrainingImage = xrMedia.industrialVrTraining;
+const workshopImage = xrMedia.jefArLearningWorkshopWide;
+const vrTrainingImage = xrMedia.jefXrTvetEducationWorkshop;
 
 function StatusTag({ children }: { children: string }) {
   return (
@@ -97,7 +97,7 @@ export function TvetXrLabsExperience() {
           <Reveal delay={0.12}>
             <div className="rounded-[1.55rem] border border-white/[0.12] bg-white/[0.055] p-1">
               <div className="relative min-h-[460px] overflow-hidden rounded-[1.25rem] bg-[#0d1e1c] p-6">
-                <Image alt="TVET students and professionals in a digital skills workshop" className="object-cover opacity-38 saturate-[0.85]" fill priority sizes="(min-width: 1024px) 42vw, 100vw" src={workshopImage} />
+                <Image alt="JEF XR in TVET education workshop with facilitator and participants" className="object-cover opacity-38 saturate-[0.85]" fill priority sizes="(min-width: 1024px) 42vw, 100vw" src={workshopImage} />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,30,28,0.18),rgba(13,30,28,0.94))]" />
                 <div className="relative z-10 flex min-h-[400px] flex-col justify-between gap-10">
                   <div>
@@ -218,7 +218,7 @@ export function TvetXrLabsExperience() {
           </div>
           <Reveal delay={0.08}>
             <article className="relative mt-10 min-h-[460px] overflow-hidden rounded-[1.55rem] bg-[#06211f] p-7 text-white">
-              <Image alt="Professional using VR headset during immersive technical training" className="object-cover opacity-36 saturate-[0.8]" fill sizes="100vw" src={vrTrainingImage} />
+              <Image alt="JEF VulaBook augmented reality textbook demonstration with technical learning content" className="object-cover opacity-36 saturate-[0.8]" fill sizes="100vw" src={vrTrainingImage} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,33,31,0.18),rgba(6,33,31,0.94))]" />
               <div className="relative z-10 flex min-h-[340px] flex-col justify-end">
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#f59e0b]">Active zone</p>

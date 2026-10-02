@@ -21,8 +21,8 @@ import {
 } from "@/content/ai-services";
 import { xrMedia } from "@/content/xr-media";
 
-const aiImage = xrMedia.industrialDataXrWorker;
-const skillsImage = xrMedia.jefDigitalClassroomSession;
+const aiImage = xrMedia.spatialAiCollaborationRoom;
+const skillsImage = xrMedia.jefArLearningClassroomTablets;
 
 function StatusTag({ children }: { children: string }) {
   return (
@@ -101,7 +101,7 @@ export function AiServicesExperience() {
           <Reveal delay={0.12}>
             <div className="rounded-[1.55rem] border border-white/[0.12] bg-white/[0.055] p-1">
               <div className="relative min-h-[460px] overflow-hidden rounded-[1.25rem] bg-surface p-6">
-                <Image alt="Professional using AI assisted work systems" className="object-cover opacity-38 saturate-[0.85]" fill priority sizes="(min-width: 1024px) 42vw, 100vw" src={aiImage} />
+                <Image alt="JEF team planning AI and XR programme systems in a workshop setting" className="object-cover opacity-38 saturate-[0.85]" fill priority sizes="(min-width: 1024px) 42vw, 100vw" src={aiImage} />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,15,24,0.16),rgba(9,15,24,0.95))]" />
                 <div className="relative z-10 flex min-h-[400px] flex-col justify-between gap-10">
                   <div>
@@ -274,7 +274,7 @@ export function AiServicesExperience() {
           </div>
           <Reveal delay={0.08}>
             <article className="relative mt-10 min-h-[460px] overflow-hidden rounded-[1.55rem] bg-ink p-7 text-paper">
-              <Image alt="Team reviewing AI assisted digital work" className="object-cover opacity-28 saturate-[0.8]" fill sizes="100vw" src={skillsImage} />
+              <Image alt="JEF presentation showing integrated platforms for education, skills and opportunity" className="object-cover opacity-28 saturate-[0.8]" fill sizes="100vw" src={skillsImage} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.1),rgba(5,8,13,0.95))]" />
               <div className="relative z-10 flex min-h-[340px] flex-col justify-end">
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-amber">Knowledge answer inspector</p>

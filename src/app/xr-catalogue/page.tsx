@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: "XR Catalogue | Jengrac Education Foundation",
     description:
       "A digital XR Lab catalogue with products, comparison, quote-list tools and a guided XR Lab configurator.",
-    images: ["/images/xr/jef-xr-expo-headset-demo.jpeg"]
+    images: ["/images/xr/jef-ar-learning-workshop-wide.webp"]
   }
 };
 

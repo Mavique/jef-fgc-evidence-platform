@@ -314,7 +314,7 @@ export function XrCatalogueExperience() {
           </div>
 
           <div className="relative min-h-[500px] overflow-hidden rounded-[1.5rem] border border-white/[0.1] bg-white/[0.055] p-4 shadow-[0_34px_110px_rgba(0,0,0,0.38)]">
-            <Image alt="Learner using an XR headset in a JEF learning technology environment" className="rounded-[1.1rem] object-cover" fill priority sizes="(min-width: 1024px) 50vw, 100vw" src="/images/xr/jef-xr-expo-headset-demo.jpeg" />
+            <Image alt="JEF AR learning workshop with participants and projection-based simulation" className="rounded-[1.1rem] object-cover" fill priority sizes="(min-width: 1024px) 50vw, 100vw" src="/images/xr/jef-ar-learning-workshop-wide.webp" />
             <div className="absolute inset-4 rounded-[1.1rem] bg-[linear-gradient(180deg,rgba(5,8,13,0.04),rgba(5,8,13,0.72))]" />
             <div className="absolute bottom-8 left-8 right-8 grid gap-3 rounded-[1rem] border border-white/[0.16] bg-ink/72 p-5 backdrop-blur-xl md:grid-cols-3">
               {["Hardware", "Software", "Infrastructure"].map((item) => (

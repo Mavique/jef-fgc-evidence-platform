@@ -100,7 +100,7 @@ export function VocleXrExperience() {
           <Reveal delay={0.12}>
             <div className="rounded-[2.2rem] bg-white/[0.06] p-1.5 ring-1 ring-white/[0.12]">
               <div className="relative min-h-[460px] overflow-hidden rounded-[1.7rem] bg-[#101326] p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
-                <div className="absolute inset-0 bg-[url('/images/xr/xr-medical-heart-learning.jpg')] bg-cover bg-center opacity-20 grayscale" />
+                <div className="absolute inset-0 bg-[url('/images/xr/jef-vulabook-ar-textbook-demo.webp')] bg-cover bg-center opacity-20 grayscale" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,19,38,0.25),rgba(16,19,38,0.94))]" />
                 <div className="relative z-10 grid min-h-[400px] content-between gap-8">
                   <div>

@@ -29,8 +29,8 @@ const capabilities = [
       "Responsible AI strategy, knowledge systems, workflow intelligence, supervised automation and institutional decision support.",
     outcome: "Helps leaders and teams redesign work around trusted information, oversight and measurable adoption.",
     href: "/programmes/ai-services",
-    image: xrMedia.industrialDataXrWorker,
-    alt: "Professional using extended reality and data systems in an industrial setting"
+    image: xrMedia.mixedRealityDeviceCollage,
+    alt: "Mixed reality device collage representing applied intelligence and systems design"
   },
   {
     title: "Extended Reality",
@@ -38,8 +38,8 @@ const capabilities = [
       "Immersive teaching, simulation, practice, assessment support, content creation and safer preparation for real-world performance.",
     outcome: "Gives learners, lecturers and workers space to practise complex tasks before workplace consequences are real.",
     href: "/programmes/vocle-xr",
-    image: xrMedia.xrDeviceIndustrialHologram,
-    alt: "Technician using extended reality equipment in a technical environment"
+    image: xrMedia.jefVocleXrExpoDemo,
+    alt: "Learner using a VR headset during a JEF immersive learning demonstration"
   },
   {
     title: "Spatial Intelligence",
@@ -47,8 +47,8 @@ const capabilities = [
       "Digital twins, spatial platforms, asset and place intelligence, contextual guidance and data-informed institutional transformation.",
     outcome: "Connects people, places, assets and services so decisions are made with clearer operational context.",
     href: "/programmes/spatial-enterprise",
-    image: xrMedia.xrManufacturingEngineOverlay,
-    alt: "Worker inspecting a digital twin of industrial equipment"
+    image: xrMedia.spatialAiRoboticsFactory,
+    alt: "Spatial AI robotics factory environment with digital workflow overlays"
   }
 ];
 
@@ -173,7 +173,7 @@ export function LandingHomeExperience() {
       <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-12 pt-32 md:px-8 md:pb-16 md:pt-36">
         <div className="absolute inset-0">
           <Image
-            alt="JEF team demonstrating XR technology at an education and skills development exhibition"
+            alt="JEF XR exhibition demonstration with headset-based learning"
             className="object-cover opacity-55 saturate-[0.86]"
             fill
             priority
@@ -367,7 +367,7 @@ export function LandingHomeExperience() {
           <Reveal>
             <div className="relative min-h-[320px] overflow-hidden rounded-[1.35rem] bg-ink">
               <Image
-                alt="JEF team engaging stakeholders during an institutional technology briefing"
+                alt="JEF industry briefing with institutional participants"
                 className="object-cover"
                 fill
                 sizes="(min-width: 1024px) 44vw, 100vw"
@@ -423,11 +423,11 @@ export function LandingHomeExperience() {
       <section className="relative overflow-hidden bg-ink px-4 py-20 md:px-8 md:py-32">
         <div className="absolute inset-0">
           <Image
-            alt="JEF education innovation display with institutional transformation message"
+            alt="JEF presentation stage showing integrated platforms for education, skills and opportunity"
             className="object-cover opacity-28 saturate-[0.82]"
             fill
             sizes="100vw"
-            src={xrMedia.jefTransformingEducationBanner}
+            src={xrMedia.jefXrPresentationStage2}
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,8,13,0.96),rgba(5,8,13,0.78)),linear-gradient(180deg,rgba(5,8,13,0.18),rgba(5,8,13,0.94))]" />
         </div>

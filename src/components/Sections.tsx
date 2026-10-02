@@ -30,8 +30,8 @@ const clarityTiles = [
     title: "Education stays at the centre of the technology.",
     body:
       "The platform connects schools, TVET colleges, training providers, employers and public partners around practical capability development, not technology for its own sake.",
-    image: xrMedia.childrenRoboticsLearning,
-    alt: "Students and professionals in a digital skills workshop"
+    image: xrMedia.jefArLearningClassroomTablets,
+    alt: "Learners using AR tablets and textbooks in a classroom environment"
   }
 ];
 
@@ -42,29 +42,29 @@ const visualLibrary = {
   vr: xrMedia.xrDeviceIndustrialHologram,
   ar: xrMedia.arManufacturingDigitalTwin,
   classroom: xrMedia.xrSpaceScienceLearning,
-  skills: xrMedia.vrRoboticsWorkcell,
+  skills: xrMedia.jefLargeTrainingRoom,
   city: xrMedia.arLabInspection,
-  enterprise: xrMedia.xrManufacturingEngineOverlay,
+  enterprise: xrMedia.vrRoboticsWorkcell,
   robotics: xrMedia.roboticsSensorCar,
   workshop: xrMedia.jefSmallWorkshopDemo,
-  workplace: xrMedia.xrManufacturingDashboard,
-  ignite: xrMedia.jefXrPresentationStage1
+  workplace: xrMedia.industrialDataXrWorker,
+  ignite: xrMedia.jefXrPresentationStage2
 };
 
 const programmeVisuals: Record<string, string> = {
-  "vocle-xr": visualLibrary.vr,
-  "ai-services": visualLibrary.ai,
-  icampus: xrMedia.xrEducationGears,
+  "vocle-xr": xrMedia.jefVocleXrExpoDemo,
+  "ai-services": xrMedia.spatialAiCollaborationRoom,
+  icampus: xrMedia.jefDigitalClassroomSession,
   worxstream: visualLibrary.skills,
   "workplace-4": visualLibrary.workplace,
-  "spatial-enterprise": visualLibrary.enterprise,
+  "spatial-enterprise": xrMedia.jefSpatialAiIndustrialTraining,
   "gig-economy-accelerator": visualLibrary.workshop,
-  "spatial-ai-city": visualLibrary.city,
-  "digital-transformation-hubs": visualLibrary.classroom,
+  "spatial-ai-city": xrMedia.jefSpatialAiCommercialWorkshop,
+  "digital-transformation-hubs": xrMedia.jefCollegeComputerLab,
   "prolific-edge": xrMedia.vrIndustrialFactoryTour,
-  "workgrid-labs": visualLibrary.robotics,
+  "workgrid-labs": xrMedia.jefWorkshopAuditoriumWide,
   "merseta-fgc-ekm": xrMedia.jefTransformingEducationBanner,
-  "xr-labs-tvet-colleges": visualLibrary.skills,
+  "xr-labs-tvet-colleges": xrMedia.jefArLearningWorkshopWide,
   "xr-basic-education": xrMedia.girlRoboticsLab,
   "jef-ignite-institute": visualLibrary.ignite
 };

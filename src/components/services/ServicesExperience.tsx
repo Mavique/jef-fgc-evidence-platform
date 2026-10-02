@@ -20,11 +20,11 @@ import {
 import { xrMedia } from "@/content/xr-media";
 
 const sectorImages: Record<string, string> = {
-  tvet: xrMedia.arAutomotiveTraining,
-  private: xrMedia.xrEducationGears,
+  tvet: xrMedia.jefXrTvetEducationWorkshop,
+  private: xrMedia.jefArLearningClassroomTablets,
   government: xrMedia.jefLargeTrainingRoom,
   health: xrMedia.medicalXrTraining,
-  enterprise: xrMedia.arManufacturingTablet
+  enterprise: xrMedia.vrRoboticsWorkcell
 };
 
 function CTA({ href, children }: { href: string; children: React.ReactNode }) {
