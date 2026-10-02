@@ -149,6 +149,9 @@ jobs:
       - name: Package generated payload output
         working-directory: _payload
         run: npm run cf:staging:package
+      - name: Restore generated Next type references
+        working-directory: _payload
+        run: git checkout -- next-env.d.ts
       - name: Verify unchanged exact checkout and stamp two-SHA manifest
         run: node _control/scripts/fgc/staging-control.mjs stamp
       - name: Upload fresh validated staging artifact
