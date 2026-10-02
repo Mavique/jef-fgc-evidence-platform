@@ -51,6 +51,9 @@ Production migration order:
 3. `005_curriculum_master_schema.sql`
 4. `007_production_hardening_schema.sql`
 5. `008_evidence_upload_lifecycle.sql`
+6. `009_review_assignment_workflows.sql`
+7. `010_merseta_reporting_scope.sql`
+8. `011_lecturer_toolkit_assignment_repair.sql`
 
 Production reference seed order:
 

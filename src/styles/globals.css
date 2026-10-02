@@ -4,7 +4,7 @@
 
 :root {
   --font-display: "Arial", "Helvetica Neue", sans-serif;
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --color-ink: 5 8 13;
   --color-surface: 9 15 24;
@@ -18,7 +18,21 @@
   --color-cyan: 84 220 255;
   --color-lime: 170 255 128;
   --color-amber: 255 196 92;
+  --color-brand-primary: var(--color-cyan);
+  --color-brand-secondary: var(--color-lime);
+  --color-brand-accent: var(--color-amber);
+  --color-background: var(--color-ink);
+  --color-elevated-surface: var(--color-surface);
+  --color-border: 255 255 255;
+  --color-text-primary: var(--color-paper);
+  --color-text-secondary: var(--color-chalk);
+  --color-success: var(--color-lime);
+  --color-warning: var(--color-amber);
+  --color-error: 255 151 166;
   --radius-tight: 10px;
+  --radius-card: 18px;
+  --space-unit: 8px;
+  --shadow-elevated: 0 24px 80px rgba(0, 0, 0, 0.26);
   --motion-standard: 700ms cubic-bezier(0.16, 1, 0.3, 1);
   --surface-line: rgba(255, 255, 255, 0.12);
   --surface-glow: rgba(84, 220, 255, 0.24);
@@ -125,6 +139,53 @@ a {
   border-width: 0 1px 1px 0;
   bottom: 12px;
   right: 12px;
+}
+
+@layer components {
+  .home-section {
+    padding: clamp(4rem, 7vw, 7rem) 1rem;
+  }
+
+  .home-section-tight {
+    padding: clamp(3.25rem, 6vw, 5.75rem) 1rem;
+  }
+
+  .home-section-anchor {
+    scroll-margin-top: 8rem;
+    padding: clamp(5.25rem, 8vw, 9rem) 1rem clamp(4rem, 7vw, 7rem);
+  }
+
+  .home-container {
+    margin-inline: auto;
+    max-width: 80rem;
+    width: 100%;
+  }
+
+  .home-rule-top {
+    position: relative;
+  }
+
+  .home-rule-top::before {
+    background: linear-gradient(90deg, transparent, rgba(84, 220, 255, 0.34), transparent);
+    content: "";
+    height: 1px;
+    inset: 0 0 auto;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .home-body {
+    font-size: clamp(1rem, 1.4vw, 1.125rem);
+    line-height: 1.75;
+  }
+
+  @media (min-width: 768px) {
+    .home-section,
+    .home-section-tight,
+    .home-section-anchor {
+      padding-inline: 2rem;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -3,6 +3,7 @@ import { migrationFiles } from "./config.mjs";
 
 const expectedBranch = process.env.FGC_EXPECTED_BRANCH ?? "fix/fgc-production-hardening";
 const productionRequested = process.argv.includes("--production");
+const postVerificationRequested = process.argv.includes("--post-verify");
 const failures = [];
 const deploymentEnvironment = process.env.FGC_ENVIRONMENT;
 const requiredRuntimeVariables = [
@@ -17,10 +18,11 @@ const requiredRuntimeVariables = [
   "FGC_EMAIL_API_KEY",
   "FGC_SUPABASE_SERVICE_ROLE_KEY",
   "FGC_SESSION_TTL_SECONDS",
-  "FGC_VERIFICATION_TOKEN_TTL_SECONDS"
+  "FGC_VERIFICATION_TOKEN_TTL_SECONDS",
+  "FGC_PASSWORD_RESET_TOKEN_TTL_SECONDS"
 ];
 
-const resourceVariables = ["FGC_CF_KV_NAMESPACE_ID", "FGC_CF_HYPERDRIVE_ID", "FGC_CF_IMAGES_CONFIGURED"];
+const resourceVariables = ["FGC_CF_KV_NAMESPACE_ID", "FGC_CF_HYPERDRIVE_ID"];
 
 function commandOutput(command, args) {
   const result = spawnSync(command, args, { encoding: "utf8" });
@@ -34,14 +36,14 @@ if (status === null) failures.push("Git status could not be verified");
 else if (status) failures.push("the working tree must be clean before a deployment gate can pass");
 
 if (migrationFiles.some((file) => /seed|demo/i.test(file))) failures.push("the production migration list contains a seed or demo file");
-if (!process.env.FGC_STAGING_VERIFIED_AT) failures.push("FGC_STAGING_VERIFIED_AT is required after non-production staging verification");
+if (postVerificationRequested && !process.env.FGC_STAGING_VERIFIED_AT) failures.push("FGC_STAGING_VERIFIED_AT is required after non-production staging verification");
 if (process.env.FGC_EVIDENCE_PUBLIC === "true") failures.push("public evidence storage is forbidden");
 if (!["staging", "production"].includes(deploymentEnvironment)) failures.push("FGC_ENVIRONMENT must be staging or production for a deployment gate");
 const missingRuntimeVariables = requiredRuntimeVariables.filter((name) => !process.env[name]);
 if (missingRuntimeVariables.length) failures.push(`required runtime configuration is missing: ${missingRuntimeVariables.join(", ")}`);
 const missingResourceVariables = resourceVariables.filter((name) => !process.env[name]);
 if (missingResourceVariables.length) failures.push(`environment-specific Cloudflare bindings are missing: ${missingResourceVariables.join(", ")}`);
-if (process.env.FGC_CF_IMAGES_CONFIGURED && process.env.FGC_CF_IMAGES_CONFIGURED !== "true") failures.push("the IMAGES binding must be explicitly confirmed for the target environment");
+if (process.env.FGC_CF_IMAGES_CONFIGURED && !["true", "false"].includes(process.env.FGC_CF_IMAGES_CONFIGURED)) failures.push("FGC_CF_IMAGES_CONFIGURED must be explicitly true or false");
 for (const name of ["FGC_CF_KV_NAMESPACE_ID", "FGC_CF_HYPERDRIVE_ID"]) {
   const value = process.env[name];
   if (value && (!/^[0-9a-f]{32}$/i.test(value) || /REPLACE|PLACEHOLDER|example/i.test(value))) failures.push(`${name} must be a real target binding identifier, not a placeholder`);

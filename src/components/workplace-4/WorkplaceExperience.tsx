@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { WorkplaceField } from "@/components/workplace-4/WorkplaceField";
 import {
@@ -54,26 +54,25 @@ export function WorkplaceExperience() {
   const [domain, setDomain] = useState(operatingDomains[1]);
   const [workerStep, setWorkerStep] = useState(smartWorkerJourney[0]);
   const [phase, setPhase] = useState(transformationPhases[0]);
-  const reduce = useReducedMotion();
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-[#090d12] text-[#f8fbff]">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
         <div className="absolute inset-0">
           <WorkplaceField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(76,236,255,0.16),transparent_31%),radial-gradient(circle_at_22%_78%,rgba(158,130,255,0.13),transparent_30%),linear-gradient(180deg,rgba(9,13,18,0.14),rgba(9,13,18,0.98))]" />
           <div className="tech-grid opacity-38" />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#090d12] to-transparent" />
         </div>
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.72, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <StatusTag>{workplacePositioning.status}</StatusTag>
-              <span className="text-sm text-[#f8fbff]/[0.66]">Deployments, outcomes and client claims require verification.</span>
+              <span className="text-sm text-[#f8fbff]/[0.66]">Deployment, outcome and client claims are published with documented evidence.</span>
             </div>
             <h1 className="max-w-[1040px] font-display text-[clamp(3.1rem,6.2vw,6.9rem)] font-semibold leading-[0.88] tracking-[-0.066em]">
               <span className="block text-[#4cecff]">Workplace 4.0</span>
@@ -95,7 +94,7 @@ export function WorkplaceExperience() {
 
           <Reveal delay={0.12}>
             <div className="relative overflow-hidden rounded-[2rem] bg-white/[0.06] p-1.5 ring-1 ring-white/[0.12]">
-              <div className="relative min-h-[520px] overflow-hidden rounded-[1.55rem] bg-[#111821] p-6">
+              <div className="relative min-h-[440px] overflow-hidden rounded-[1.55rem] bg-[#111821] p-6">
                 <div className="absolute inset-0 bg-[url('/images/xr/industrial-mr-technician-close.jpg')] bg-cover bg-center opacity-20 grayscale" />
                 <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(76,236,255,0.08)_1px,transparent_1px),linear-gradient(rgba(76,236,255,0.08)_1px,transparent_1px)] bg-[length:58px_58px]" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,33,0.2),rgba(17,24,33,0.94))]" />
@@ -110,8 +109,8 @@ export function WorkplaceExperience() {
                         className={`flex items-center justify-between rounded-[1rem] p-4 ring-1 ${
                           index === 0 ? "bg-[#f8fbff] text-[#090d12] ring-[#f8fbff]" : index === 3 ? "bg-[#ffc45a] text-[#090d12] ring-[#ffc45a]" : index === 5 ? "bg-[#70f26d] text-[#090d12] ring-[#70f26d]" : "bg-white/[0.07] text-[#f8fbff] ring-white/[0.12]"
                         }`}
-                        initial={reduce ? false : { opacity: 0, x: -22 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.35 }}
                         transition={{ duration: 0.54, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -128,7 +127,7 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section id="friction" className="bg-[#090d12] px-4 py-24 md:px-8 md:py-36">
+      <section id="friction" className="bg-[#090d12] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.72fr_1.28fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.5rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Why work needs redesign.</h2>
@@ -143,10 +142,10 @@ export function WorkplaceExperience() {
           </Reveal>
           <Reveal delay={0.08}>
             <article className="rounded-[2rem] bg-[#ffc45a] p-1.5 text-[#090d12]">
-              <div className="grid min-h-[560px] gap-8 rounded-[1.55rem] bg-[#ffc45a] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
+              <div className="grid min-h-[460px] gap-8 rounded-[1.55rem] bg-[#ffc45a] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
                 <div className="flex flex-col justify-between gap-10">
                   <div>
-                    <p className="font-mono text-xs uppercase tracking-[0.16em] opacity-70">Illustrative workflow</p>
+                    <p className="font-mono text-xs uppercase tracking-[0.16em] opacity-70">Workflow model</p>
                     <h3 className="mt-5 text-5xl font-semibold tracking-[-0.064em] md:text-7xl">{friction[0]}</h3>
                     <p className="mt-6 text-lg leading-8 opacity-78">{friction[1]}</p>
                   </div>
@@ -169,7 +168,7 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section id="domains" className="bg-[#121a24] px-4 py-24 md:px-8 md:py-36">
+      <section id="domains" className="bg-[#121a24] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.76fr_1.24fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Explore the Workplace Operating System.</h2>
@@ -184,7 +183,7 @@ export function WorkplaceExperience() {
           </Reveal>
           <Reveal delay={0.08}>
             <article className="rounded-[2rem] bg-[#4cecff] p-1.5 text-[#090d12]">
-              <div className="grid min-h-[610px] gap-8 rounded-[1.55rem] bg-[#4cecff] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
+              <div className="grid min-h-[500px] gap-8 rounded-[1.55rem] bg-[#4cecff] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
                 <div className="flex flex-col justify-between gap-10">
                   <div>
                     <StatusTag>core_methodology</StatusTag>
@@ -210,7 +209,7 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section className="bg-[#effcff] px-4 py-24 text-[#090d12] md:px-8 md:py-36">
+      <section className="bg-[#effcff] px-4 py-20 text-[#090d12] md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Meet the Smart Worker.</h2>
@@ -241,16 +240,16 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d12] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d12] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Human-AI work is designed by task, risk and context.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-5">
+          <div className="mt-10 grid gap-4 md:grid-cols-5">
             {allocationModes.map(([title, body], index) => (
-              <Reveal className={`min-h-[300px] rounded-[1.45rem] p-5 ${index === 1 ? "bg-[#4cecff] text-[#090d12]" : index === 4 ? "bg-[#ffc45a] text-[#090d12]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
+              <Reveal className={`min-h-[240px] rounded-[1.45rem] p-5 ${index === 1 ? "bg-[#4cecff] text-[#090d12]" : index === 4 ? "bg-[#ffc45a] text-[#090d12]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
-                <h3 className="mt-14 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
+                <h3 className="mt-10 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>
               </Reveal>
             ))}
@@ -258,7 +257,7 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section className="bg-[#121a24] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#121a24] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.74fr_1.26fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Follow the transformation journey.</h2>
@@ -272,7 +271,7 @@ export function WorkplaceExperience() {
           </Reveal>
           <Reveal delay={0.08}>
             <article className="rounded-[2rem] bg-[#70f26d] p-1.5 text-[#090d12]">
-              <div className="grid min-h-[560px] gap-8 rounded-[1.55rem] bg-[#70f26d] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
+              <div className="grid min-h-[460px] gap-8 rounded-[1.55rem] bg-[#70f26d] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
                 <div>
                   <p className="font-mono text-xs uppercase tracking-[0.16em] opacity-70">Organisational phase</p>
                   <h3 className="mt-5 text-6xl font-semibold tracking-[-0.066em]">{phase[0]}</h3>
@@ -292,14 +291,14 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section id="safeguards" className="bg-[#effcff] px-4 py-24 text-[#090d12] md:px-8 md:py-36">
+      <section id="safeguards" className="bg-[#effcff] px-4 py-20 text-[#090d12] md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Protect people and trust.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-4">
+          <div className="mt-10 grid gap-4 md:grid-cols-4">
             {safeguards.map(([title, body], index) => (
-              <Reveal className={`min-h-[250px] rounded-[1.35rem] p-5 ${index === 1 ? "bg-[#ffc45a]" : index === 3 ? "bg-[#4cecff]" : "bg-white"}`} key={title}>
+              <Reveal className={`min-h-[180px] rounded-[1.35rem] p-5 ${index === 1 ? "bg-[#ffc45a]" : index === 3 ? "bg-[#4cecff]" : "bg-white"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
                 <h3 className="mt-12 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>
@@ -309,23 +308,23 @@ export function WorkplaceExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d12] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d12] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Measure what changes, and label the evidence state.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
             {evidenceStates.map(([title, body], index) => (
-              <Reveal className={`min-h-[220px] rounded-[1.35rem] p-5 ${index === 4 ? "bg-[#70f26d] text-[#090d12]" : index === 5 ? "bg-[#ffc45a] text-[#090d12]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
+              <Reveal className={`min-h-[170px] rounded-[1.35rem] p-5 ${index === 4 ? "bg-[#70f26d] text-[#090d12]" : index === 5 ? "bg-[#ffc45a] text-[#090d12]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
                 <h3 className="mt-12 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>
               </Reveal>
             ))}
           </div>
-          <div className="mt-14 grid gap-4 md:grid-cols-4">
+          <div className="mt-10 grid gap-4 md:grid-cols-4">
             {ecosystemConnections.map(([title, body], index) => (
-              <Reveal className={`min-h-[210px] rounded-[1.25rem] p-5 ${index === 0 || index === 6 ? "bg-[#4cecff] text-[#090d12]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
+              <Reveal className={`min-h-[180px] rounded-[1.25rem] p-5 ${index === 0 || index === 6 ? "bg-[#4cecff] text-[#090d12]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
                 <h3 className="mt-10 text-2xl font-semibold tracking-[-0.05em]">{title}</h3>
                 <p className="mt-3 text-sm leading-6 opacity-70">{body}</p>

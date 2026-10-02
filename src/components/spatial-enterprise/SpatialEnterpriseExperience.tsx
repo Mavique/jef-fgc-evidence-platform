@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { SpatialEnterpriseField } from "@/components/spatial-enterprise/SpatialEnterpriseField";
 import {
@@ -59,13 +59,12 @@ export function SpatialEnterpriseExperience() {
   const [journeyStep, setJourneyStep] = useState(transformationJourney[0]);
   const [sector, setSector] = useState(sectors[0]);
   const [hypothesis, setHypothesis] = useState(hypothesisOptions[0]);
-  const reduce = useReducedMotion();
 
   const activeStepIndex = useMemo(() => transformationJourney.findIndex((item) => item[0] === journeyStep[0]), [journeyStep]);
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-[#090d14] text-[#f8fbff]">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
         <div className="absolute inset-0">
           <SpatialEnterpriseField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(72,242,210,0.16),transparent_31%),radial-gradient(circle_at_20%_78%,rgba(255,200,87,0.12),transparent_29%),linear-gradient(180deg,rgba(9,13,20,0.18),rgba(9,13,20,0.98))]" />
@@ -73,10 +72,10 @@ export function SpatialEnterpriseExperience() {
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#090d14] to-transparent" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.72, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -103,7 +102,7 @@ export function SpatialEnterpriseExperience() {
 
           <Reveal delay={0.12}>
             <div className="relative overflow-hidden rounded-[2rem] bg-white/[0.06] p-1.5 ring-1 ring-white/[0.12]">
-              <div className="relative min-h-[520px] overflow-hidden rounded-[1.55rem] bg-[#101722] p-6">
+              <div className="relative min-h-[440px] overflow-hidden rounded-[1.55rem] bg-[#101722] p-6">
                 <div className="absolute inset-0 bg-[url('/images/xr/vr-robotics-workcell.jpg')] bg-cover bg-center opacity-22 grayscale" />
                 <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(72,242,210,0.08)_1px,transparent_1px),linear-gradient(rgba(72,242,210,0.08)_1px,transparent_1px)] bg-[length:58px_58px]" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,23,34,0.22),rgba(16,23,34,0.94))]" />
@@ -118,8 +117,8 @@ export function SpatialEnterpriseExperience() {
                         className={`flex items-center justify-between rounded-[1rem] p-4 ring-1 ${
                           index === 0 ? "bg-[#f8fbff] text-[#090d14] ring-[#f8fbff]" : index === 4 ? "bg-[#ffc857] text-[#090d14] ring-[#ffc857]" : "bg-white/[0.07] text-[#f8fbff] ring-white/[0.12]"
                         }`}
-                        initial={reduce ? false : { opacity: 0, x: -22 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.35 }}
                         transition={{ duration: 0.54, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -136,12 +135,12 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d14] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d14] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.7rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Not AR theatre. Operational intelligence with boundaries.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-5 lg:grid-cols-2">
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {overlayCompare.map((item, index) => (
               <Reveal className={`rounded-[2rem] p-1.5 ${index === 0 ? "bg-white/[0.07]" : "bg-[#48f2d2]"}`} key={item.label}>
                 <article className={`min-h-[440px] rounded-[1.55rem] p-7 ${index === 0 ? "bg-[#101722] text-[#f8fbff]" : "bg-[#48f2d2] text-[#090d14]"}`}>
@@ -162,7 +161,7 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section id="asset-a17" className="bg-[#101722] px-4 py-24 md:px-8 md:py-36">
+      <section id="asset-a17" className="bg-[#101722] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.76fr_1.24fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.5rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Follow Asset A17 through the enterprise stack.</h2>
@@ -180,7 +179,7 @@ export function SpatialEnterpriseExperience() {
 
           <Reveal delay={0.08}>
             <article className="rounded-[2rem] bg-[#ffc857] p-1.5 text-[#090d14]">
-              <div className="grid min-h-[610px] gap-8 rounded-[1.55rem] bg-[#ffc857] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
+              <div className="grid min-h-[500px] gap-8 rounded-[1.55rem] bg-[#ffc857] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
                 <div className="flex flex-col justify-between gap-10">
                   <div>
                     <p className="font-mono text-xs uppercase tracking-[0.16em] opacity-70">{assetView.signal}</p>
@@ -209,12 +208,12 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section id="journey" className="bg-[#090d14] px-4 py-24 md:px-8 md:py-36">
+      <section id="journey" className="bg-[#090d14] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Start with enterprise need, not device spectacle.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
             <div className="grid gap-3 sm:grid-cols-2">
               {transformationJourney.map((item, index) => (
                 <button
@@ -247,7 +246,7 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#e9fffb] px-4 py-24 text-[#090d14] md:px-8 md:py-36">
+      <section className="bg-[#e9fffb] px-4 py-20 text-[#090d14] md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">What makes one instruction trustworthy?</h2>
@@ -269,16 +268,16 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d14] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d14] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Solution portfolio by enterprise outcome.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-4">
+          <div className="mt-10 grid gap-4 md:grid-cols-4">
             {solutions.map(([title, body], index) => (
-              <Reveal className={`min-h-[300px] rounded-[1.5rem] p-5 ${index === 2 ? "bg-[#48f2d2] text-[#090d14]" : index === 5 ? "bg-[#ffc857] text-[#090d14]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
+              <Reveal className={`min-h-[240px] rounded-[1.5rem] p-5 ${index === 2 ? "bg-[#48f2d2] text-[#090d14]" : index === 5 ? "bg-[#ffc857] text-[#090d14]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
-                <h3 className="mt-14 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
+                <h3 className="mt-10 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>
               </Reveal>
             ))}
@@ -286,12 +285,12 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#111823] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#111823] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.72fr_1.28fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.3rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Sector Spatial Lens.</h2>
             <p className="mt-7 max-w-xl text-lg leading-8 text-[#f8fbff]/[0.66]">
-              Examples remain illustrative until JEF verifies deployments, dates, permissions and measured outcomes.
+              Examples frame the types of deployment evidence, permissions and measured outcomes JEF reviews before public claims.
             </p>
             <div className="mt-9 grid gap-3">
               {sectors.map((item) => (
@@ -302,10 +301,10 @@ export function SpatialEnterpriseExperience() {
             </div>
           </Reveal>
           <Reveal delay={0.08}>
-            <article className="relative min-h-[560px] overflow-hidden rounded-[2rem] bg-[#48f2d2] p-8 text-[#090d14]">
+            <article className="relative min-h-[460px] overflow-hidden rounded-[2rem] bg-[#48f2d2] p-8 text-[#090d14]">
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,13,20,0.12)_1px,transparent_1px),linear-gradient(rgba(9,13,20,0.12)_1px,transparent_1px)] bg-[length:56px_56px]" />
               <div className="relative z-10 flex min-h-[500px] flex-col justify-between">
-                <StatusTag>illustrative_use_case</StatusTag>
+                <StatusTag>use_case_pathway</StatusTag>
                 <div>
                   <h3 className="text-6xl font-semibold tracking-[-0.066em]">{sector.asset}</h3>
                   <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -325,12 +324,12 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d14] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d14] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.3rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Learn, simulate, operate, capture, improve.</h2>
           </Reveal>
-          <div className="mt-14 overflow-hidden rounded-[2rem] bg-white/[0.06] p-5 ring-1 ring-white/[0.11]">
+          <div className="mt-10 overflow-hidden rounded-[2rem] bg-white/[0.06] p-5 ring-1 ring-white/[0.11]">
             <div className="grid min-w-[980px] grid-cols-9 gap-2">
               {lifecycle.map((item, index) => (
                 <div className={`min-h-48 rounded-[1rem] p-4 ${index >= 2 && index <= 5 ? "bg-[#48f2d2] text-[#090d14]" : "bg-[#111823] text-[#f8fbff]"}`} key={item}>
@@ -346,14 +345,14 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#e9fffb] px-4 py-24 text-[#090d14] md:px-8 md:py-36">
+      <section className="bg-[#e9fffb] px-4 py-20 text-[#090d14] md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.3rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Spatial Copilot boundary explorer.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
             {copilotBoundaries.map(([title, body], index) => (
-              <Reveal className={`min-h-[250px] rounded-[1.4rem] p-5 ${index < 3 ? "bg-white" : index === 4 ? "bg-[#ffc857]" : "bg-[#090d14] text-[#f8fbff]"}`} key={title}>
+              <Reveal className={`min-h-[180px] rounded-[1.4rem] p-5 ${index < 3 ? "bg-white" : index === 4 ? "bg-[#ffc857]" : "bg-[#090d14] text-[#f8fbff]"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
                 <h3 className="mt-12 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>
@@ -363,7 +362,7 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d14] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d14] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Knowledge Provenance Inspector.</h2>
@@ -390,7 +389,7 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section id="pilot" className="bg-[#111823] px-4 py-24 md:px-8 md:py-36">
+      <section id="pilot" className="bg-[#111823] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.3rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Value hypothesis builder.</h2>
@@ -424,14 +423,14 @@ export function SpatialEnterpriseExperience() {
         </div>
       </section>
 
-      <section className="bg-[#090d14] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#090d14] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.2rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Built through the JEF enterprise ecosystem.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
             {ecosystemLinks.map(([title, body], index) => (
-              <Reveal className={`min-h-[250px] rounded-[1.4rem] p-5 ${index === 0 ? "bg-[#48f2d2] text-[#090d14]" : index === 5 ? "bg-[#ffc857] text-[#090d14]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
+              <Reveal className={`min-h-[180px] rounded-[1.4rem] p-5 ${index === 0 ? "bg-[#48f2d2] text-[#090d14]" : index === 5 ? "bg-[#ffc857] text-[#090d14]" : "bg-white/[0.06] text-[#f8fbff] ring-1 ring-white/[0.1]"}`} key={title}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
                 <h3 className="mt-12 text-3xl font-semibold tracking-[-0.055em]">{title}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>

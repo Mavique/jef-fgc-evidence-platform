@@ -48,7 +48,7 @@ const rolePortalPriority: Array<{ codes: string[]; accessState: FgcAccessState; 
   { codes: ["MODERATOR"], accessState: "MODERATOR_ACTIVE", expectedPortal: "/fgc-ekm/moderation" },
   { codes: ["ASSESSOR"], accessState: "ASSESSOR_ACTIVE", expectedPortal: "/fgc-ekm/assessments/challenges" },
   { codes: ["COLLEGE_EVIDENCE_OWNER"], accessState: "COLLEGE_ACTIVE", expectedPortal: "/fgc-ekm/college/overview" },
-  { codes: ["LECTURER"], accessState: "LECTURER_ACTIVE", expectedPortal: "/fgc-ekm/data-capturer" }
+  { codes: ["LECTURER"], accessState: "LECTURER_ACTIVE", expectedPortal: "/fgc-ekm/dashboard" }
 ];
 
 export function resolveFgcAccessPolicy(input: FgcAccessPolicyInput): FgcAccessPolicyResult {

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { ArrowRight, ChevronDown, LayoutDashboard, LogOut, Menu, UserCircle, X } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
 
 type SolutionItem = {
@@ -40,34 +40,84 @@ const solutionGroups: SolutionGroup[] = [
         href: "/programmes/xr-labs-tvet-colleges"
       },
       {
+        label: "XR Catalogue",
+        description: "XR Lab devices, infrastructure, quote list and solution configurator.",
+        href: "/xr-catalogue"
+      },
+      {
         label: "VOCLE XR",
         description: "Learning-to-capability intelligence through immersive experience and evidence.",
         href: "/programmes/vocle-xr"
-      },
-      {
-        label: "iCampus",
-        description: "Connected digital learning and progression pathways.",
-        href: "/programmes/icampus"
       }
     ]
   },
   {
-    group: "Digital Transformation",
+    group: "Institutional Transformation",
     items: [
       {
-        label: "DxHub",
-        description: "Local digital transformation, innovation and capability infrastructure.",
+        label: "Digital Transformation Hubs",
+        description: "Place-based infrastructure for local capability, services and participation.",
         href: "/programmes/dxhub"
       },
       {
-        label: "Workplace 4.0",
-        description: "Human-centred workforce, AI and organisational transformation.",
-        href: "/programmes/workplace-4"
+        label: "JEF AI Services",
+        description: "Responsible AI strategy, knowledge systems, workflow intelligence and governance.",
+        href: "/programmes/ai-services"
       },
       {
-        label: "AI Services",
-        description: "Responsible AI strategy, knowledge systems, automation and implementation.",
-        href: "/programmes/ai-services"
+        label: "Workplace 4.0",
+        description: "Human-centred work redesign, responsible AI adoption and measurable capability.",
+        href: "/programmes/workplace-4"
+      }
+    ]
+  },
+  {
+    group: "Workforce and Enterprise",
+    items: [
+      {
+        label: "WORKGRID LABS",
+        description: "TVET-to-work capability, missions, evidence and opportunity routing.",
+        href: "/programmes/workgrid-labs"
+      },
+      {
+        label: "Prolific Edge",
+        description: "Enterprise capability development for leadership, digital readiness and operations.",
+        href: "/programmes/prolific-edge"
+      },
+      {
+        label: "WorxStream",
+        description: "Capability-to-opportunity pathways for work, projects and continued development.",
+        href: "/programmes/worxstream"
+      }
+    ]
+  },
+  {
+    group: "Spatial Intelligence",
+    items: [
+      {
+        label: "Spatial Enterprise",
+        description: "Digital twins, spatial guidance and contextual workplace intelligence.",
+        href: "/programmes/spatial-enterprise"
+      },
+      {
+        label: "Spatial AI City",
+        description: "Civic spatial intelligence for places, services, participation and public innovation.",
+        href: "/programmes/spatial-ai-city"
+      }
+    ]
+  },
+  {
+    group: "Digital Platforms",
+    items: [
+      {
+        label: "iCampus",
+        description: "Connected digital learning and progression pathways.",
+        href: "/programmes/icampus"
+      },
+      {
+        label: "FGC Evidence Platform",
+        description: "Evidence validation and adoption intelligence for scoped FGC users.",
+        href: "/programmes/merseta-fgc-ekm"
       }
     ]
   }
@@ -103,7 +153,6 @@ function getProductionWorkspaceHref(access: FgcCurrentUserResult | null) {
 export function SiteNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const reduce = useReducedMotion();
   const solutionsId = useId();
   const fgcMenuId = useId();
   const mobileMenuId = useId();
@@ -123,7 +172,7 @@ export function SiteNav() {
   const hoverOpenTimer = useRef<number | null>(null);
   const hoverCloseTimer = useRef<number | null>(null);
 
-  const solutionsActive = pathname.startsWith("/programmes") || pathname === "/platform-overview";
+  const solutionsActive = pathname.startsWith("/programmes") || pathname === "/platform-overview" || pathname.startsWith("/xr-catalogue");
   const productionWorkspaceHref = getProductionWorkspaceHref(productionAccess);
   const workspaceHref = productionWorkspaceHref ?? "/fgc-ekm/sign-in";
 
@@ -340,17 +389,17 @@ export function SiteNav() {
 
                   {solutionsOpen ? (
                     <motion.div
-                      animate={reduce ? undefined : { opacity: 1, y: 0 }}
+                      animate={{ opacity: 1, y: 0 }}
                       aria-label="Solutions menu"
-                      className="absolute left-1/2 top-[calc(100%+0.8rem)] w-[820px] max-w-[calc(100vw-3rem)] -translate-x-1/2 rounded-[1rem] border border-white/[0.12] bg-[#07131d] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.42)]"
+                      className="absolute left-1/2 top-[calc(100%+0.8rem)] w-[1040px] max-w-[calc(100vw-3rem)] -translate-x-1/2 rounded-[1rem] border border-white/[0.12] bg-[#07131d] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.42)]"
                       id={solutionsId}
-                      initial={reduce ? false : { opacity: 0, y: -8 }}
+                      initial={false}
                       onKeyDown={handleSolutionPanelKeyDown}
                       ref={solutionsPanelRef}
                       role="menu"
                       transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <div className="grid gap-6 md:grid-cols-2">
+                      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {solutionGroups.map((group) => (
                           <section key={group.group}>
                             <p className="text-xs font-semibold text-cyan">{group.group}</p>
@@ -431,11 +480,11 @@ export function SiteNav() {
 
             {fgcOpen ? (
               <motion.div
-                animate={reduce ? undefined : { opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 aria-label="FGC Portal menu"
                 className="absolute right-0 top-[calc(100%+0.75rem)] w-[320px] rounded-[1rem] border border-white/[0.12] bg-[#07131d] p-3 text-paper shadow-[0_24px_80px_rgba(0,0,0,0.4)]"
                 id={fgcMenuId}
-                initial={reduce ? false : { opacity: 0, y: -8 }}
+                initial={false}
                 ref={fgcPanelRef}
                 role="menu"
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
@@ -491,11 +540,11 @@ export function SiteNav() {
 
       {mobileOpen ? (
         <motion.div
-          animate={reduce ? undefined : { opacity: 1 }}
+          animate={{ opacity: 1 }}
           aria-modal="true"
           className="fixed inset-0 z-40 overflow-y-auto bg-ink/96 px-4 pb-8 pt-28 text-paper backdrop-blur-2xl lg:hidden"
           id={mobileMenuId}
-          initial={reduce ? false : { opacity: 0 }}
+          initial={false}
           ref={mobilePanelRef}
           role="dialog"
           transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}

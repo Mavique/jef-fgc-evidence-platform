@@ -10,7 +10,10 @@ const curriculumSchema = readFileSync(join(root, "db", "fgc", "005_curriculum_ma
 const curriculumSeed = readFileSync(join(root, "db", "fgc", "006_seed_curriculum_master.sql"), "utf8");
 const productionSchema = readFileSync(join(root, "db", "fgc", "007_production_hardening_schema.sql"), "utf8");
 const evidenceUploadLifecycleMigration = readFileSync(join(root, "db", "fgc", "008_evidence_upload_lifecycle.sql"), "utf8");
-const reviewAssignmentMigration = readFileSync(join(root, "db", "fgc", "009_review_assignment_workflows.sql"), "utf8");
+const reviewAssignmentMigration = readFileSync(
+  join(root, "db", "fgc", "009_review_assignment_workflows.sql"),
+  "utf8",
+).replace(/\r\n/g, "\n");
 const mersetaReportingMigration = readFileSync(join(root, "db", "fgc", "010_merseta_reporting_scope.sql"), "utf8");
 const migrationConfig = readFileSync(join(root, "scripts", "fgc", "config.mjs"), "utf8");
 

@@ -211,6 +211,9 @@ async function ensureLecturerFormAssignment(userId: string, actorUserId: string,
     `
       INSERT INTO fgc.form_assignments (template_id, assigned_to, assigned_by, college_id, campus_id, due_at)
       VALUES ($1, $2, $3, $4, $5, now() + interval '30 days')
+      ON CONFLICT (template_id, assigned_to)
+        WHERE status IN ('ASSIGNED', 'IN_PROGRESS', 'RETURNED')
+      DO UPDATE SET assigned_to = EXCLUDED.assigned_to
       RETURNING id::text
     `,
     [template.rows[0].id, userId, actorUserId, row.college_id, row.campus_id]

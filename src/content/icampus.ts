@@ -171,7 +171,7 @@ export const credentials = [
   },
   {
     name: "Portfolio evidence",
-    status: "illustrative_pathway",
+    status: "pathway_model",
     means: "Shows what the learner produced or performed with context and verification.",
     not: "It is not a placement, job or income promise."
   }

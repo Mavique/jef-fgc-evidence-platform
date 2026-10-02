@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { AiServicesField } from "@/components/ai-services/AiServicesField";
 import {
@@ -21,8 +21,8 @@ import {
 } from "@/content/ai-services";
 import { xrMedia } from "@/content/xr-media";
 
-const aiImage = xrMedia.industrialDataXrWorker;
-const skillsImage = xrMedia.jefDigitalClassroomSession;
+const aiImage = xrMedia.spatialAiCollaborationRoom;
+const skillsImage = xrMedia.jefArLearningClassroomTablets;
 
 function StatusTag({ children }: { children: string }) {
   return (
@@ -61,11 +61,10 @@ export function AiServicesExperience() {
   const [readiness, setReadiness] = useState(readinessDimensions[0]);
   const [source, setSource] = useState(knowledgeInspector[0]);
   const [trace, setTrace] = useState(agentTrace[0]);
-  const reduce = useReducedMotion();
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-ink text-paper">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
         <div className="absolute inset-0">
           <AiServicesField />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,8,13,1)_0%,rgba(5,8,13,0.82)_46%,rgba(5,8,13,0.28)_100%),linear-gradient(180deg,rgba(5,8,13,0.12),rgba(5,8,13,1))]" />
@@ -73,10 +72,10 @@ export function AiServicesExperience() {
           <div className="grain opacity-25" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.94fr_1.06fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.94fr_1.06fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.72, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -101,10 +100,10 @@ export function AiServicesExperience() {
 
           <Reveal delay={0.12}>
             <div className="rounded-[1.55rem] border border-white/[0.12] bg-white/[0.055] p-1">
-              <div className="relative min-h-[540px] overflow-hidden rounded-[1.25rem] bg-surface p-6">
-                <Image alt="Professional using AI assisted work systems" className="object-cover opacity-38 saturate-[0.85]" fill priority sizes="(min-width: 1024px) 42vw, 100vw" src={aiImage} />
+              <div className="relative min-h-[460px] overflow-hidden rounded-[1.25rem] bg-surface p-6">
+                <Image alt="JEF team planning AI and XR programme systems in a workshop setting" className="object-cover opacity-38 saturate-[0.85]" fill priority sizes="(min-width: 1024px) 42vw, 100vw" src={aiImage} />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,15,24,0.16),rgba(9,15,24,0.95))]" />
-                <div className="relative z-10 flex min-h-[492px] flex-col justify-between gap-10">
+                <div className="relative z-10 flex min-h-[400px] flex-col justify-between gap-10">
                   <div>
                     <p className="font-mono text-xs uppercase tracking-[0.18em] text-amber">Intelligence workbench</p>
                     <h2 className="mt-5 max-w-2xl text-5xl font-semibold tracking-[-0.065em] md:text-7xl">AI works when the work is redesigned.</h2>
@@ -113,8 +112,8 @@ export function AiServicesExperience() {
                     {aiTruths.slice(0, 4).map((item, index) => (
                       <motion.div
                         className="rounded-[1rem] bg-white/[0.1] p-4 text-lg font-semibold ring-1 ring-white/[0.12]"
-                        initial={reduce ? false : { opacity: 0, x: -18 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.35 }}
                         transition={{ duration: 0.48, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -130,18 +129,18 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Not a catalogue of fashionable tools.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-5 lg:grid-cols-2">
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {[
               ["AI Services is", "A problem-led transformation and implementation capability that connects trusted foundations, human capability, appropriate autonomy, operations and evidence."],
               ["AI Services is not", "A chatbot animation, an agent for every task, indiscriminate automation, vendor lock-in or a prototype presented as production."]
             ].map(([title, body], index) => (
               <Reveal className={`rounded-[1.55rem] p-1 ${index === 0 ? "bg-cyan" : "bg-white/[0.07]"}`} delay={index * 0.08} key={title}>
-                <article className={`min-h-[420px] rounded-[1.25rem] p-7 ${index === 0 ? "bg-cyan text-ink" : "bg-surface text-paper"}`}>
+                <article className={`min-h-[320px] rounded-[1.25rem] p-7 ${index === 0 ? "bg-cyan text-ink" : "bg-surface text-paper"}`}>
                   <span className="font-mono text-xs uppercase tracking-[0.18em] opacity-65">{index === 0 ? "Transformation system" : "Evidence boundary"}</span>
                   <h3 className="mt-8 text-5xl font-semibold tracking-[-0.06em]">{title}</h3>
                   <p className="mt-8 text-xl leading-9 opacity-75">{body}</p>
@@ -152,7 +151,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section id="workbench" className="bg-surface px-4 py-24 md:px-8 md:py-36">
+      <section id="workbench" className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.78fr_1.22fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-cyan">Problem to intervention navigator</p>
@@ -179,7 +178,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Twelve domains form one intelligence operating system.</h2>
@@ -187,7 +186,7 @@ export function AiServicesExperience() {
               JEF AI Services is vendor-aware but not vendor-defined. The work moves through strategy, foundations, implementation, governance, adoption and managed improvement.
             </p>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {serviceDomains.map(([title, body], index) => (
               <Reveal delay={index * 0.035} key={title}>
                 <article className="flex min-h-64 flex-col justify-between rounded-[1.15rem] border border-white/[0.1] bg-white/[0.055] p-5">
@@ -203,7 +202,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-lime">Autonomy boundary designer</p>
@@ -230,7 +229,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section id="readiness" className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section id="readiness" className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.82fr_1.18fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Readiness is a set of conditions, not one percentage.</h2>
@@ -253,7 +252,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-paper px-4 py-24 text-ink md:px-8 md:py-36">
+      <section className="bg-paper px-4 py-20 text-ink md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Inspect the answer before you trust it.</h2>
@@ -275,9 +274,9 @@ export function AiServicesExperience() {
           </div>
           <Reveal delay={0.08}>
             <article className="relative mt-10 min-h-[460px] overflow-hidden rounded-[1.55rem] bg-ink p-7 text-paper">
-              <Image alt="Team reviewing AI assisted digital work" className="object-cover opacity-28 saturate-[0.8]" fill sizes="100vw" src={skillsImage} />
+              <Image alt="JEF presentation showing integrated platforms for education, skills and opportunity" className="object-cover opacity-28 saturate-[0.8]" fill sizes="100vw" src={skillsImage} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.1),rgba(5,8,13,0.95))]" />
-              <div className="relative z-10 flex min-h-[404px] flex-col justify-end">
+              <div className="relative z-10 flex min-h-[340px] flex-col justify-end">
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-amber">Knowledge answer inspector</p>
                 <h3 className="mt-5 max-w-3xl text-6xl font-semibold tracking-[-0.07em]">{source[0]}</h3>
                 <p className="mt-6 max-w-3xl text-xl leading-9 text-paper/[0.76]">{source[1]}</p>
@@ -287,7 +286,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">See an agent act responsibly.</h2>
@@ -317,12 +316,12 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Twelve phases from experiment to governed operation.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {implementationPhases.map(([title, body], index) => (
               <Reveal delay={index * 0.035} key={title}>
                 <article className="min-h-56 rounded-[1.15rem] border border-white/[0.1] bg-white/[0.055] p-5">
@@ -336,7 +335,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section id="governance" className="bg-surface px-4 py-24 md:px-8 md:py-36">
+      <section id="governance" className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.92fr_1.08fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-cyan">Evaluation and assurance</p>
@@ -357,12 +356,12 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Connected to the JEF ecosystem.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {ecosystemMap.map(([title, body], index) => (
               <Reveal delay={index * 0.04} key={title}>
                 <article className="flex min-h-60 flex-col justify-between rounded-[1.15rem] border border-white/[0.1] bg-white/[0.055] p-5">
@@ -378,7 +377,7 @@ export function AiServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-cyan px-4 py-24 text-ink md:px-8 md:py-32">
+      <section className="bg-cyan px-4 py-20 text-ink md:px-8 md:py-32">
         <div className="mx-auto max-w-7xl">
           <Reveal>
             <h2 className="max-w-6xl font-display text-[clamp(3rem,7vw,7.7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">

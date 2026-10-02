@@ -37,4 +37,11 @@ describe("FGC database integration boundary", () => {
     expect(getFgcPool()).toBeDefined();
     await closeFgcIntegrationPool();
   });
-});
+  it("does not create a reusable pool outside disposable integration tests", () => {
+    delete process.env.FGC_TEST_DATABASE_URL;
+    delete process.env.FGC_INTEGRATION_TEST;
+    process.env.DATABASE_URL =
+      "postgresql://runtime.example.invalid:5432/fgc";
+
+    expect(() => getFgcPool()).toThrowError(FgcConfigurationError);
+  });});

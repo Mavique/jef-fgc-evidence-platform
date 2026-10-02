@@ -1,7 +1,7 @@
 export type ProlificStatus =
   | "core_methodology"
   | "implementation_option"
-  | "illustrative"
+  | "evidence_model"
   | "proposal_specific"
   | "confirmed_cohort"
   | "target"

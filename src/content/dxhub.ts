@@ -1,7 +1,7 @@
 export type ContentStatus =
   | "confirmed"
   | "proposed"
-  | "illustrative"
+  | "pathway_model"
   | "target"
   | "in_development"
   | "operational"
@@ -92,7 +92,7 @@ export const transformationLoop = [
     happens: "Turn learning into workflows, XR experiences, AI assistants, prototypes and service improvements.",
     outputs: "Working prototype, digital asset, process map, portfolio or implementation plan.",
     evidence: "Reviewed project outputs and user feedback.",
-    status: "illustrative" as ContentStatus
+    status: "pathway_model" as ContentStatus
   },
   {
     title: "Activate opportunity",

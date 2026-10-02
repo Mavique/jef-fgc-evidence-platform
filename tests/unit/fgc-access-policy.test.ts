@@ -17,7 +17,7 @@ const role = (overrides: Partial<FgcProductionRole>): FgcProductionRole => ({
 });
 
 describe("FGC production access policy", () => {
-  it("routes an active verified lecturer to the data-capture workspace", () => {
+  it("routes an active verified lecturer to the canonical lecturer dashboard", () => {
     const result = resolveFgcAccessPolicy({
       accountState: "ACTIVE",
       emailVerified: true,
@@ -25,7 +25,7 @@ describe("FGC production access policy", () => {
     });
 
     expect(result.accessState).toBe("LECTURER_ACTIVE");
-    expect(result.expectedPortal).toBe("/fgc-ekm/data-capturer");
+    expect(result.expectedPortal).toBe("/fgc-ekm/dashboard");
     expect(result.canOpenProtectedWorkspace).toBe(true);
   });
 

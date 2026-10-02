@@ -19,7 +19,7 @@ await withClient(async (client) => {
   for (const file of migrationFiles) {
     const sqlPath = join(projectRoot, "db", "fgc", file);
     const sql = readFileSync(sqlPath, "utf8");
-    const checksum = createHash("sha256").update(sql).digest("hex");
+    const checksum = createHash("sha256").update(sql.replace(/\r\n/g, "\n")).digest("hex");
     const existing = await client.query("select checksum from fgc.schema_migrations where version = $1", [file]);
 
     if (existing.rows[0]) {

@@ -351,9 +351,9 @@ export async function getFgcRoleWorkbench(access: Access): Promise<FgcRoleWorkbe
       templateName: row.template_name,
       completionPercent: parsed.completionPercent,
       evidenceManifest: parsed.values["evidence_uploads.evidence_manifest"] ?? "",
-      programmeName: parsed.values["learner_cohort.programme_name"] ?? "",
-      moduleName: parsed.values["learner_cohort.subject_or_module"] ?? "",
-      sourceStatus: parsed.values["evidence_uploads.evidence_status"] ?? "Self-Reported"
+      programmeName: parsed.values["teaching_context.programme_name"] ?? parsed.values["learner_cohort.programme_name"] ?? "",
+      moduleName: parsed.values["teaching_context.subject_or_module"] ?? parsed.values["learner_cohort.subject_or_module"] ?? "",
+      sourceStatus: "Lecturer self-report pending governed review"
     };
   }) ?? [];
   const role = access.access.activeRole;
@@ -528,7 +528,6 @@ export async function getFgcSubmissionDetail(access: Access, submissionId: strin
   }
   const parsed = snapshotValues(detail.snapshot);
   const manifest = parsed.values["evidence_uploads.evidence_manifest"] ?? "";
-  const evidenceStatus = parsed.values["evidence_uploads.evidence_status"] ?? "";
 
   return {
     id: detail.id,
@@ -548,7 +547,7 @@ export async function getFgcSubmissionDetail(access: Access, submissionId: strin
     completionPercent: parsed.completionPercent,
     verificationStatus: ["VERIFIED", "PARTIALLY_VERIFIED", "CONTRADICTED"].includes(detail.status) ? detail.status : "PENDING_VERIFICATION",
     evidenceCompletenessStatus: evidenceResult.rows.length || manifest ? "EVIDENCE_DECLARED_PENDING_REVIEW" : "EVIDENCE_MANIFEST_PENDING",
-    sourceStatus: evidenceStatus || "Lecturer Self-Report",
+    sourceStatus: "Lecturer self-report; document support and verification shown separately",
     sections: fgcLecturerModules
       .map((formModule) => sections.get(formModule.code))
       .filter((section): section is FgcSubmissionDetailSection => Boolean(section))

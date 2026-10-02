@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { VocleField } from "@/components/vocle-xr/VocleField";
 import {
@@ -58,24 +58,23 @@ export function VocleXrExperience() {
   const [evidence, setEvidence] = useState(evidenceInspector[0]);
   const [mode, setMode] = useState(userModes[0]);
   const [partner, setPartner] = useState(partnerPathways[0]);
-  const reduce = useReducedMotion();
 
   const loopIndex = useMemo(() => loopSteps.findIndex((item) => item.name === loop.name), [loop]);
   const visibleJourney = useMemo(() => journeyStages.slice(0, Math.max(5, loopIndex + 5)), [loopIndex]);
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-[#080a16] text-paper">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-32 md:px-8">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-32 md:px-8">
         <div className="absolute inset-0">
           <VocleField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(85,230,212,0.18),transparent_32%),radial-gradient(circle_at_22%_72%,rgba(109,107,255,0.22),transparent_32%),linear-gradient(180deg,rgba(8,10,22,0.12),rgba(8,10,22,0.97))]" />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(246,248,255,0.045)_1px,transparent_1px),linear-gradient(rgba(246,248,255,0.045)_1px,transparent_1px)] bg-[length:78px_78px] opacity-50" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.7, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -100,10 +99,10 @@ export function VocleXrExperience() {
 
           <Reveal delay={0.12}>
             <div className="rounded-[2.2rem] bg-white/[0.06] p-1.5 ring-1 ring-white/[0.12]">
-              <div className="relative min-h-[540px] overflow-hidden rounded-[1.7rem] bg-[#101326] p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
-                <div className="absolute inset-0 bg-[url('/images/xr/xr-medical-heart-learning.jpg')] bg-cover bg-center opacity-20 grayscale" />
+              <div className="relative min-h-[460px] overflow-hidden rounded-[1.7rem] bg-[#101326] p-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.14)]">
+                <div className="absolute inset-0 bg-[url('/images/xr/jef-vulabook-ar-textbook-demo.webp')] bg-cover bg-center opacity-20 grayscale" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,19,38,0.25),rgba(16,19,38,0.94))]" />
-                <div className="relative z-10 grid min-h-[486px] content-between gap-8">
+                <div className="relative z-10 grid min-h-[400px] content-between gap-8">
                   <div>
                     <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#ffc86b]">Core doctrine</p>
                     <h2 className="mt-5 text-5xl font-semibold tracking-[-0.065em] md:text-7xl">Experience is not competence.</h2>
@@ -117,8 +116,8 @@ export function VocleXrExperience() {
                     ].map((item, index) => (
                       <motion.div
                         className="rounded-[1.1rem] bg-white/[0.085] p-4 text-lg font-semibold ring-1 ring-white/[0.12]"
-                        initial={reduce ? false : { opacity: 0, x: -20 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.4 }}
                         transition={{ duration: 0.5, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -134,16 +133,16 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section className="bg-[#080a16] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#080a16] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Not an XR content library.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="mt-10 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
             {contentComparison.map((item, index) => (
               <Reveal delay={index * 0.08} key={item.name}>
                 <article className={`h-full rounded-[2rem] p-1.5 ${index === 0 ? "bg-white/[0.055] ring-1 ring-white/[0.1]" : "bg-[#55e6d4] text-[#111424]"}`}>
-                  <div className={`flex min-h-[420px] flex-col justify-between rounded-[1.55rem] p-7 ${index === 0 ? "bg-[#101326] text-paper" : "bg-[#55e6d4] text-[#111424]"}`}>
+                  <div className={`flex min-h-[320px] flex-col justify-between rounded-[1.55rem] p-7 ${index === 0 ? "bg-[#101326] text-paper" : "bg-[#55e6d4] text-[#111424]"}`}>
                     <div>
                       <p className="font-mono text-xs uppercase tracking-[0.18em] opacity-70">{item.stance}</p>
                       <h3 className="mt-6 text-5xl font-semibold tracking-[-0.065em]">{item.name}</h3>
@@ -166,7 +165,7 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section id="loop" className="bg-[#101326] px-4 py-28 md:px-8 md:py-40">
+      <section id="loop" className="bg-[#101326] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.84fr_1.16fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Follow Thabo's first loop.</h2>
@@ -198,12 +197,12 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section className="bg-[#080a16] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#080a16] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Who owns what?</h2>
           </Reveal>
-          <div className="mt-16 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="grid gap-3 sm:grid-cols-2">
               {systems.map((item) => (
                 <button
@@ -228,7 +227,7 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section className="bg-[#101326] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#101326] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.78fr_1.22fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Evidence lenses, not autonomous judges.</h2>
@@ -253,12 +252,12 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section id="learner" className="bg-[#080a16] px-4 py-28 md:px-8 md:py-40">
+      <section id="learner" className="bg-[#080a16] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">The Twin is revisable.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="rounded-[2.2rem] bg-paper p-7 text-[#111424]">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <h3 className="text-5xl font-semibold tracking-[-0.065em]">Living Capability Twin</h3>
@@ -268,8 +267,8 @@ export function VocleXrExperience() {
                 {twinDimensions.map((item, index) => (
                   <motion.div
                     className="rounded-[1rem] bg-[#111424] p-4 text-paper"
-                    initial={reduce ? false : { opacity: 0, y: 16 }}
-                    whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                    initial={false}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.4 }}
                     transition={{ duration: 0.5, delay: index * 0.045, ease: [0.16, 1, 0.3, 1] }}
                     key={item.name}
@@ -302,7 +301,7 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section className="bg-[#101326] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#101326] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Lecturer Mission Control is primary.</h2>
@@ -322,12 +321,12 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section className="bg-[#080a16] px-4 py-28 md:px-8 md:py-40">
+      <section className="bg-[#080a16] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6vw,7rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Academic life and career life stay distinct.</h2>
           </Reveal>
-          <div className="mt-16 grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="mt-10 grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
             <div className="rounded-[2rem] bg-[#ffc86b] p-7 text-[#111424]">
               <h3 className="text-4xl font-semibold tracking-[-0.055em]">Formal Academic Life</h3>
               <p className="mt-5 text-lg leading-8 opacity-75">Institution-bound programmes, curriculum, assessment, academic calendars and approved qualifications.</p>
@@ -347,7 +346,7 @@ export function VocleXrExperience() {
         </div>
       </section>
 
-      <section id="partners" className="bg-[#101326] px-4 py-28 md:px-8 md:py-40">
+      <section id="partners" className="bg-[#101326] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.8rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.065em]">Curriculum becomes experience through governance.</h2>

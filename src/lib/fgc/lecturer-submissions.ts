@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { fgcQuery, withFgcTransaction } from "@/lib/fgc/db";
 import { throwFgcIntegrationFault } from "@/lib/fgc/test-faults";
 import type { FgcCurrentUserResult } from "@/lib/fgc/current-user";
-import { evaluateFgcLecturerDraft, fgcLecturerModules, fieldKey, type FgcLecturerDraftValues } from "@/lib/fgc/lecturer-form";
+import { evaluateFgcLecturerDraft, fgcLecturerModules, fieldKey, sanitizeFgcLecturerDraft, type FgcLecturerDraftValues } from "@/lib/fgc/lecturer-form";
 
 type ResolvedProductionAccess = Extract<FgcCurrentUserResult, { ok: true }>;
 type FgcQueryExecutor = typeof fgcQuery;
@@ -273,7 +273,8 @@ async function saveLecturerDraftWithinTransaction(
   reason: string,
   query: FgcQueryExecutor
 ) {
-  const completion = evaluateFgcLecturerDraft(values);
+  const sanitizedValues = sanitizeFgcLecturerDraft(values);
+  const completion = evaluateFgcLecturerDraft(sanitizedValues);
   const now = new Date().toISOString();
 
   const assignment = await getAssignmentForUser(assignmentId, access.user.id, query);
@@ -304,7 +305,7 @@ async function saveLecturerDraftWithinTransaction(
     }
 
     const nextVersion = submission.current_version + 1;
-    const snapshot: LecturerSubmissionSnapshot = { values, completion, savedAt: now };
+    const snapshot: LecturerSubmissionSnapshot = { values: sanitizedValues, completion, savedAt: now };
     const insertedVersion = await query<{ id: string }>(
       `
         INSERT INTO fgc.production_submission_versions (
@@ -324,7 +325,7 @@ async function saveLecturerDraftWithinTransaction(
     for (const captureModule of fgcLecturerModules) {
       for (const field of captureModule.fields) {
         const key = fieldKey(captureModule.code, field.code);
-        const value = values[key] ?? "";
+        const value = sanitizedValues[key] ?? "";
         await query(
           `
             INSERT INTO fgc.production_response_values (
@@ -366,13 +367,14 @@ async function saveLecturerDraftWithinTransaction(
 
 export async function submitLecturerForm(access: ResolvedProductionAccess, assignmentId: string, values: FgcLecturerDraftValues) {
   assertLecturerAccess(access);
-  const completion = evaluateFgcLecturerDraft(values);
+  const sanitizedValues = sanitizeFgcLecturerDraft(values);
+  const completion = evaluateFgcLecturerDraft(sanitizedValues);
   if (!completion.complete) {
     throw new FgcFormAccessError(422, "FGC_SUBMISSION_INCOMPLETE", "Complete all required lecturer capture fields before final submission.");
   }
 
   return withFgcTransaction(async (query) => {
-    const saved = await saveLecturerDraftWithinTransaction(access, assignmentId, values, "Lecturer saved final submission snapshot", query);
+    const saved = await saveLecturerDraftWithinTransaction(access, assignmentId, sanitizedValues, "Lecturer saved final submission snapshot", query);
     throwFgcIntegrationFault("lecturer_submission_after_snapshot");
     await query(
       `

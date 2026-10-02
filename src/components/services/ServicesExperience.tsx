@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import {
   capabilitySpine,
@@ -20,11 +20,11 @@ import {
 import { xrMedia } from "@/content/xr-media";
 
 const sectorImages: Record<string, string> = {
-  tvet: xrMedia.arAutomotiveTraining,
-  private: xrMedia.xrEducationGears,
+  tvet: xrMedia.jefXrTvetEducationWorkshop,
+  private: xrMedia.jefArLearningClassroomTablets,
   government: xrMedia.jefLargeTrainingRoom,
   health: xrMedia.medicalXrTraining,
-  enterprise: xrMedia.arManufacturingTablet
+  enterprise: xrMedia.vrRoboticsWorkcell
 };
 
 function CTA({ href, children }: { href: string; children: React.ReactNode }) {
@@ -41,12 +41,24 @@ export function ServicesExperience() {
   const [challenge, setChallenge] = useState(pathwayChallenges[0]);
   const [currentState, setCurrentState] = useState(currentStates[0]);
   const [submitted, setSubmitted] = useState(false);
-  const reduce = useReducedMotion();
 
   useEffect(() => {
-    const selectedId = window.location.hash.replace("#", "");
-    const selectedSector = sectors.find((item) => item.id === selectedId);
-    if (selectedSector) setSector(selectedSector);
+    const applyHashSector = () => {
+      const selectedId = window.location.hash.replace("#", "");
+      const selectedSector = sectors.find((item) => item.id === selectedId);
+      if (selectedSector) setSector(selectedSector);
+    };
+
+    applyHashSector();
+    const frame = window.requestAnimationFrame(applyHashSector);
+    const timeout = window.setTimeout(applyHashSector, 100);
+    window.addEventListener("hashchange", applyHashSector);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+      window.removeEventListener("hashchange", applyHashSector);
+    };
   }, []);
 
   const selectedPathway = useMemo(
@@ -59,7 +71,7 @@ export function ServicesExperience() {
           : challenge.includes("curriculum") || challenge.includes("readiness")
             ? "Curriculum, capability and readiness discovery before implementation"
             : "Sector-specific transformation prescription before scale",
-      evidence: "Illustrative pathway. Final scope requires discovery, validation and approved evidence."
+      evidence: "Discovery path. Final scope follows partner discovery, validation and evidence review."
     }),
     [challenge, currentState, sector.service]
   );
@@ -90,8 +102,8 @@ export function ServicesExperience() {
 
         <div className="relative z-10 mx-auto grid min-h-[78dvh] max-w-7xl content-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.72, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="mb-5 inline-flex rounded-full bg-amber px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.18em] text-ink">{servicesPositioning.eyebrow}</p>
@@ -119,7 +131,7 @@ export function ServicesExperience() {
                 {[
                   ["Current friction", sector.challenge],
                   ["JEF intervention", sector.service],
-                  ["Illustrative transformed state", sector.positioning]
+                  ["Target transformed state", sector.positioning]
                 ].map(([label, value]) => (
                   <div className="rounded-[1rem] bg-ink/60 p-4 ring-1 ring-white/[0.1]" key={label}>
                     <p className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-lime">{label}</p>
@@ -139,7 +151,7 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-20 md:px-8 md:py-24">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[0.78fr_1.22fr] md:items-start lg:grid-cols-[0.76fr_1.24fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-cyan">Why JEF</p>
@@ -179,11 +191,11 @@ export function ServicesExperience() {
         </Reveal>
       </section>
 
-      <section id="sector-gateway" className="bg-ink px-4 py-20 md:px-8 md:py-24">
+      <section id="sector-gateway" className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.72fr_0.62fr_0.66fr] lg:items-end">
             <h2 className="font-display text-[clamp(2.55rem,5vw,5.85rem)] font-semibold leading-[0.88] tracking-[-0.062em]">Choose the system you need to transform.</h2>
-            <p className="max-w-2xl text-lg leading-8 text-paper/[0.68]">The page preserves your sector lens and shows the service system, flagship products, package entry points and safeguards that fit.</p>
+            <p className="max-w-2xl text-lg leading-8 text-paper/[0.68]">Use the sector lens to compare service systems, flagship products, package entry points and safeguards that fit your operating need.</p>
             <div className="rounded-[1.15rem] border border-white/[0.1] bg-white/[0.055] p-5">
               <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-lime">Current lens</p>
               <p className="mt-3 text-2xl font-semibold leading-tight tracking-[-0.045em]">{sector.name}</p>
@@ -209,7 +221,7 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-paper px-4 py-24 text-ink md:px-8 md:py-36">
+      <section className="bg-paper px-4 py-20 text-ink md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.86fr_1.14fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-slate-600">Active sector lens</p>
@@ -217,7 +229,7 @@ export function ServicesExperience() {
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-700">{sector.audience}</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <article className="relative min-h-[520px] overflow-hidden rounded-[1.55rem] bg-ink p-7 text-paper">
+            <article className="relative min-h-[440px] overflow-hidden rounded-[1.55rem] bg-ink p-7 text-paper">
               <Image alt={`${sector.name} transformation pathway`} className="object-cover opacity-34 saturate-[0.85]" fill sizes="(min-width: 1024px) 48vw, 100vw" src={sectorImages[sector.id]} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,13,0.08),rgba(5,8,13,0.96))]" />
               <div className="relative z-10 flex min-h-[464px] flex-col justify-end">
@@ -262,12 +274,12 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section id="method" className="bg-surface px-4 py-24 md:px-8 md:py-36">
+      <section id="method" className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">One method, adapted by sector.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
             {jefMethod.map(([title, body], index) => (
               <Reveal delay={index * 0.04} key={title}>
                 <article className="min-h-56 rounded-[1.15rem] border border-white/[0.1] bg-white/[0.055] p-5">
@@ -281,7 +293,7 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.76fr_1.24fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-cyan">Shared packages</p>
@@ -301,11 +313,11 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section id="pathway-builder" className="bg-paper px-4 py-24 text-ink md:px-8 md:py-36">
+      <section id="pathway-builder" className="bg-paper px-4 py-20 text-ink md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.86fr_1.14fr]">
           <Reveal>
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-slate-600">Transformation Pathway Builder</p>
-            <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Receive an illustrative pathway.</h2>
+            <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Receive a discovery pathway.</h2>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-700">The builder recommends a discovery path. It does not auto-generate pricing, commitments or outcome claims.</p>
           </Reveal>
           <Reveal delay={0.1}>
@@ -327,7 +339,7 @@ export function ServicesExperience() {
                 </div>
               </fieldset>
               <div className="mt-8 rounded-[1.15rem] bg-ink p-6 text-paper">
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-amber">Illustrative pathway</p>
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-amber">Discovery pathway</p>
                 <h3 className="mt-5 text-4xl font-semibold tracking-[-0.055em]">{selectedPathway.system}</h3>
                 <p className="mt-5 leading-7 text-paper/[0.72]">Recommended discovery path: {selectedPathway.discovery}</p>
                 <p className="mt-3 leading-7 text-paper/[0.72]">Possible first sprint: {selectedPathway.firstSprint}</p>
@@ -338,7 +350,7 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section className="bg-surface px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-surface px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Specialist capability layers, activated with purpose.</h2>
@@ -349,10 +361,13 @@ export function ServicesExperience() {
               <span className="rounded-full bg-white/[0.08] px-4 py-3 font-semibold text-paper ring-1 ring-white/[0.1]" key={item}>{item}</span>
             ))}
           </div>
+          <Link className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-cyan px-6 py-4 text-sm font-bold text-ink transition duration-700 ease-fluid hover:bg-lime" href="/xr-catalogue">
+            Explore XR Catalogue
+          </Link>
         </div>
       </section>
 
-      <section className="bg-ink px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-ink px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.78fr_1.22fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.65rem,5.8vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Evidence and responsible implementation stay visible.</h2>
@@ -371,7 +386,7 @@ export function ServicesExperience() {
         </div>
       </section>
 
-      <section id="lead-form" className="bg-cyan px-4 py-24 text-ink md:px-8 md:py-32">
+      <section id="lead-form" className="bg-cyan px-4 py-20 text-ink md:px-8 md:py-32">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.85fr_1.15fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(3rem,6.8vw,7.4rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Start a Transformation Conversation.</h2>
@@ -381,7 +396,7 @@ export function ServicesExperience() {
             <form className="rounded-[1.35rem] bg-white p-6 shadow-fine ring-1 ring-ink/10" onSubmit={submitLead}>
               {submitted ? (
                 <div className="rounded-[1rem] bg-lime p-5 font-bold text-ink" role="status">
-                  Thank you. This is a local prototype success state. JEF still needs to confirm the operational enquiry owner, privacy notice and response process.
+                  Thank you. JEF will review the enquiry and respond through the appropriate contact route.
                 </div>
               ) : null}
               <div className="grid gap-4 md:grid-cols-2">
@@ -419,7 +434,7 @@ export function ServicesExperience() {
               </label>
               <label className="mt-4 flex gap-3 text-sm leading-6 text-slate-700">
                 <input className="mt-1 size-4" required type="checkbox" />
-                I consent to be contacted about this transformation enquiry. Privacy wording and routing must be confirmed before public launch.
+                I consent to be contacted about this transformation enquiry and understand that sensitive information should not be shared through this public form.
               </label>
               <button className="mt-6 inline-flex min-h-12 rounded-full bg-ink px-6 py-4 text-sm font-bold text-paper transition duration-700 ease-fluid hover:bg-surface" type="submit">
                 Submit transformation enquiry

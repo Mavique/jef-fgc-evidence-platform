@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Reveal } from "@/components/MotionPrimitives";
 import { WorxStreamField } from "@/components/worxstream/WorxStreamField";
 import {
@@ -61,11 +61,10 @@ export function WorxStreamExperience() {
   const [step, setStep] = useState(opportunityStream[0]);
   const [route, setRoute] = useState(opportunityTypes[0]);
   const [partnerRoute, setPartnerRoute] = useState(partnerRoutes[0]);
-  const reduce = useReducedMotion();
 
   return (
     <main className="w-full max-w-full overflow-x-hidden bg-[#07110e] text-[#f7fff9]">
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-16 pt-36 md:px-8 md:pt-32">
         <div className="absolute inset-0">
           <WorxStreamField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(98,246,163,0.2),transparent_31%),radial-gradient(circle_at_20%_80%,rgba(255,123,134,0.15),transparent_29%),linear-gradient(180deg,rgba(7,17,14,0.18),rgba(7,17,14,0.98))]" />
@@ -73,10 +72,10 @@ export function WorxStreamExperience() {
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07110e] to-transparent" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-8rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.96fr_1.04fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center gap-10 lg:grid-cols-[0.96fr_1.04fr] lg:items-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.7, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -103,7 +102,7 @@ export function WorxStreamExperience() {
 
           <Reveal delay={0.12}>
             <div className="relative overflow-hidden rounded-[2rem] bg-white/[0.06] p-1.5 ring-1 ring-white/[0.12]">
-              <div className="relative min-h-[510px] overflow-hidden rounded-[1.55rem] bg-[#0c1915] p-6">
+              <div className="relative min-h-[440px] overflow-hidden rounded-[1.55rem] bg-[#0c1915] p-6">
                 <div className="absolute inset-0 bg-[url('/images/xr/vr-industrial-factory-tour.jpeg')] bg-cover bg-center opacity-20 grayscale" />
                 <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(127,215,255,0.08)_1px,transparent_1px),linear-gradient(rgba(127,215,255,0.08)_1px,transparent_1px)] bg-[length:58px_58px]" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,21,0.2),rgba(12,25,21,0.94))]" />
@@ -118,8 +117,8 @@ export function WorxStreamExperience() {
                         className={`flex items-center justify-between rounded-[1rem] p-4 ring-1 ${
                           index === 0 ? "bg-[#f7fff9] text-[#07110e] ring-[#f7fff9]" : index === 3 ? "bg-[#62f6a3] text-[#07110e] ring-[#62f6a3]" : "bg-white/[0.07] text-[#f7fff9] ring-white/[0.12]"
                         }`}
-                        initial={reduce ? false : { opacity: 0, x: -22 }}
-                        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                        initial={false}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.35 }}
                         transition={{ duration: 0.54, delay: index * 0.055, ease: [0.16, 1, 0.3, 1] }}
                         key={item}
@@ -136,15 +135,15 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section className="bg-[#07110e] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#07110e] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.7rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Broken transition becomes governed movement.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-5 lg:grid-cols-2">
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {transitionCompare.map((item) => (
               <Reveal className={`rounded-[2rem] p-1.5 ${item.tone === "broken" ? "bg-white/[0.07]" : "bg-[#62f6a3]"}`} key={item.label}>
-                <article className={`min-h-[430px] rounded-[1.55rem] p-7 ${item.tone === "broken" ? "bg-[#0d1714] text-[#f7fff9]" : "bg-[#62f6a3] text-[#07110e]"}`}>
+                <article className={`min-h-[320px] rounded-[1.55rem] p-7 ${item.tone === "broken" ? "bg-[#0d1714] text-[#f7fff9]" : "bg-[#62f6a3] text-[#07110e]"}`}>
                   <h3 className="max-w-lg text-5xl font-semibold tracking-[-0.06em]">{item.label}</h3>
                   <div className="mt-12 grid gap-3">
                     {item.points.map((point, index) => (
@@ -161,7 +160,7 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section id="journey" className="bg-[#0b1714] px-4 py-24 md:px-8 md:py-36">
+      <section id="journey" className="bg-[#0b1714] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.78fr_1.22fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.5rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Choose a role. The opportunity stream explains itself.</h2>
@@ -179,7 +178,7 @@ export function WorxStreamExperience() {
 
           <Reveal delay={0.08}>
             <article className="rounded-[2rem] bg-[#62f6a3] p-1.5 text-[#07110e]">
-              <div className="grid min-h-[610px] gap-8 rounded-[1.55rem] bg-[#62f6a3] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
+              <div className="grid min-h-[500px] gap-8 rounded-[1.55rem] bg-[#62f6a3] p-7 md:grid-cols-[0.9fr_1.1fr] md:p-9">
                 <div className="flex flex-col justify-between gap-10">
                   <div>
                     <p className="font-mono text-xs uppercase tracking-[0.16em] opacity-70">{perspective.signal}</p>
@@ -212,12 +211,12 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section id="matching" className="bg-[#07110e] px-4 py-24 md:px-8 md:py-36">
+      <section id="matching" className="bg-[#07110e] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.8vw,6.6rem)] font-semibold leading-[0.86] tracking-[-0.066em]">No universal score. Separate factors, separate decisions.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {matchFactors.map((item) => (
               <Reveal className="rounded-[1.45rem] bg-white/[0.06] p-5 ring-1 ring-white/[0.11]" key={item.name}>
                 <span className={`inline-flex rounded-full px-3 py-1 font-mono text-[0.63rem] font-bold uppercase tracking-[0.14em] ${stateClasses(item.state)}`}>
@@ -231,7 +230,7 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section className="bg-[#dfffee] px-4 py-24 text-[#07110e] md:px-8 md:py-36">
+      <section className="bg-[#dfffee] px-4 py-20 text-[#07110e] md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Passport Consent Preview.</h2>
@@ -259,12 +258,12 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section className="bg-[#0b1714] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#0b1714] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-4xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.2rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Route explorer without placement promises.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.72fr_1.28fr]">
             <div className="grid gap-3">
               {opportunityTypes.map((item) => (
                 <ChoiceButton active={item[0] === route[0]} onClick={() => setRoute(item)} key={item[0]}>
@@ -273,9 +272,9 @@ export function WorxStreamExperience() {
               ))}
             </div>
             <Reveal delay={0.08}>
-              <article className="relative min-h-[470px] overflow-hidden rounded-[2rem] bg-white/[0.06] p-8 ring-1 ring-white/[0.11]">
+              <article className="relative min-h-[400px] overflow-hidden rounded-[2rem] bg-white/[0.06] p-8 ring-1 ring-white/[0.11]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(127,215,255,0.16),transparent_32%),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] bg-[length:auto,52px_52px]" />
-                <div className="relative z-10 flex min-h-[410px] flex-col justify-between">
+                <div className="relative z-10 flex min-h-[340px] flex-col justify-between">
                   <StatusTag>verification_required</StatusTag>
                   <div>
                     <h3 className="text-6xl font-semibold tracking-[-0.066em]">{route[0]}</h3>
@@ -288,12 +287,12 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section className="bg-[#07110e] px-4 py-24 md:px-8 md:py-36">
+      <section className="bg-[#07110e] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Statuses keep outcomes honest.</h2>
           </Reveal>
-          <div className="mt-14 overflow-hidden rounded-[2rem] bg-white/[0.06] p-5 ring-1 ring-white/[0.11]">
+          <div className="mt-10 overflow-hidden rounded-[2rem] bg-white/[0.06] p-5 ring-1 ring-white/[0.11]">
             <div className="grid min-w-[980px] grid-cols-10 gap-2">
               {statusJourney.map((item, index) => (
                 <div className={`min-h-48 rounded-[1rem] p-4 ${index >= 7 ? "bg-[#62f6a3] text-[#07110e]" : "bg-[#0d1b17] text-[#f7fff9]"}`} key={item}>
@@ -309,16 +308,16 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section className="bg-[#eaf7ff] px-4 py-24 text-[#07110e] md:px-8 md:py-36">
+      <section className="bg-[#eaf7ff] px-4 py-20 text-[#07110e] md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.4rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Ecosystem sources feed the stream.</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-5">
+          <div className="mt-10 grid gap-4 md:grid-cols-5">
             {ecosystemSources.map(([name, body], index) => (
-              <Reveal className={`min-h-[300px] rounded-[1.5rem] p-5 ${index === 1 ? "bg-[#07110e] text-[#f7fff9]" : index === 2 ? "bg-[#62f6a3]" : "bg-white"}`} key={name}>
+              <Reveal className={`min-h-[240px] rounded-[1.5rem] p-5 ${index === 1 ? "bg-[#07110e] text-[#f7fff9]" : index === 2 ? "bg-[#62f6a3]" : "bg-white"}`} key={name}>
                 <span className="font-mono text-xs opacity-60">{String(index + 1).padStart(2, "0")}</span>
-                <h3 className="mt-14 text-3xl font-semibold tracking-[-0.055em]">{name}</h3>
+                <h3 className="mt-10 text-3xl font-semibold tracking-[-0.055em]">{name}</h3>
                 <p className="mt-4 text-sm leading-6 opacity-70">{body}</p>
               </Reveal>
             ))}
@@ -326,7 +325,7 @@ export function WorxStreamExperience() {
         </div>
       </section>
 
-      <section id="partners" className="bg-[#07110e] px-4 py-24 md:px-8 md:py-36">
+      <section id="partners" className="bg-[#07110e] px-4 py-20 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <Reveal>
             <h2 className="font-display text-[clamp(2.7rem,5.7vw,6.3rem)] font-semibold leading-[0.86] tracking-[-0.066em]">Partnership configurator.</h2>

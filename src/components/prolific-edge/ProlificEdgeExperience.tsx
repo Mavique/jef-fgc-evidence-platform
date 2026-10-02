@@ -83,16 +83,16 @@ export function ProlificEdgeExperience() {
         <div ref={progressRef} className="h-full bg-gradient-to-r from-amber via-cyan to-canopy" />
       </div>
 
-      <section className="relative isolate min-h-[100dvh] overflow-hidden px-4 pb-20 pt-32 md:px-8">
+      <section className="relative isolate min-h-[84dvh] overflow-hidden px-4 pb-20 pt-32 md:px-8">
         <div className="absolute inset-0">
           <EnterpriseField />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(255,201,104,0.19),transparent_34%),radial-gradient(circle_at_22%_72%,rgba(138,124,255,0.18),transparent_32%),linear-gradient(180deg,rgba(6,8,13,0.08),rgba(6,8,13,0.98))]" />
           <div className="tech-grid" />
         </div>
-        <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-9rem)] max-w-7xl content-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(84dvh-7rem)] max-w-7xl content-center">
           <motion.div
-            initial={reduce ? false : { opacity: 0.74, y: 28, filter: "blur(5px)" }}
-            animate={reduce ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={false}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-[1180px]"
           >
@@ -127,7 +127,7 @@ export function ProlificEdgeExperience() {
               From business support to enterprise transformation.
             </h2>
           </Reveal>
-          <div className="mt-16 grid grid-flow-dense auto-rows-[minmax(300px,auto)] grid-cols-1 gap-4 md:grid-cols-12">
+          <div className="mt-10 grid grid-flow-dense auto-rows-[minmax(300px,auto)] grid-cols-1 gap-4 md:grid-cols-12">
             {supportVsTransformation.map(([title, body], index) => (
               <Reveal delay={index * 0.08} className={index === 0 ? "md:col-span-5" : "md:col-span-7"} key={title}>
                 <article className={`group h-full rounded-[2rem] p-1.5 ring-1 ring-white/[0.1] ${index === 0 ? "bg-white/[0.04]" : "bg-amber text-ink"}`}>
@@ -175,7 +175,7 @@ export function ProlificEdgeExperience() {
             <h2 className="font-display text-[clamp(2.8rem,6.2vw,7.2rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Enterprise Evolution Journey</h2>
             <p className="max-w-2xl text-lg leading-8 text-paper/[0.64]">A common methodology creates enterprise-specific pathways. Select a movement to see purpose, assets and evidence status.</p>
           </Reveal>
-          <div className="mt-16 grid gap-8 lg:grid-cols-[0.78fr_1.22fr]">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.78fr_1.22fr]">
             <div className="grid gap-3">
               {evolutionStages.map((item, index) => (
                 <button className={`rounded-[1.35rem] p-4 text-left transition duration-700 ease-fluid ${item.title === stage.title ? "bg-cyan text-ink" : "bg-white/[0.055] text-paper ring-1 ring-white/[0.1] hover:bg-white/[0.09]"}`} type="button" onClick={() => setStage(item)} key={item.title}>
@@ -254,7 +254,7 @@ export function ProlificEdgeExperience() {
           <Reveal className="max-w-5xl">
             <h2 className="font-display text-[clamp(2.8rem,6.2vw,7.2rem)] font-semibold leading-[0.84] tracking-[-0.07em]">Transformation Campus</h2>
           </Reveal>
-          <div className="mt-16 grid grid-flow-dense auto-rows-[minmax(280px,auto)] grid-cols-1 gap-4 md:grid-cols-12">
+          <div className="mt-10 grid grid-flow-dense auto-rows-[minmax(280px,auto)] grid-cols-1 gap-4 md:grid-cols-12">
             {campus.map((item, index) => (
               <button
                 className={`group rounded-[2rem] bg-white/[0.05] p-1.5 text-left ring-1 ring-white/[0.1] transition duration-700 ease-fluid hover:-translate-y-1 ${index === 0 ? "md:col-span-7" : index === 1 ? "md:col-span-5" : "md:col-span-4"}`}
@@ -291,7 +291,7 @@ export function ProlificEdgeExperience() {
           <Reveal delay={0.1}>
             <article className="rounded-[2.2rem] bg-white/[0.05] p-1.5 ring-1 ring-white/[0.1]">
               <div className="rounded-[1.75rem] bg-surface p-8">
-                <EvidenceTag status="illustrative" />
+                <EvidenceTag status="evidence_model" />
                 <h3 className="mt-8 text-5xl font-semibold tracking-[-0.065em]">{sector.name}</h3>
                 <p className="mt-6 text-lg leading-8 text-paper/[0.66]"><strong className="text-paper">Friction: </strong>{sector.friction}</p>
                 <p className="mt-4 text-lg leading-8 text-paper/[0.66]"><strong className="text-paper">Intervention: </strong>{sector.intervention}</p>
