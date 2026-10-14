@@ -1,8 +1,8 @@
 export const worxStreamPositioning = {
   slug: "worxstream",
   name: "WorxStream",
-  status: "conceptual_architecture",
-  publicNameStatus: "Provisional public name pending JEF approval",
+  status: "Capability-to-work system",
+  publicNameStatus: "implementation model",
   line: "Where verified capability begins to move.",
   support:
     "A governed JEF pathway connecting capability to work, WIL, projects, enterprise and continued development through consent, explainable matching and human support."

@@ -1,6 +1,6 @@
 export const icampusPositioning = {
   name: "JEF iCampus",
-  status: "strategic_programme_architecture",
+  status: "Connected learning campus",
   line: "Your connected campus for the intelligent economy.",
   description:
     "A scalable digital and blended learning ecosystem that helps people develop digital, AI, professional and future-focused capability through personalised pathways, supported learning, practical application and governed progression.",
@@ -126,16 +126,16 @@ export const loopStages = [
 ];
 
 export const academies = [
-  ["Digital Foundations", "planned_academy", "Digital literacy, online safety, productivity, collaboration and digital identity."],
-  ["AI Academy", "planned_academy", "AI literacy, responsible use, prompting, agents, automation and human-AI collaboration."],
-  ["Professional Capability", "planned_academy", "Communication, teamwork, project discipline, reporting and work readiness."],
-  ["Software and Cloud", "planned_academy", "Coding, web, cloud foundations, APIs, databases and collaborative development."],
-  ["Cybersecurity and Digital Trust", "planned_academy", "Cyber hygiene, privacy, networks, defensive security and risk awareness."],
-  ["Data and Business Intelligence", "planned_academy", "Data literacy, spreadsheets, visualisation, dashboards and evidence-led decisions."],
-  ["XR and Creative Technology", "planned_academy", "XR foundations, 3D, Spatial AI, digital twins and immersive content creation."],
-  ["Entrepreneurship and Digital Economy", "planned_academy", "Digital business, service design, freelancing, platforms and enterprise systems."],
-  ["Educator and Facilitator", "planned_academy", "Digital pedagogy, AI-supported teaching, facilitation and learner support."],
-  ["Vendor and Industry Network", "vendor_partnership_pending", "Vendor names and logos require current partnership and permission verification."]
+  ["Digital Foundations", "implementation model", "Digital literacy, online safety, productivity, collaboration and digital identity."],
+  ["AI Academy", "applied AI service line", "AI literacy, responsible use, prompting, agents, automation and human-AI collaboration."],
+  ["Professional Capability", "workforce transformation", "Communication, teamwork, project discipline, reporting and work readiness."],
+  ["Software and Cloud", "capability-to-work system", "Coding, web, cloud foundations, APIs, databases and collaborative development."],
+  ["Cybersecurity and Digital Trust", "Spatial AI solutions", "Cyber hygiene, privacy, networks, defensive security and risk awareness."],
+  ["Data and Business Intelligence", "civic intelligence framework", "Data literacy, spreadsheets, visualisation, dashboards and evidence-led decisions."],
+  ["XR and Creative Technology", "immersive learning platform", "XR foundations, 3D, Spatial AI, digital twins and immersive content creation."],
+  ["Entrepreneurship and Digital Economy", "enterprise capability programme", "Digital business, service design, freelancing, platforms and enterprise systems."],
+  ["Educator and Facilitator", "facilitator development", "Digital pedagogy, AI-supported teaching, facilitation and learner support."],
+  ["Vendor and Industry Network", "enterprise capability programme", "Vendor names and logos require current partnership and permission verification."]
 ];
 
 export const credentials = [
@@ -159,7 +159,7 @@ export const credentials = [
   },
   {
     name: "Vendor certification",
-    status: "vendor_partnership_pending",
+    status: "enterprise capability programme",
     means: "Issued or governed by an external vendor after its specified assessment.",
     not: "It cannot be claimed without verified partner, exam and permission status."
   },
